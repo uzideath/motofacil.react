@@ -1,0 +1,333 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221.2 83% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 221.2 83% 53.3%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83% 53.3%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 221.2 83% 53.3%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 221.2 83% 53.3%;
+    --sidebar-accent: 217.2 91.2% 59.8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 0 0% 100%;
+  }
+
+  .dark {
+    /* Tema oscuro con azul oscuro */
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 5%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 91.2% 59.8%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+
+    /* Sidebar con azul oscuro */
+    --sidebar-background: 222 47% 15%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 224.3 76.3% 48%;
+    --sidebar-accent: 217.2 91.2% 59.8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 47% 20%;
+    --sidebar-ring: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Estilos para efectos de vidrio y transparencia */
+.glass-effect {
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(30, 50, 100, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(30, 50, 100, 0.2);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(15, 23, 42, 0.75);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.4);
+}
+
+.dark-blue-gradient {
+  background: linear-gradient(135deg, #001533 0%, #002966 50%, #001533 100%);
+}
+
+.sidebar-gradient {
+  background: linear-gradient(180deg, rgba(0, 41, 102, 0.9) 0%, rgba(0, 21, 51, 0.9) 100%);
+}
+
+.stats-card {
+  transition: all 0.3s ease;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(30, 50, 100, 0.2);
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.animated-icon {
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover .animated-icon {
+  transform: scale(1.2);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table th {
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(30, 50, 100, 0.2);
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(30, 50, 100, 0.2);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background-color: rgba(30, 50, 100, 0.1);
+}
+
+.card-hover-effect {
+  transition: all 0.3s ease;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(30, 50, 100, 0.2);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  background: rgba(15, 23, 42, 0.75);
+}
+
+/* Estilos para el fondo con patrón de puntos */
+.dot-pattern {
+  background-image: radial-gradient(rgba(30, 50, 100, 0.2) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Estilos para bordes brillantes */
+.glow-border {
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.glow-border:hover {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+}
+
+/* Animación de brillo para elementos destacados */
+.glow-effect {
+  animation: pulse-slow 3s infinite;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+  }
+}
+
+/* Estilos para tablas con efecto de vidrio */
+.glass-table {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.glass-table th {
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.glass-table tr:hover td {
+  background: rgba(30, 50, 100, 0.2);
+}
+
+/* Estilos para inputs con efecto de vidrio */
+.glass-input {
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(30, 50, 100, 0.3);
+  color: white;
+}
+
+.glass-input:focus {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Estilos para la barra de progreso */
+.progress-bar {
+  height: 8px;
+  background: rgba(30, 64, 175, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease-in-out;
+}
+
+
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-surface {
+  overflow: visible;
+}
+
+.recharts-tooltip-wrapper {
+  z-index: 10;
+}
+
+.recharts-default-tooltip {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(30, 50, 100, 0.3) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.recharts-tooltip-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+}
+
+.recharts-tooltip-item-list {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.recharts-tooltip-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 2px 0 !important;
+}
+
+.recharts-legend-wrapper {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.recharts-legend-item {
+  margin-right: 20px !important;
+}
+
+@media (max-width: 640px) {
+  .recharts-legend-item-text {
+    font-size: 12px !important;
+  }
+
+  .recharts-cartesian-axis-tick-value {
+    font-size: 10px !important;
+  }
+}
