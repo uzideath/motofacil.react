@@ -77,25 +77,33 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
         .find((c) => c.startsWith("authToken="))
         ?.split("=")[1]
 
-      const response = await HttpService.post("/api/v1/motorcycles", values, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      })
+      let response
+      if (motorcycleId) {
+        response = await HttpService.put(`/api/v1/motorcycles/${motorcycleId}`, values, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+      } else {
+        response = await HttpService.post("/api/v1/motorcycles", values, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+      }
 
       toast({
-        title: "Motocicleta creada",
-        description: "La motocicleta ha sido creada correctamente",
+        title: motorcycleId ? "Motocicleta actualizada" : "Motocicleta creada",
+        description: motorcycleId
+          ? "La motocicleta ha sido actualizada correctamente"
+          : "La motocicleta ha sido creada correctamente",
       })
 
       setOpen(false)
+      setTimeout(() => {
+        onCreated?.(response.data)
+      }, 100)
 
-      // Pass the new motorcycle data to the onCreated callback
-      if (onCreated) {
-        onCreated(response.data)
-      }
-
-      // Reset the form
       form.reset({
         brand: "",
         model: "",
@@ -105,11 +113,13 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
         gps: undefined,
       })
     } catch (error) {
-      console.error("Error al crear motocicleta:", error)
+      console.error("Error al guardar motocicleta:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo crear la motocicleta",
+        description: motorcycleId
+          ? "No se pudo actualizar la motocicleta"
+          : "No se pudo crear la motocicleta",
       })
     } finally {
       setLoading(false)
@@ -126,110 +136,65 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <FormField
-                control={form.control}
-                name="brand"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Marca</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Marca de la motocicleta"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="brand" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Marca</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Marca de la motocicleta" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Modelo</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Modelo de la motocicleta"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="model" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Modelo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Modelo de la motocicleta" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="plate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Placa</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Placa de la motocicleta"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="plate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Placa</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Placa de la motocicleta" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Color</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Color de la motocicleta"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="color" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Color</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Color de la motocicleta" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="gps"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GPS</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Código GPS"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="gps" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GPS</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Código GPS" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="cc"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cilindraje (cc)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Ej: 150" value={field.value ?? ""} onChange={field.onChange} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="cc" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cilindraje (cc)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Ej: 150" value={field.value ?? ""} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
 
             <div className="flex justify-end gap-4">
@@ -240,10 +205,10 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creando...
+                    {motorcycleId ? "Actualizando..." : "Creando..."}
                   </>
                 ) : (
-                  "Crear"
+                  motorcycleId ? "Actualizar" : "Crear"
                 )}
               </Button>
             </div>

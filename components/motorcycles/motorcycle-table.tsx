@@ -10,12 +10,15 @@ import { MotorcycleForm } from "./motorcycle-form"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HttpService } from "@/lib/http"
 import type { Motorcycle } from "@/lib/types"
+import { DeleteConfirmationDialog } from "./delete-dialog"
 
 export function MotorcycleTable() {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [motorcycleToDelete, setMotorcycleToDelete] = useState<string | null>(null)
 
   const fetchMotorcycles = async () => {
     try {
@@ -60,34 +63,38 @@ export function MotorcycleTable() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm("¿Está seguro que desea eliminar esta motocicleta?")) {
-      try {
-        const token = document.cookie
-          .split("; ")
-          .find((c) => c.startsWith("authToken="))
-          ?.split("=")[1]
+    setMotorcycleToDelete(id)
+    setDeleteDialogOpen(true)
+  }
 
-        await HttpService.delete(`/api/v1/motorcycles/${id}`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        })
+  const confirmDelete = async () => {
+    if (!motorcycleToDelete) return
 
-        // Update the state directly
-        setMotorcycles((prev) => prev.filter((moto) => moto.id !== id))
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-        toast({
-          title: "Motocicleta eliminada",
-          description: "La motocicleta ha sido eliminada correctamente",
-        })
-      } catch (error) {
-        console.error("Error al eliminar motocicleta:", error)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No se pudo eliminar la motocicleta",
-        })
-      }
+      await HttpService.delete(`/api/v1/motorcycles/${motorcycleToDelete}`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
+
+      setMotorcycles((prev) => prev.filter((moto) => moto.id !== motorcycleToDelete))
+
+      toast({
+        title: "Motocicleta eliminada",
+        description: "La motocicleta ha sido eliminada correctamente",
+      })
+    } catch (error) {
+      console.error("Error al eliminar motocicleta:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar la motocicleta",
+      })
     }
   }
 
@@ -199,6 +206,13 @@ export function MotorcycleTable() {
           </Table>
         </div>
       </div>
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+        title="Confirmar eliminación"
+        description="¿Está seguro que desea eliminar esta motocicleta? Esta acción no se puede deshacer."
+      />
     </div>
   )
 }
