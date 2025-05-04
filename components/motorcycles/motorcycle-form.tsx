@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -11,37 +10,35 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { HttpService } from "@/lib/http"
+import type { Motorcycle } from "@/lib/types"
+import { Loader2 } from "lucide-react"
 
 const motorcycleSchema = z.object({
-  brand: z.string().min(2, {
-    message: "La marca debe tener al menos 2 caracteres",
-  }),
-  model: z.string().min(2, {
-    message: "El modelo debe tener al menos 2 caracteres",
-  }),
-  plate: z.string().min(5, {
-    message: "La placa debe tener al menos 5 caracteres",
-  }),
+  brand: z.string().min(2, { message: "La marca debe tener al menos 2 caracteres" }),
+  model: z.string().min(2, { message: "El modelo debe tener al menos 2 caracteres" }),
+  plate: z.string().min(5, { message: "La placa debe tener al menos 5 caracteres" }),
+  color: z.string().optional().default(""),
+  cc: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : Number(val)),
+    z.number().min(0, { message: "El cilindraje debe ser un número positivo" }).optional(),
+  ),
+  gps: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : Number(val)),
+    z.number().min(1, { message: "El GPS debe ser un número mayor o igual a 1" }).optional(),
+  ),
 })
 
 type MotorcycleFormValues = z.infer<typeof motorcycleSchema>
 
-type MotorcycleData = {
-  id: string
-  brand: string
-  model: string
-  plate: string
-}
-
-export function MotorcycleForm({
-  children,
-  motorcycleId,
-  motorcycleData,
-}: {
+type Props = {
   children: React.ReactNode
   motorcycleId?: string
-  motorcycleData?: MotorcycleData
-}) {
+  motorcycleData?: Motorcycle
+  onCreated?: (newMotorcycle?: Motorcycle) => void
+}
+
+export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreated }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -52,6 +49,9 @@ export function MotorcycleForm({
       brand: "",
       model: "",
       plate: "",
+      color: "",
+      cc: undefined,
+      gps: undefined,
     },
   })
 
@@ -61,6 +61,9 @@ export function MotorcycleForm({
         brand: motorcycleData.brand,
         model: motorcycleData.model,
         plate: motorcycleData.plate,
+        color: motorcycleData.color ?? "",
+        cc: motorcycleData.cc ?? undefined,
+        gps: motorcycleData.gps ?? undefined,
       })
     }
   }, [motorcycleData, form])
@@ -69,29 +72,44 @@ export function MotorcycleForm({
     try {
       setLoading(true)
 
-      // Simulación de guardado
-      console.log(
-        motorcycleId ? "Actualizando motocicleta:" : "Creando motocicleta:",
-        motorcycleId ? { id: motorcycleId, ...values } : values,
-      )
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-      // Esperar un momento para simular la operación
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await HttpService.post("/api/v1/motorcycles", values, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
 
       toast({
-        title: motorcycleId ? "Motocicleta actualizada" : "Motocicleta creada",
-        description: motorcycleId
-          ? "La motocicleta ha sido actualizada correctamente"
-          : "La motocicleta ha sido creada correctamente",
+        title: "Motocicleta creada",
+        description: "La motocicleta ha sido creada correctamente",
       })
 
       setOpen(false)
+
+      // Pass the new motorcycle data to the onCreated callback
+      if (onCreated) {
+        onCreated(response.data)
+      }
+
+      // Reset the form
+      form.reset({
+        brand: "",
+        model: "",
+        plate: "",
+        color: "",
+        cc: undefined,
+        gps: undefined,
+      })
     } catch (error) {
-      console.error("Error al guardar motocicleta:", error)
+      console.error("Error al crear motocicleta:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: motorcycleId ? "No se pudo actualizar la motocicleta" : "No se pudo crear la motocicleta",
+        description: "No se pudo crear la motocicleta",
       })
     } finally {
       setLoading(false)
@@ -115,7 +133,11 @@ export function MotorcycleForm({
                   <FormItem>
                     <FormLabel>Marca</FormLabel>
                     <FormControl>
-                      <Input placeholder="Marca de la motocicleta" {...field} />
+                      <Input
+                        placeholder="Marca de la motocicleta"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -129,7 +151,11 @@ export function MotorcycleForm({
                   <FormItem>
                     <FormLabel>Modelo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Modelo de la motocicleta" {...field} />
+                      <Input
+                        placeholder="Modelo de la motocicleta"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -143,7 +169,62 @@ export function MotorcycleForm({
                   <FormItem>
                     <FormLabel>Placa</FormLabel>
                     <FormControl>
-                      <Input placeholder="Placa de la motocicleta" {...field} />
+                      <Input
+                        placeholder="Placa de la motocicleta"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Color</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Color de la motocicleta"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gps"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GPS</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Código GPS"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cc"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cilindraje (cc)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Ej: 150" value={field.value ?? ""} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,8 +236,15 @@ export function MotorcycleForm({
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Guardando..." : motorcycleId ? "Actualizar" : "Crear"}
+              <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 text-white">
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creando...
+                  </>
+                ) : (
+                  "Crear"
+                )}
               </Button>
             </div>
           </form>

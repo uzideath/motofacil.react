@@ -1,20 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search } from "lucide-react"
+import { Edit, Trash2, Search, Plus } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { MotorcycleForm } from "./motorcycle-form"
 import { Skeleton } from "@/components/ui/skeleton"
-
-type Motorcycle = {
-  id: string
-  brand: string
-  model: string
-  plate: string
-}
+import { HttpService } from "@/lib/http"
+import type { Motorcycle } from "@/lib/types"
 
 export function MotorcycleTable() {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([])
@@ -22,46 +17,65 @@ export function MotorcycleTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      setMotorcycles([
-        {
-          id: "1",
-          brand: "Honda",
-          model: "CB 125F",
-          plate: "ABC123",
-        },
-        {
-          id: "2",
-          brand: "Yamaha",
-          model: "FZ 150",
-          plate: "DEF456",
-        },
-        {
-          id: "3",
-          brand: "Suzuki",
-          model: "Gixxer 250",
-          plate: "GHI789",
-        },
-        {
-          id: "4",
-          brand: "Bajaj",
-          model: "Pulsar NS 200",
-          plate: "JKL012",
-        },
-      ])
-      setLoading(false)
-    }, 1000)
+  const fetchMotorcycles = async () => {
+    try {
+      setLoading(true)
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-    return () => clearTimeout(timer)
+      const response = await HttpService.get<Motorcycle[]>("/api/v1/motorcycles", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
+
+      setMotorcycles(response.data)
+    } catch (error) {
+      console.error("Error al obtener motocicletas:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar datos",
+        description: "No se pudieron obtener las motocicletas del servidor",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchMotorcycles()
   }, [])
+
+  // Handle new motorcycle creation
+  const handleMotorcycleCreated = (newMotorcycle?: Motorcycle) => {
+    if (newMotorcycle) {
+      // Add the new motorcycle to the state directly
+      setMotorcycles((prev) => [newMotorcycle, ...prev])
+    } else {
+      // If no motorcycle data is provided, fetch all motorcycles
+      fetchMotorcycles()
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (confirm("¿Está seguro que desea eliminar esta motocicleta?")) {
       try {
-        // Simulación de eliminación
-        setMotorcycles(motorcycles.filter((moto) => moto.id !== id))
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("authToken="))
+          ?.split("=")[1]
+
+        await HttpService.delete(`/api/v1/motorcycles/${id}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+
+        // Update the state directly
+        setMotorcycles((prev) => prev.filter((moto) => moto.id !== id))
+
         toast({
           title: "Motocicleta eliminada",
           description: "La motocicleta ha sido eliminada correctamente",
@@ -86,7 +100,7 @@ export function MotorcycleTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-300/70" />
           <Input
@@ -97,6 +111,12 @@ export function MotorcycleTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <MotorcycleForm onCreated={handleMotorcycleCreated}>
+          <Button className="bg-primary hover:bg-primary/90 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Motocicleta
+          </Button>
+        </MotorcycleForm>
       </div>
 
       <div className="glass-table border border-dark-blue-800/30">
@@ -107,6 +127,9 @@ export function MotorcycleTable() {
                 <TableHead className="text-blue-200">Marca</TableHead>
                 <TableHead className="text-blue-200">Modelo</TableHead>
                 <TableHead className="text-blue-200">Placa</TableHead>
+                <TableHead className="text-blue-200">Color</TableHead>
+                <TableHead className="text-blue-200">Cilindraje (cc)</TableHead>
+                <TableHead className="text-blue-200">GPS</TableHead>
                 <TableHead className="text-right text-blue-200">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -114,15 +137,11 @@ export function MotorcycleTable() {
               {loading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <TableRow key={index} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell>
-                      <Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-[120px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-[80px] bg-dark-blue-800/50" />
-                    </TableCell>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <TableCell key={i}>
+                        <Skeleton className="h-5 w-full bg-dark-blue-800/50" />
+                      </TableCell>
+                    ))}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Skeleton className="h-8 w-8 rounded-md bg-dark-blue-800/50" />
@@ -133,19 +152,26 @@ export function MotorcycleTable() {
                 ))
               ) : filteredMotorcycles.length === 0 ? (
                 <TableRow className="border-dark-blue-800/30">
-                  <TableCell colSpan={4} className="text-center text-blue-200/70">
+                  <TableCell colSpan={7} className="text-center text-blue-200/70">
                     No se encontraron motocicletas
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredMotorcycles.map((moto) => (
                   <TableRow key={moto.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell className="font-medium text-white">{moto.brand}</TableCell>
+                    <TableCell className="text-white">{moto.brand}</TableCell>
                     <TableCell className="text-blue-200">{moto.model}</TableCell>
                     <TableCell className="text-blue-200">{moto.plate}</TableCell>
+                    <TableCell className="text-blue-200">{moto.color ?? "No encontrado"}</TableCell>
+                    <TableCell className="text-blue-200">{moto.cc?.toString() ?? "No encontrado"}</TableCell>
+                    <TableCell className="text-blue-200">{moto.gps ?? "No encontrado"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <MotorcycleForm motorcycleId={moto.id} motorcycleData={moto}>
+                        <MotorcycleForm
+                          motorcycleId={moto.id}
+                          motorcycleData={moto}
+                          onCreated={handleMotorcycleCreated}
+                        >
                           <Button
                             variant="outline"
                             size="icon"

@@ -1,26 +1,46 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { hasAccess } from "./lib/services/auth"
 
-// Rutas que no requieren autenticación
+
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
+
+function parseJwt(token: string): any {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join("")
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return null
+  }
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  // Verificar si la ruta actual es pública
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+  const token = request.cookies.get("authToken")?.value
 
-  // Obtener el token de autenticación de las cookies
-  const authToken = request.cookies.get("authToken")?.value
-
-  // Si es una ruta pública y el usuario está autenticado, redirigir al dashboard
-  if (isPublicRoute && authToken) {
+  if (isPublicRoute && token) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
-  // Si no es una ruta pública y el usuario no está autenticado, redirigir al login
-  if (!isPublicRoute && !authToken && !pathname.includes("/_next")) {
+  if (!isPublicRoute && !token && !pathname.includes("/_next")) {
     return NextResponse.redirect(new URL("/login", request.url))
+  }
+
+  if (token) {
+    const decoded = parseJwt(token)
+    const userRoles: string[] = decoded?.roles || []
+
+    if (!hasAccess(pathname, userRoles)) {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
   }
 
   return NextResponse.next()

@@ -218,19 +218,19 @@ export function AppSidebar() {
                 <Avatar className="border border-primary/30 bg-slate-800/80 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                   <AvatarImage src="/abstract-geometric-shapes.png" alt="Avatar" />
                   <AvatarFallback className="bg-slate-800/80 text-white">
-                    {user.name.substring(0, 2).toUpperCase()}
+                    {user.username.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-blue-200/70">{user.email}</p>
+                  <p className="text-sm font-medium text-white">{user.username}</p>
+                  <p className="text-xs text-blue-200/70">{user.username}</p>
                 </div>
               </div>
             ) : (
               <Avatar className="border border-primary/30 bg-slate-800/80 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                 <AvatarImage src="/abstract-geometric-shapes.png" alt="Avatar" />
                 <AvatarFallback className="bg-slate-800/80 text-white">
-                  {user.name.substring(0, 2).toUpperCase()}
+                  {user.username.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             )}

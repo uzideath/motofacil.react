@@ -2,11 +2,12 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-type User = {
+export type Role = "admin" | "user" | "manager"
+
+export type User = {
   id: string
-  name: string
-  email: string
-  role: "admin" | "user" | "manager"
+  username: string
+  role: Role
 }
 
 type AuthContextType = {
@@ -18,44 +19,82 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Función para decodificar un JWT (sin verificar la firma)
+function decodeJWT(token: string): any | null {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join("")
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar si hay un usuario en localStorage al cargar la página
-    const storedUser = localStorage.getItem("user")
+    const token = document.cookie
+      .split(";")
+      .find((c) => c.trim().startsWith("authToken="))
+      ?.split("=")[1]
 
-    // Verificar si hay una cookie de autenticación
-    const hasAuthCookie = document.cookie.split(";").some((item) => item.trim().startsWith("authToken="))
+    if (token) {
+      const decoded = decodeJWT(token)
 
-    if (storedUser && hasAuthCookie) {
-      setUser(JSON.parse(storedUser))
+      if (decoded && decoded.sub && decoded.username && Array.isArray(decoded.roles)) {
+        // Mapear roles válidos
+        const roleMap: Record<string, Role> = {
+          ADMIN: "admin",
+          MANAGER: "manager",
+          USER: "user",
+        }
+
+        const validRoles = decoded.roles
+          .map((r: string) => roleMap[r.toUpperCase()])
+          .filter(Boolean) as Role[]
+
+        const rolePriority: Role[] = ["admin", "manager", "user"]
+        const primaryRole = rolePriority.find((r) => validRoles.includes(r)) ?? "user"
+
+        setUser({
+          id: decoded.sub,
+          username: decoded.username,
+          role: primaryRole,
+        })
+      }
     }
+
     setIsLoading(false)
   }, [])
 
   const login = (userData: User) => {
     setUser(userData)
-    localStorage.setItem("user", JSON.stringify(userData))
+    // Ya no se usa localStorage
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
-    // Eliminar la cookie de autenticación
     document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-    // Redireccionar a la página de login
     window.location.href = "/login"
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider")
   return context
 }
