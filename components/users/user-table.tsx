@@ -4,74 +4,79 @@ import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search } from "lucide-react"
+import { Edit, Trash2, Search, Plus } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { UserForm } from "./user-form"
 import { Skeleton } from "@/components/ui/skeleton"
+import { HttpService } from "@/lib/http"
+import { Client } from "@/lib/types"
 
-type User = {
-  id: string
-  name: string
-  identification: string
-  age: number
-  phone: string
-  address: string
-}
 
 export function UserTable() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      setUsers([
-        {
-          id: "1",
-          name: "Carlos Rodríguez",
-          identification: "1098765432",
-          age: 35,
-          phone: "3101234567",
-          address: "Calle 123 #45-67, Bogotá",
-        },
-        {
-          id: "2",
-          name: "María López",
-          identification: "1087654321",
-          age: 28,
-          phone: "3157654321",
-          address: "Carrera 45 #12-34, Medellín",
-        },
-        {
-          id: "3",
-          name: "Juan Pérez",
-          identification: "1076543210",
-          age: 42,
-          phone: "3209876543",
-          address: "Avenida 67 #89-12, Cali",
-        },
-        {
-          id: "4",
-          name: "Ana Gómez",
-          identification: "1065432109",
-          age: 31,
-          phone: "3003456789",
-          address: "Calle 78 #90-12, Barranquilla",
-        },
-      ])
-      setLoading(false)
-    }, 1000)
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-    return () => clearTimeout(timer)
+      const response = await HttpService.get<Client[]>("/api/v1/users", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
+
+      setUsers(response.data)
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar usuarios",
+        description: "No se pudieron obtener los usuarios del servidor",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
   }, [])
+
+  const handleUserCreated = (newUser?: Client) => {
+    if (newUser) {
+      setUsers((prev) => {
+        const exists = prev.some((user) => user.id === newUser.id)
+        return exists
+          ? prev.map((u) => (u.id === newUser.id ? newUser : u))
+          : [newUser, ...prev]
+      })
+    } else {
+      fetchUsers()
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (confirm("¿Está seguro que desea eliminar este usuario?")) {
       try {
-        // Simulación de eliminación
-        setUsers(users.filter((user) => user.id !== id))
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("authToken="))
+          ?.split("=")[1]
+
+        await HttpService.delete(`/api/v1/users/${id}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+
+        setUsers((prev) => prev.filter((user) => user.id !== id))
         toast({
           title: "Usuario eliminado",
           description: "El usuario ha sido eliminado correctamente",
@@ -88,12 +93,14 @@ export function UserTable() {
   }
 
   const filteredUsers = users.filter(
-    (user) => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.identification.includes(searchTerm),
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.identification.includes(searchTerm),
   )
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-300/70" />
           <Input
@@ -104,6 +111,12 @@ export function UserTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <UserForm onCreated={handleUserCreated}>
+          <Button className="bg-primary hover:bg-primary/90 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Usuario
+          </Button>
+        </UserForm>
       </div>
 
       <div className="glass-table border border-dark-blue-800/30">
@@ -112,10 +125,10 @@ export function UserTable() {
             <TableHeader>
               <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
                 <TableHead className="text-blue-200">Nombre</TableHead>
-                <TableHead className="hidden md:table-cell text-blue-200">Identificación</TableHead>
-                <TableHead className="hidden md:table-cell text-blue-200">Edad</TableHead>
-                <TableHead className="hidden md:table-cell text-blue-200">Teléfono</TableHead>
-                <TableHead className="hidden lg:table-cell text-blue-200">Dirección</TableHead>
+                <TableHead className="text-blue-200 hidden md:table-cell">Identificación</TableHead>
+                <TableHead className="text-blue-200 hidden md:table-cell">Edad</TableHead>
+                <TableHead className="text-blue-200 hidden md:table-cell">Teléfono</TableHead>
+                <TableHead className="text-blue-200 hidden lg:table-cell">Dirección</TableHead>
                 <TableHead className="text-right text-blue-200">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -155,14 +168,14 @@ export function UserTable() {
               ) : (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell className="font-medium text-white">{user.name}</TableCell>
+                    <TableCell className="text-white">{user.name}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{user.identification}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{user.age}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{user.phone}</TableCell>
                     <TableCell className="hidden lg:table-cell text-blue-200">{user.address}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <UserForm userId={user.id} userData={user}>
+                        <UserForm userId={user.id} userData={user} onCreated={handleUserCreated}>
                           <Button
                             variant="outline"
                             size="icon"

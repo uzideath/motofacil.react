@@ -39,3 +39,16 @@ export type Motorcycle = {
     cc?: number | null
     gps?: number | null
 }
+
+export type Client = {
+    id: string
+    name: string
+    identification: string
+    age: number
+    phone: string
+    address: string
+    refName: string
+    refID: string
+    refPhone: string
+  }
+  

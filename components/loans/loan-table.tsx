@@ -1,10 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search, Eye, CreditCard } from "lucide-react"
+import {
+  Edit,
+  Trash2,
+  Search,
+  Eye,
+  CreditCard,
+} from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -12,8 +25,9 @@ import { LoanForm } from "./loan-form"
 import { LoanDetails } from "./loan-details"
 import { InstallmentForm } from "../installments/installment-form"
 import { Skeleton } from "@/components/ui/skeleton"
+import { HttpService } from "@/lib/http"
 
-type Loan = {
+export type Loan = {
   id: string
   userName: string
   motorcycleModel: string
@@ -32,70 +46,53 @@ export function LoanTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      setLoans([
-        {
-          id: "1",
-          userName: "Carlos Rodríguez",
-          motorcycleModel: "Honda CB 125F",
-          totalAmount: 8500000,
-          installments: 24,
-          paidInstallments: 6,
-          remainingInstallments: 18,
-          totalPaid: 2125000,
-          debtRemaining: 6375000,
-          status: "ACTIVE",
-        },
-        {
-          id: "2",
-          userName: "María López",
-          motorcycleModel: "Yamaha FZ 150",
-          totalAmount: 12000000,
-          installments: 36,
-          paidInstallments: 12,
-          remainingInstallments: 24,
-          totalPaid: 4000000,
-          debtRemaining: 8000000,
-          status: "ACTIVE",
-        },
-        {
-          id: "3",
-          userName: "Juan Pérez",
-          motorcycleModel: "Suzuki Gixxer 250",
-          totalAmount: 15000000,
-          installments: 48,
-          paidInstallments: 48,
-          remainingInstallments: 0,
-          totalPaid: 15000000,
-          debtRemaining: 0,
-          status: "COMPLETED",
-        },
-        {
-          id: "4",
-          userName: "Ana Gómez",
-          motorcycleModel: "Bajaj Pulsar NS 200",
-          totalAmount: 10500000,
-          installments: 36,
-          paidInstallments: 5,
-          remainingInstallments: 31,
-          totalPaid: 1458333,
-          debtRemaining: 9041667,
-          status: "DEFAULTED",
-        },
-      ])
-      setLoading(false)
-    }, 1000)
+  const fetchLoans = async () => {
+    try {
+      setLoading(true)
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-    return () => clearTimeout(timer)
+      const response = await HttpService.get<Loan[]>("/api/v1/loans", {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
+
+      setLoans(response.data)
+    } catch (error) {
+      console.error("Error al obtener préstamos:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar datos",
+        description: "No se pudieron obtener los préstamos del servidor",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLoans()
   }, [])
 
   const handleDelete = async (id: string) => {
     if (confirm("¿Está seguro que desea eliminar este préstamo?")) {
       try {
-        // Simulación de eliminación
-        setLoans(loans.filter((loan) => loan.id !== id))
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("authToken="))
+          ?.split("=")[1]
+
+        await HttpService.delete(`/api/v1/loans/${id}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+
+        setLoans((prev) => prev.filter((loan) => loan.id !== id))
+
         toast({
           title: "Préstamo eliminado",
           description: "El préstamo ha sido eliminado correctamente",
@@ -114,7 +111,7 @@ export function LoanTable() {
   const filteredLoans = loans.filter(
     (loan) =>
       loan.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase()),
+      loan.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getStatusBadge = (status: string) => {

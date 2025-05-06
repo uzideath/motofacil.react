@@ -14,8 +14,8 @@ import { useToast } from "@/components/ui/use-toast"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { HttpService } from "@/lib/http"
 
-// Definición de tipos
 interface User {
   id: string
   name: string
@@ -29,7 +29,6 @@ interface Motorcycle {
   price: number
 }
 
-// Definición del esquema de validación con Zod
 const loanSchema = z.object({
   userId: z.string().min(1, { message: "Por favor, selecciona un cliente." }),
   motorcycleId: z.string().min(1, { message: "Por favor, selecciona una motocicleta." }),
@@ -38,13 +37,11 @@ const loanSchema = z.object({
   installments: z.coerce.number().min(1, { message: "El número de cuotas debe ser al menos 1." }),
   interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
   interestType: z.enum(["FIXED", "COMPOUND"]),
-  paymentFrequency: z.enum(["MONTHLY", "BIWEEKLY", "WEEKLY"]),
+  paymentFrequency: z.enum(["DAILY","MONTHLY", "BIWEEKLY", "WEEKLY"]),
 })
 
-// Definición del tipo para los valores del formulario
 type LoanFormValues = z.infer<typeof loanSchema>
 
-// Función para formatear la moneda
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -53,16 +50,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount)
 }
 
-export function LoanForm({
-  children,
-  loanId,
-  loanData,
-}: {
-  children: React.ReactNode
-  loanId?: string
-  loanData?: any
-}) {
-  // Estado para controlar si el diálogo está abierto
+export function LoanForm({ children, loanId, loanData, onSaved }: { children: React.ReactNode; loanId?: string; loanData?: any; onSaved?: (updatedLoan?: any) => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [users, setUsers] = useState<User[]>([])
@@ -71,9 +59,7 @@ export function LoanForm({
   const [loanSummary, setLoanSummary] = useState<any>(null)
   const { toast } = useToast()
 
-  // Referencia para controlar si ya se han cargado los datos
   const dataLoaded = useRef(false)
-  // Referencia para controlar si el componente está montado
   const isMounted = useRef(false)
 
   const form = useForm<LoanFormValues>({
@@ -90,10 +76,8 @@ export function LoanForm({
     },
   })
 
-  // Observar cambios en los valores del formulario para actualizar el resumen
   const formValues = form.watch()
 
-  // Efecto para marcar el componente como montado
   useEffect(() => {
     isMounted.current = true
     return () => {
@@ -101,7 +85,6 @@ export function LoanForm({
     }
   }, [])
 
-  // Función para calcular el resumen del préstamo
   const calculateLoanSummary = (values: LoanFormValues) => {
     if (!values.totalAmount || !values.installments || !values.interestRate) return
 
@@ -110,18 +93,15 @@ export function LoanForm({
     let monthlyPayment: number
 
     if (values.interestType === "FIXED") {
-      // Interés simple
       const interestAmount = financedAmount * (values.interestRate / 100) * (values.installments / 12)
       totalWithInterest = financedAmount + interestAmount
     } else {
-      // Interés compuesto
       const monthlyRate = values.interestRate / 100 / 12
       totalWithInterest = financedAmount * Math.pow(1 + monthlyRate, values.installments)
     }
 
     monthlyPayment = totalWithInterest / values.installments
 
-    // Ajustar la frecuencia de pago
     if (values.paymentFrequency === "BIWEEKLY") {
       monthlyPayment = (totalWithInterest * 12) / (values.installments * 26)
     } else if (values.paymentFrequency === "WEEKLY") {
@@ -138,20 +118,11 @@ export function LoanForm({
     }
   }
 
-  // Efecto para calcular el resumen cuando cambian los valores del formulario
   const watchedValues = useWatch({
     control: form.control,
-    name: [
-      "totalAmount",
-      "downPayment",
-      "installments",
-      "interestRate",
-      "interestType",
-      "paymentFrequency",
-    ],
+    name: ["totalAmount", "downPayment", "installments", "interestRate", "interestType", "paymentFrequency"],
   })
-  
-  // Calcular resumen solo cuando se abre el modal y cambian los valores relevantes
+
   useEffect(() => {
     if (isOpen && isMounted.current) {
       const values = form.getValues()
@@ -159,102 +130,66 @@ export function LoanForm({
     }
   }, [watchedValues, isOpen])
 
-  // Función para cargar los datos iniciales
-  const loadInitialData = () => {
+  const loadInitialData = async () => {
     if (dataLoaded.current || !isMounted.current) return
-
     setLoadingData(true)
-
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      if (!isMounted.current) return
-
-      const usersData = [
-        { id: "1", name: "Carlos Rodríguez" },
-        { id: "2", name: "María López" },
-        { id: "3", name: "Juan Pérez" },
-        { id: "4", name: "Ana Gómez" },
-      ]
-
-      const motorcyclesData = [
-        { id: "1", brand: "Honda", model: "CB 125F", plate: "ABC123", price: 8500000 },
-        { id: "2", brand: "Yamaha", model: "FZ 150", plate: "DEF456", price: 12000000 },
-        { id: "3", brand: "Suzuki", model: "Gixxer 250", plate: "GHI789", price: 15000000 },
-        { id: "4", brand: "Bajaj", model: "Pulsar NS 200", plate: "JKL012", price: 10500000 },
-      ]
-
-      setUsers(usersData)
-      setMotorcycles(motorcyclesData)
-      setLoadingData(false)
-      dataLoaded.current = true
-
-      // Solo resetear el formulario si hay datos de préstamo
+    try {
+      const token = document.cookie.split("; ").find((c) => c.startsWith("authToken="))?.split("=")[1]
+      const [userRes, motoRes] = await Promise.all([
+        HttpService.get<User[]>("/api/v1/users", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
+        HttpService.get<Motorcycle[]>("/api/v1/motorcycles", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
+      ])
+      setUsers(userRes.data)
+      setMotorcycles(motoRes.data)
       if (loanData) {
         form.reset({
-          userId: loanData.userId || "1",
-          motorcycleId: loanData.motorcycleId || "1",
+          userId: loanData.userId,
+          motorcycleId: loanData.motorcycleId,
           totalAmount: loanData.totalAmount,
-          downPayment: loanData.downPayment || 0,
+          downPayment: loanData.downPayment ?? 0,
           installments: loanData.installments,
-          interestRate: loanData.interestRate || 12,
-          interestType: loanData.interestType || "FIXED",
-          paymentFrequency: loanData.paymentFrequency || "MONTHLY",
+          interestRate: loanData.interestRate ?? 12,
+          interestType: loanData.interestType ?? "FIXED",
+          paymentFrequency: loanData.paymentFrequency ?? "MONTHLY",
         })
       }
-    }, 1000)
-
-    return () => clearTimeout(timer)
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los datos" })
+    } finally {
+      setLoadingData(false)
+      dataLoaded.current = true
+    }
   }
 
-  // Función para actualizar el monto total cuando se selecciona una motocicleta
   const handleMotorcycleChange = (motorcycleId: string) => {
-    const selectedMotorcycle = motorcycles.find((m) => m.id === motorcycleId)
-    if (selectedMotorcycle) {
-      form.setValue("totalAmount", selectedMotorcycle.price)
-    }
+    const selected = motorcycles.find((m) => m.id === motorcycleId)
+    if (selected) form.setValue("totalAmount", selected.price)
   }
 
   async function onSubmit(values: LoanFormValues) {
     try {
       setLoading(true)
+      const token = document.cookie.split("; ").find((c) => c.startsWith("authToken="))?.split("=")[1]
+      const response = loanId
+        ? await HttpService.put(`/api/v1/loans/${loanId}`, values, { headers: { Authorization: token ? `Bearer ${token}` : "" } })
+        : await HttpService.post("/api/v1/loans", values, { headers: { Authorization: token ? `Bearer ${token}` : "" } })
 
-      // Simulación de guardado
-      console.log(loanId ? "Actualizando préstamo:" : "Creando préstamo:", loanId ? { id: loanId, ...values } : values)
-
-      // Esperar un momento para simular la operación
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      toast({
-        title: loanId ? "Préstamo actualizado" : "Préstamo creado",
-        description: loanId
-          ? "El préstamo ha sido actualizado correctamente"
-          : "El préstamo ha sido creado correctamente",
-      })
-
+      toast({ title: loanId ? "Préstamo actualizado" : "Préstamo creado", description: "Operación exitosa" })
       setIsOpen(false)
+      onSaved?.(response.data)
     } catch (error) {
       console.error("Error al guardar préstamo:", error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: loanId ? "No se pudo actualizar el préstamo" : "No se pudo crear el préstamo",
-      })
+      toast({ variant: "destructive", title: "Error", description: "No se pudo guardar el préstamo" })
     } finally {
       setLoading(false)
     }
   }
 
-  // Función para manejar la apertura del diálogo
   const handleOpenDialog = () => {
     setIsOpen(true)
-    // Cargar datos solo cuando se abre el diálogo
-    if (!dataLoaded.current) {
-      setLoadingData(true)
-      loadInitialData()
-    }
+    if (!dataLoaded.current) loadInitialData()
   }
 
-  // Función para manejar el cierre del diálogo
   const handleCloseDialog = () => {
     setIsOpen(false)
     setLoanSummary(null)

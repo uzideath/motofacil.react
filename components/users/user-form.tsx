@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -11,45 +10,31 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { HttpService } from "@/lib/http"
+import { Client } from "@/lib/types"
+
 
 const userSchema = z.object({
-  name: z.string().min(2, {
-    message: "El nombre debe tener al menos 2 caracteres",
-  }),
-  identification: z.string().min(5, {
-    message: "La identificación debe tener al menos 5 caracteres",
-  }),
-  age: z.coerce.number().min(18, {
-    message: "La edad debe ser mayor o igual a 18",
-  }),
-  phone: z.string().min(7, {
-    message: "El teléfono debe tener al menos 7 caracteres",
-  }),
-  address: z.string().min(5, {
-    message: "La dirección debe tener al menos 5 caracteres",
-  }),
+  name: z.string().min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
+  identification: z.string().min(5, { message: "La identificación debe tener al menos 5 caracteres" }),
+  age: z.coerce.number().min(18, { message: "La edad debe ser mayor o igual a 18" }),
+  phone: z.string().min(7, { message: "El teléfono debe tener al menos 7 caracteres" }),
+  address: z.string().min(5, { message: "La dirección debe tener al menos 5 caracteres" }),
+  refName: z.string().min(2, { message: "El nombre del referente debe tener al menos 2 caracteres" }),
+  refID: z.string().min(5, { message: "La identificación del referente debe tener al menos 5 caracteres" }),
+  refPhone: z.string().min(7, { message: "El teléfono del referente debe tener al menos 7 caracteres" }),
 })
 
 type UserFormValues = z.infer<typeof userSchema>
 
-type UserData = {
-  id: string
-  name: string
-  identification: string
-  age: number
-  phone: string
-  address: string
-}
-
-export function UserForm({
-  children,
-  userId,
-  userData,
-}: {
+type Props = {
   children: React.ReactNode
   userId?: string
-  userData?: UserData
-}) {
+  userData?: Client
+  onCreated?: (user: Client) => void
+}
+
+export function UserForm({ children, userId, userData, onCreated }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
@@ -62,6 +47,9 @@ export function UserForm({
       age: 18,
       phone: "",
       address: "",
+      refName: "",
+      refID: "",
+      refPhone: "",
     },
   })
 
@@ -73,6 +61,9 @@ export function UserForm({
         age: userData.age,
         phone: userData.phone,
         address: userData.address,
+        refName: userData.refName,
+        refID: userData.refID,
+        refPhone: userData.refPhone,
       })
     }
   }, [userData, form])
@@ -81,11 +72,25 @@ export function UserForm({
     try {
       setLoading(true)
 
-      // Simulación de guardado
-      console.log(userId ? "Actualizando usuario:" : "Creando usuario:", userId ? { id: userId, ...values } : values)
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-      // Esperar un momento para simular la operación
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      let response
+      if (userId) {
+        response = await HttpService.put(`/api/v1/users/${userId}`, values, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+      } else {
+        response = await HttpService.post("/api/v1/users", values, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+      }
 
       toast({
         title: userId ? "Usuario actualizado" : "Usuario creado",
@@ -94,7 +99,9 @@ export function UserForm({
           : "El usuario ha sido creado correctamente",
       })
 
+      onCreated?.(response.data)
       setOpen(false)
+      form.reset()
     } catch (error) {
       console.error("Error al guardar usuario:", error)
       toast({
@@ -117,75 +124,85 @@ export function UserForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre completo" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre completo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="identification"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identificación</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Número de identificación" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="identification" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Identificación</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Número de identificación" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="age"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Edad</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="age" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Edad</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Número de teléfono" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Número de teléfono" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Dirección</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Dirección completa" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="address" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dirección</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Dirección completa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="refName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre del Referente</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre del referente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="refID" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Identificación del Referente</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ID del referente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="refPhone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Teléfono del Referente</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Teléfono del referente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
 
             <div className="flex justify-end gap-4">
