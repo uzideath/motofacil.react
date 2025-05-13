@@ -30,6 +30,7 @@ import {
   Search,
   CircleAlertIcon,
   Calculator,
+  ArrowDownRight,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -66,6 +67,7 @@ export function AppSidebar() {
     { path: "/motocicletas", label: "Motocicletas", icon: Bike },
     { path: "/prestamos", label: "Préstamos", icon: CreditCard, badge: 2 },
     { path: "/cuotas", label: "Cuotas", icon: Receipt },
+    { path: "/egresos", label: "Egresos", icon: ArrowDownRight },
     { path: "/cierre-caja", label: "Cierre de Caja", icon: CircleAlertIcon },
     { path: "/flujo-caja", label: "Flujo de Caja", icon: DollarSign },
     { path: "/reportes", label: "Reportes", icon: BarChart4 },
