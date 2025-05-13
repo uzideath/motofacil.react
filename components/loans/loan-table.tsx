@@ -57,6 +57,7 @@ export function LoanTable() {
   const fetchLoans = async () => {
     try {
       setLoading(true)
+      
       const token = document.cookie
         .split("; ")
         .find((c) => c.startsWith("authToken="))

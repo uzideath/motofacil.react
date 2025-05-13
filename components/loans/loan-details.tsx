@@ -16,36 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bike, Users } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
-
-type Loan = {
-  id: string
-  userId: string
-  userName: string
-  motorcycleId: string
-  motorcycleBrand: string
-  motorcycleModel: string
-  motorcyclePlate: string
-  totalAmount: number
-  financedAmount: number
-  downPayment: number
-  totalWithInterest: number
-  monthlyPayment: number
-  installments: number
-  paidInstallments: number
-  remainingInstallments: number
-  totalPaid: number
-  debtRemaining: number
-  totalCapitalPaid: number
-  totalInterestPaid: number
-  interestRate: number
-  interestType: "FIXED" | "COMPOUND"
-  paymentFrequency: "MONTHLY" | "BIWEEKLY" | "WEEKLY"
-  status: "ACTIVE" | "COMPLETED" | "DEFAULTED"
-  createdAt: string
-  payments: Payment[]
-  amortizationTable: AmortizationRow[]
-}
-
+import { fetchLoan } from "@/lib/api"
+import { Loan } from "@/lib/dto/loan"
 type Payment = {
   id: string
   amount: number
@@ -132,94 +104,18 @@ export function LoanDetails({
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("payments")
   const { toast } = useToast()
+  const [interests, setInterests] = useState(0);
   const dataFetchedRef = useRef(false)
 
   // Función para obtener datos del préstamo
   const fetchLoanData = () => {
     setLoading(true)
     // Simulación de carga de datos
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
-        // Datos de ejemplo para demostración
-        const data = {
-          id: loanId,
-          userId: "1",
-          userName: loanData?.userName || "Carlos Rodríguez",
-          motorcycleId: "1",
-          motorcycleBrand: "Honda",
-          motorcycleModel: loanData?.motorcycleModel || "CB 125F",
-          motorcyclePlate: "ABC123",
-          totalAmount: loanData?.totalAmount || 8500000,
-          financedAmount: 8000000,
-          downPayment: 500000,
-          totalWithInterest: 9600000,
-          monthlyPayment: 400000,
-          installments: loanData?.installments || 24,
-          paidInstallments: loanData?.paidInstallments || 6,
-          remainingInstallments: loanData?.remainingInstallments || 18,
-          totalPaid: loanData?.totalPaid || 2400000,
-          debtRemaining: loanData?.debtRemaining || 7200000,
-          totalCapitalPaid: 2000000,
-          totalInterestPaid: 400000,
-          interestRate: 12,
-          interestType: "FIXED" as const,
-          paymentFrequency: "MONTHLY" as const,
-          status: (loanData?.status || "ACTIVE") as "ACTIVE" | "COMPLETED" | "DEFAULTED",
-          createdAt: "2023-01-10",
-          payments: [
-            {
-              id: "1",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-01-10",
-              isLate: false,
-            },
-            {
-              id: "2",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-02-10",
-              isLate: false,
-            },
-            {
-              id: "3",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-03-10",
-              isLate: false,
-            },
-            {
-              id: "4",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-04-10",
-              isLate: false,
-            },
-            {
-              id: "5",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-05-10",
-              isLate: true,
-            },
-            {
-              id: "6",
-              amount: 400000,
-              principalAmount: 333333,
-              interestAmount: 66667,
-              date: "2023-06-10",
-              isLate: false,
-            },
-          ],
-          amortizationTable: generateAmortizationTable(24, 8000000, 400000, 12, "FIXED", 6),
-        } as Loan
-
-        setLoan(data)
+        const response = await fetchLoan(loanId);
+        setInterests(response.totalAmount * response.interestRate / 100);
+        setLoan(loanData);
       } catch (error) {
         console.error("Error al cargar datos del préstamo:", error)
         toast({
@@ -301,11 +197,11 @@ export function LoanDetails({
   }
 
   // Función para calcular la fecha estimada de finalización
-  function getEstimatedEndDate(loan: any) {
-    const startDate = new Date(loan.createdAt)
-    const endDate = new Date(startDate)
+  function getEstimatedEndDate(loan: Loan) {
+    const startDate = new Date(loan.startDate)
+    const endDate = new Date()
     endDate.setMonth(startDate.getMonth() + loan.installments)
-    return formatDate(endDate.toISOString())
+    return formatDate(`${endDate.getFullYear()}-${endDate.getMonth()}-${endDate.getDate()}`)
   }
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -359,34 +255,30 @@ export function LoanDetails({
                   <div className="flex items-center space-x-4 mb-4">
                     <Avatar className="h-12 w-12 border border-dark-blue-700 bg-dark-blue-800/50">
                       <AvatarImage
-                        src={`/abstract-geometric-shapes.png?height=48&width=48&query=${loan.userName}`}
-                        alt={loan.userName}
+                        src={`/abstract-geometric-shapes.png?height=48&width=48&query=${loan.id}`}
+                        alt={loan.id}
                       />
                       <AvatarFallback className="bg-dark-blue-800/80 text-blue-200">
-                        {loan.userName
+                        {/* {loan.userName
                           .split(" ")
                           .map((n) => n[0])
                           .join("")
-                          .toUpperCase()}
+                          .toUpperCase()} */}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-medium text-white">{loan.userName}</h3>
+                      <h3 className="font-medium text-white">{loan.user.name} {loan.user.refName}</h3>
                       <p className="text-sm text-blue-200/70">Cliente</p>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">ID Cliente</span>
-                      <span className="text-sm font-medium text-white">#{loan.userId || "001"}</span>
+                      <span className="text-sm font-medium text-white">#{loan.user.identification || "001"}</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Teléfono</span>
-                      <span className="text-sm font-medium text-white">+57 300 123 4567</span>
-                    </div>
-                    <div className="flex justify-between py-2">
-                      <span className="text-sm text-blue-200/80">Email</span>
-                      <span className="text-sm font-medium text-white">cliente@ejemplo.com</span>
+                      <span className="text-sm font-medium text-white">{loan.user.phone || "none"}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -406,7 +298,7 @@ export function LoanDetails({
                     </div>
                     <div>
                       <h3 className="font-medium text-white">
-                        {loan.motorcycleBrand} {loan.motorcycleModel}
+                        {loan.motorcycle.brand} {loan.motorcycle.model}
                       </h3>
                       <p className="text-sm text-blue-200/70">Motocicleta</p>
                     </div>
@@ -414,15 +306,15 @@ export function LoanDetails({
                   <div className="space-y-2">
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Marca</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcycleBrand}</span>
+                      <span className="text-sm font-medium text-white">{loan.motorcycle.brand}</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Modelo</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcycleModel}</span>
+                      <span className="text-sm font-medium text-white">{loan.motorcycle.model}</span>
                     </div>
                     <div className="flex justify-between py-2">
                       <span className="text-sm text-blue-200/80">Placa</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcyclePlate}</span>
+                      <span className="text-sm font-medium text-white">{loan.motorcycle.plate}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -458,16 +350,16 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">Precio Total</p>
                     <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Pago inicial: {formatCurrency(loan.downPayment)}</span>
-                      <span>Financiado: {formatCurrency(loan.financedAmount)}</span>
+                      <span>Pago inicial: {formatCurrency(loan.totalAmount)}</span>
+                      {/* <span>Financiado: {formatCurrency(loan.downPayment)}</span> */}
                     </div>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Total con Interés</p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.totalWithInterest)}</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount + (interests * loan.installments))}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Interés: {formatCurrency(loan.totalWithInterest - loan.financedAmount)}</span>
+                      {/* <span>Interés: {formatCurrency(loan.totalWithInterest - loan.financedAmount)}</span>} */}
                       <span>Tasa: {loan.interestRate}%</span>
                     </div>
                   </div>
@@ -476,7 +368,7 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">
                       Cuota {getPaymentFrequencyText(loan.paymentFrequency)}
                     </p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.monthlyPayment)}</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(loan.dailyPaymentAmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
                       <span>Tipo: {getInterestTypeText(loan.interestType)}</span>
                       <span>Cuotas: {loan.installments}</span>
@@ -503,8 +395,8 @@ export function LoanDetails({
                     </div>
                     <p className="text-xl font-bold text-green-400">{formatCurrency(loan.totalPaid)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Capital: {formatCurrency(loan.totalCapitalPaid)}</span>
-                      <span>Interés: {formatCurrency(loan.totalInterestPaid)}</span>
+                      <span>Capital: {formatCurrency(loan.totalPaid)}</span>
+                      {/* <span>Interés: {formatCurrency(loan.totalInterestPaid)}</span> */}
                     </div>
                   </div>
 
@@ -515,7 +407,7 @@ export function LoanDetails({
                     </div>
                     <p className="text-xl font-bold text-amber-400">{formatCurrency(loan.debtRemaining)}</p>
                     <p className="text-xs text-blue-200/60 mt-1">
-                      {((loan.debtRemaining / loan.totalWithInterest) * 100).toFixed(0)}% pendiente
+                      {/* {((loan.debtRemaining / loan.totalWithInterest) * 100).toFixed(0)}% pendiente */}
                     </p>
                   </div>
 
@@ -524,11 +416,11 @@ export function LoanDetails({
                       <Percent className="h-4 w-4 text-blue-400 mr-1" />
                       <p className="text-sm font-medium text-blue-200/80">Interés Pagado</p>
                     </div>
-                    <p className="text-xl font-bold text-blue-400">{formatCurrency(loan.totalInterestPaid)}</p>
-                    <p className="text-xs text-blue-200/60 mt-1">
+                    {/* <p className="text-xl font-bold text-blue-400">{formatCurrency(loan.totalInterestPaid)}</p> */}
+                    {/* <p className="text-xs text-blue-200/60 mt-1">
                       {((loan.totalInterestPaid / (loan.totalWithInterest - loan.financedAmount)) * 100).toFixed(0)}%
                       del interés total
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
@@ -536,17 +428,18 @@ export function LoanDetails({
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha de Inicio</p>
-                    <p className="text-base font-medium text-white">{formatDate(loan.createdAt)}</p>
+                    <p className="text-base font-medium text-white">{loan.startDate ? formatDate(loan.startDate.split('T')[0]): ""}</p>
                   </div>
 
-                  <div className="glass-card p-4 rounded-lg">
+                  {/* <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Próximo Pago</p>
                     <p className="text-base font-medium text-white">
+                      
                       {loan.amortizationTable && loan.amortizationTable.length > loan.paidInstallments
-                        ? formatDate(loan.amortizationTable[loan.paidInstallments].date)
+                        ? formatDate(loan.amortizationTable[loan.paidInstallments].date.split('T')[0])
                         : "N/A"}
                     </p>
-                  </div>
+                  </div> */}
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha Estimada de Finalización</p>
@@ -569,7 +462,7 @@ export function LoanDetails({
                 >
                   Historial de Pagos
                 </button>
-                <button
+                {/* <button
                   className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
                     activeTab === "amortization"
                       ? "bg-blue-500 text-white"
@@ -578,7 +471,7 @@ export function LoanDetails({
                   onClick={() => setActiveTab("amortization")}
                 >
                   Tabla de Amortización
-                </button>
+                </button> */}
               </div>
 
               <div className="mt-4">
@@ -590,9 +483,10 @@ export function LoanDetails({
                           <TableHeader>
                             <TableRow>
                               <TableHead>Fecha</TableHead>
+                              <TableHead>ID</TableHead>
                               <TableHead>Monto</TableHead>
-                              <TableHead>Capital</TableHead>
-                              <TableHead>Interés</TableHead>
+                              {/* <TableHead>Capital</TableHead> */}
+                              {/* <TableHead>Interés</TableHead> */}
                               <TableHead>Estado</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -606,10 +500,10 @@ export function LoanDetails({
                             ) : (
                               loan.payments.map((payment) => (
                                 <TableRow key={payment.id}>
-                                  <TableCell>{formatDate(payment.date)}</TableCell>
+                                  <TableCell>{formatDate(payment.paymentDate.split('T')[0])}</TableCell>
+                                  <TableCell>{payment.id}</TableCell>
                                   <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                                  <TableCell>{formatCurrency(payment.principalAmount)}</TableCell>
-                                  <TableCell>{formatCurrency(payment.interestAmount)}</TableCell>
+                                  {/* <TableCell>{formatCurrency(payment.principalAmount)}</TableCell> */}
                                   <TableCell>
                                     {payment.isLate ? (
                                       <Badge variant="destructive">Atrasado</Badge>
@@ -628,7 +522,7 @@ export function LoanDetails({
                     </CardContent>
                   </Card>
                 )}
-
+{/* 
                 {activeTab === "amortization" && (
                   <Card>
                     <CardContent className="pt-6">
@@ -656,7 +550,7 @@ export function LoanDetails({
                             {loan.amortizationTable.map((row) => (
                               <TableRow key={row.installmentNumber} className={row.isPaid ? "bg-blue-900/10" : ""}>
                                 <TableCell>{row.installmentNumber}</TableCell>
-                                <TableCell>{formatDate(row.date)}</TableCell>
+                                <TableCell>{formatDate(row.date.split('T')[0])}</TableCell>
                                 <TableCell>{formatCurrency(row.payment)}</TableCell>
                                 <TableCell>{formatCurrency(row.principalPayment)}</TableCell>
                                 <TableCell>{formatCurrency(row.interestPayment)}</TableCell>
@@ -679,7 +573,7 @@ export function LoanDetails({
                       </div>
                     </CardContent>
                   </Card>
-                )}
+                )} */}
               </div>
             </div>
           </div>

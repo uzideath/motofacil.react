@@ -1,6 +1,8 @@
 // Este archivo contiene funciones para interactuar con la API del backend
 // En un entorno real, estas funciones harían peticiones HTTP al backend
 
+import { HttpService } from "./http"
+import { Loan } from '@/lib/dto/loan'
 // Usuarios
 export async function fetchUsers() {
   // En un entorno real, esto haría una petición GET a la API
@@ -81,16 +83,33 @@ export async function deleteMotorcycle(id: string) {
 }
 
 // Préstamos
-export async function fetchLoans() {
-  // const response = await fetch('/api/loans')
-  // return response.json()
-  return []
-}
+/* export async function fetchLoans() {
+  const authCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('authToken='))
+    ?.split('=')[1];
+  console.log(authCookie);
+  const response = await HttpService.get('/api/v1/loans', {
+    headers: {
+      Authorization: authCookie,
+    }
+  });
+  console.log(response.data);
+  return response.data;
+} */
 
-export async function fetchLoan(id: string) {
-  // const response = await fetch(`/api/loans/${id}`)
-  // return response.json()
-  return {}
+export async function fetchLoan(id: string): Promise<Loan> {
+  const authCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('authToken='))
+    ?.split('=')[1];
+  const response = await HttpService.get(`/api/v1/loans/${id}`, {
+    headers: {
+      Authorization: authCookie, 
+    }
+  });
+  console.log(response.data);
+  return response.data;
 }
 
 export async function createLoan(data: any) {

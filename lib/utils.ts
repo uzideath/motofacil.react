@@ -14,6 +14,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatDate(dateString: string): string {
+  console.log(dateString);
   const date = new Date(dateString)
   return new Intl.DateTimeFormat("es-CO", {
     year: "numeric",
