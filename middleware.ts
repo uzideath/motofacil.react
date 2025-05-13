@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server"
 import { hasAccess } from "./lib/services/auth"
 
 
-const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
+const publicRoutes = ["/login"]
 
 function parseJwt(token: string): any {
   try {

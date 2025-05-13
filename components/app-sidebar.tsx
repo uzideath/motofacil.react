@@ -180,7 +180,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {user?.role === "admin" && (
+        {user?.role === "ADMIN" && (
           <SidebarGroup className="relative pt-2 pb-2 mt-2">
             <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/10"></div>
             {open && (

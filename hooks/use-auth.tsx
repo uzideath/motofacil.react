@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-export type Role = "admin" | "user" | "manager"
+export type Role = "ADMIN" | "USER"
 
 export type User = {
   id: string
@@ -52,17 +52,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (decoded && decoded.sub && decoded.username && Array.isArray(decoded.roles)) {
         // Mapear roles válidos
         const roleMap: Record<string, Role> = {
-          ADMIN: "admin",
-          MANAGER: "manager",
-          USER: "user",
+          ADMIN: "ADMIN",
+          USER: "USER",
         }
 
         const validRoles = decoded.roles
           .map((r: string) => roleMap[r.toUpperCase()])
           .filter(Boolean) as Role[]
 
-        const rolePriority: Role[] = ["admin", "manager", "user"]
-        const primaryRole = rolePriority.find((r) => validRoles.includes(r)) ?? "user"
+        const rolePriority: Role[] = ["ADMIN",  "USER"]
+        const primaryRole = rolePriority.find((r) => validRoles.includes(r)) ?? "USER"
 
         setUser({
           id: decoded.sub,

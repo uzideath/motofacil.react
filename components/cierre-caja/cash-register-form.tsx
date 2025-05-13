@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,7 @@ import { HttpService } from "@/lib/http"
 type Installment = {
     id: string
     amount: number
+    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
 }
 
 type Props = {
@@ -34,13 +35,39 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
         error: false,
     })
 
+    // Autocompletar campos si hay cuotas seleccionadas
+    useEffect(() => {
+        if (selectedInstallments.length === 0) return
+
+        const cash = selectedInstallments
+            .filter((i) => i.paymentMethod === "CASH")
+            .reduce((acc, i) => acc + i.amount, 0)
+
+        const transfers = selectedInstallments
+            .filter((i) => i.paymentMethod === "TRANSACTION")
+            .reduce((acc, i) => acc + i.amount, 0)
+
+        const cards = selectedInstallments
+            .filter((i) => i.paymentMethod === "CARD")
+            .reduce((acc, i) => acc + i.amount, 0)
+
+        setFormState((prev) => ({
+            ...prev,
+            cashInRegister: cash.toString(),
+            cashFromTransfers: transfers.toString(),
+            cashFromCards: cards.toString(),
+            success: false,
+            error: false,
+        }))
+    }, [selectedInstallments])
+
     const handleInputChange = (field: string, value: string) => {
-        setFormState({
-            ...formState,
+        setFormState((prev) => ({
+            ...prev,
             [field]: value,
             success: false,
             error: false,
-        })
+        }))
     }
 
     const totalExpected = useMemo(
@@ -54,8 +81,7 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
     const totalRegistered = cashInRegister + cashFromTransfers + cashFromCards
     const totalDifference = totalRegistered - totalExpected
 
-    const hasAnyValue =
-        cashInRegister > 0 || cashFromTransfers > 0 || cashFromCards > 0
+    const hasAnyValue = cashInRegister > 0 || cashFromTransfers > 0 || cashFromCards > 0
 
     const isFormValid = useMemo(() => {
         return (
@@ -64,6 +90,12 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
             hasAnyValue
         )
     }, [formState, selectedInstallments, hasAnyValue])
+
+    const isReadOnly = selectedInstallments.length > 0
+
+    const sharedInputClass = isReadOnly
+        ? "bg-muted text-muted-foreground cursor-not-allowed"
+        : ""
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -84,7 +116,11 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                 }
             )
 
-            setFormState((prev) => ({ ...prev, submitting: false, success: true }))
+            setFormState((prev) => ({
+                ...prev,
+                submitting: false,
+                success: true,
+            }))
         } catch (err) {
             console.error("Error registrando cierre:", err)
             setFormState((prev) => ({ ...prev, submitting: false, error: true }))
@@ -114,7 +150,7 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Campos de entrada */}
+                {/* Campos */}
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <Label htmlFor="cashInRegister">Efectivo en Caja</Label>
@@ -124,7 +160,8 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                             placeholder="0"
                             value={formState.cashInRegister}
                             onChange={(e) => handleInputChange("cashInRegister", e.target.value)}
-                            required
+                            readOnly={isReadOnly}
+                            className={sharedInputClass}
                         />
                     </div>
 
@@ -136,7 +173,8 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                             placeholder="0"
                             value={formState.cashFromTransfers}
                             onChange={(e) => handleInputChange("cashFromTransfers", e.target.value)}
-                            required
+                            readOnly={isReadOnly}
+                            className={sharedInputClass}
                         />
                     </div>
 
@@ -148,7 +186,8 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                             placeholder="0"
                             value={formState.cashFromCards}
                             onChange={(e) => handleInputChange("cashFromCards", e.target.value)}
-                            required
+                            readOnly={isReadOnly}
+                            className={sharedInputClass}
                         />
                     </div>
                 </div>

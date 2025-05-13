@@ -19,7 +19,7 @@ export function getRequiredRole(pathname: string): Role | null {
 
 
 export const routeRoleMap: Record<string, Role> = {
-    "/admin": "admin",
+    "/admin": "ADMIN",
 }
 
 export function hasAccess(pathname: string, userRoles: string[]): boolean {

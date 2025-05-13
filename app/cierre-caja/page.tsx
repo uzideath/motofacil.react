@@ -12,9 +12,11 @@ import { TransactionTable } from "@/components/cierre-caja/transaction-table"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { CashRegisterHistory } from "@/components/cierre-caja/history"
 
+// 👇 Ajuste correcto del tipo de cuotas seleccionadas
 type Installment = {
     id: string
     amount: number
+    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
 }
 
 export default function CierreCajaPage() {
@@ -70,16 +72,24 @@ export default function CierreCajaPage() {
                 </div>
 
                 <Tabs defaultValue="summary" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-3"> {/* ← Cambié de 4 a 3 columnas */}
                         <TabsTrigger value="summary">Resumen del Día</TabsTrigger>
                         <TabsTrigger value="transactions">Transacciones</TabsTrigger>
                         <TabsTrigger value="register">Cierre de Caja</TabsTrigger>
-                        <TabsTrigger value="history">Historial</TabsTrigger> {/* 👈 Nueva pestaña */}
                     </TabsList>
 
-                    {/* Tab: Resumen */}
                     <TabsContent value="summary" className="space-y-6">
                         <DailySummary />
+
+                        <Card className="card-hover-effect">
+                            <CardHeader>
+                                <CardTitle>Historial de Cierres</CardTitle>
+                                <CardDescription>Visualice todos los cierres realizados previamente</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <CashRegisterHistory />
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     {/* Tab: Transacciones */}
@@ -118,7 +128,10 @@ export default function CierreCajaPage() {
                                 <CardDescription>Registre el cierre de caja del día</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <CashRegisterForm token={token} selectedInstallments={selectedInstallments} />
+                                <CashRegisterForm
+                                    token={token}
+                                    selectedInstallments={selectedInstallments}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>

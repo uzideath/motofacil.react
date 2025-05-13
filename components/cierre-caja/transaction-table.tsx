@@ -23,6 +23,13 @@ type Installment = {
     }
 }
 
+type SelectedInstallment = {
+    id: string
+    amount: number
+    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+}
+
+
 type Transaction = {
     id: string
     time: string
@@ -37,8 +44,7 @@ type Transaction = {
 
 type Props = {
     token: string
-    onSelect?: (installments: { id: string; amount: number }[]) => void
-
+    onSelect?: (installments: SelectedInstallment[]) => void
 }
 
 export function TransactionTable({ token, onSelect }: Props) {
@@ -94,9 +100,19 @@ export function TransactionTable({ token, onSelect }: Props) {
 
         setSelectedIds(updated)
 
-        const selectedInstallments = transactions
+        const selectedInstallments: SelectedInstallment[] = transactions
             .filter((t) => updated.includes(t.id))
-            .map((t) => ({ id: t.id, amount: t.amount }))
+            .map((t) => ({
+                id: t.id,
+                amount: t.amount,
+                paymentMethod:
+                    t.paymentMethod === "Efectivo"
+                        ? "CASH"
+                        : t.paymentMethod === "Tarjeta"
+                            ? "CARD"
+                            : "TRANSACTION",
+            }))
+
 
         onSelect?.(selectedInstallments)
     }
