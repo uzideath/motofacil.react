@@ -28,6 +28,7 @@ import {
   UserCog,
   Bell,
   Search,
+  CircleAlertIcon,
   Calculator,
 } from "lucide-react"
 import Link from "next/link"
@@ -65,9 +66,11 @@ export function AppSidebar() {
     { path: "/motocicletas", label: "Motocicletas", icon: Bike },
     { path: "/prestamos", label: "Préstamos", icon: CreditCard, badge: 2 },
     { path: "/cuotas", label: "Cuotas", icon: Receipt },
+    { path: "/cierre-caja", label: "Cierre de Caja", icon: CircleAlertIcon },
     { path: "/flujo-caja", label: "Flujo de Caja", icon: DollarSign },
     { path: "/reportes", label: "Reportes", icon: BarChart4 },
     { path: "/calculadora", label: "Calculadora", icon: Calculator },
+
   ]
 
   const adminMenuItem = {

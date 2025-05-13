@@ -41,7 +41,11 @@ const installmentSchema = z.object({
   loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
   amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
   isLate: z.boolean().default(false),
+  paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {
+    required_error: "Debe seleccionar un método de pago",
+  }),
 })
+
 
 type InstallmentFormValues = z.infer<typeof installmentSchema>
 
@@ -194,9 +198,6 @@ export function InstallmentForm({
           principalAmount: paymentBreakdown?.principalAmount,
           interestAmount: paymentBreakdown?.interestAmount,
         },
-        {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-        }
       )
 
       toast({
@@ -281,6 +282,30 @@ export function InstallmentForm({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Método de pago</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar método" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="CASH">Efectivo</SelectItem>
+                          <SelectItem value="TRANSACTION">Transferencia</SelectItem>
+                          <SelectItem value="CARD">Tarjeta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
 
                 <FormField
                   control={form.control}

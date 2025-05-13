@@ -18,6 +18,7 @@ type Installment = {
   amount: number
   date: string
   isLate: boolean
+  paymentMethod: "CASH" | "CARD" | "TRANSACTION"
 }
 
 export function InstallmentTable() {
@@ -28,15 +29,7 @@ export function InstallmentTable() {
 
   const fetchInstallments = async () => {
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((c) => c.startsWith("authToken="))
-        ?.split("=")[1]
-
-      const res = await HttpService.get("/api/v1/installments", {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      })
-
+      const res = await HttpService.get("/api/v1/installments")
       const rawData = res.data
 
       const mapped: Installment[] = rawData.map((item: any) => ({
@@ -47,6 +40,7 @@ export function InstallmentTable() {
         amount: item.amount,
         date: item.paymentDate,
         isLate: item.isLate,
+        paymentMethod: item.paymentMethod ?? "CASH",
       }))
 
       setInstallments(mapped)
@@ -96,6 +90,7 @@ export function InstallmentTable() {
                 <TableHead className="hidden md:table-cell text-blue-200">Motocicleta</TableHead>
                 <TableHead className="text-blue-200">Monto</TableHead>
                 <TableHead className="hidden md:table-cell text-blue-200">Fecha</TableHead>
+                <TableHead className="text-blue-200">Método</TableHead>
                 <TableHead className="text-blue-200">Estado</TableHead>
               </TableRow>
             </TableHeader>
@@ -108,11 +103,12 @@ export function InstallmentTable() {
                     <TableCell><Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" /></TableCell>
                     <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-[80px] bg-dark-blue-800/50" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-[80px] bg-dark-blue-800/50" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredInstallments.length === 0 ? (
                 <TableRow className="border-dark-blue-800/30">
-                  <TableCell colSpan={5} className="text-center text-blue-200/70">
+                  <TableCell colSpan={6} className="text-center text-blue-200/70">
                     No se encontraron cuotas
                   </TableCell>
                 </TableRow>
@@ -123,6 +119,14 @@ export function InstallmentTable() {
                     <TableCell className="hidden md:table-cell text-blue-200">{i.motorcycleModel}</TableCell>
                     <TableCell className="text-blue-200">{formatCurrency(i.amount)}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{formatDate(i.date)}</TableCell>
+                    <TableCell className="text-blue-200">
+                      {{
+                        CASH: "Efectivo",
+                        CARD: "Tarjeta",
+                        TRANSACTION: "Transferencia",
+                      }[i.paymentMethod] ?? "Desconocido"}
+                    </TableCell>
+
                     <TableCell>
                       {i.isLate ? (
                         <Badge variant="destructive" className="bg-red-500/80 hover:bg-red-500/70">
