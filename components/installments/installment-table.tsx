@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { HttpService } from "@/lib/http"
 
 type Installment = {
   id: string
@@ -25,57 +26,50 @@ export function InstallmentTable() {
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      setInstallments([
-        {
-          id: "1",
-          loanId: "1",
-          userName: "Carlos Rodríguez",
-          motorcycleModel: "Honda CB 125F",
-          amount: 354167,
-          date: "2023-04-10",
-          isLate: false,
-        },
-        {
-          id: "2",
-          loanId: "1",
-          userName: "Carlos Rodríguez",
-          motorcycleModel: "Honda CB 125F",
-          amount: 354167,
-          date: "2023-03-10",
-          isLate: false,
-        },
-        {
-          id: "3",
-          loanId: "2",
-          userName: "María López",
-          motorcycleModel: "Yamaha FZ 150",
-          amount: 333333,
-          date: "2023-04-08",
-          isLate: false,
-        },
-        {
-          id: "4",
-          loanId: "2",
-          userName: "María López",
-          motorcycleModel: "Yamaha FZ 150",
-          amount: 333333,
-          date: "2023-03-08",
-          isLate: true,
-        },
-      ])
-      setLoading(false)
-    }, 1000)
+  const fetchInstallments = async () => {
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-    return () => clearTimeout(timer)
+      const res = await HttpService.get("/api/v1/installments", {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      })
+
+      const rawData = res.data
+
+      const mapped: Installment[] = rawData.map((item: any) => ({
+        id: item.id,
+        loanId: item.loanId,
+        userName: item.loan?.user?.name ?? "Desconocido",
+        motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
+        amount: item.amount,
+        date: item.paymentDate,
+        isLate: item.isLate,
+      }))
+
+      setInstallments(mapped)
+    } catch (error) {
+      console.error("Error al obtener cuotas:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron obtener las cuotas del servidor",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchInstallments()
   }, [])
 
   const filteredInstallments = installments.filter(
-    (installment) =>
-      installment.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      installment.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase()),
+    (i) =>
+      i.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      i.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
@@ -109,21 +103,11 @@ export function InstallmentTable() {
               {loading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <TableRow key={index} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell>
-                      <Skeleton className="h-5 w-[150px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Skeleton className="h-5 w-[120px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-[80px] bg-dark-blue-800/50" />
-                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-[150px] bg-dark-blue-800/50" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-[120px] bg-dark-blue-800/50" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-[100px] bg-dark-blue-800/50" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-[80px] bg-dark-blue-800/50" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredInstallments.length === 0 ? (
@@ -133,14 +117,14 @@ export function InstallmentTable() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredInstallments.map((installment) => (
-                  <TableRow key={installment.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell className="font-medium text-white">{installment.userName}</TableCell>
-                    <TableCell className="hidden md:table-cell text-blue-200">{installment.motorcycleModel}</TableCell>
-                    <TableCell className="text-blue-200">{formatCurrency(installment.amount)}</TableCell>
-                    <TableCell className="hidden md:table-cell text-blue-200">{formatDate(installment.date)}</TableCell>
+                filteredInstallments.map((i) => (
+                  <TableRow key={i.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
+                    <TableCell className="font-medium text-white">{i.userName}</TableCell>
+                    <TableCell className="hidden md:table-cell text-blue-200">{i.motorcycleModel}</TableCell>
+                    <TableCell className="text-blue-200">{formatCurrency(i.amount)}</TableCell>
+                    <TableCell className="hidden md:table-cell text-blue-200">{formatDate(i.date)}</TableCell>
                     <TableCell>
-                      {installment.isLate ? (
+                      {i.isLate ? (
                         <Badge variant="destructive" className="bg-red-500/80 hover:bg-red-500/70">
                           Atrasada
                         </Badge>

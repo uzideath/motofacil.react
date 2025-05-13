@@ -29,15 +29,23 @@ import { HttpService } from "@/lib/http"
 
 export type Loan = {
   id: string
-  userName: string
-  motorcycleModel: string
+  userId: string
+  userName: string // Derived from relation
+  motorcycleId: string
+  motorcycleModel: string // Derived from relation
   totalAmount: number
+  downPayment: number
   installments: number
   paidInstallments: number
   remainingInstallments: number
   totalPaid: number
   debtRemaining: number
-  status: "ACTIVE" | "COMPLETED" | "DEFAULTED"
+  interestRate: number
+  interestType: "FIXED" | "COMPOUND" // aligned with frontend enum
+  paymentFrequency: "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY"
+  dailyPaymentAmount: number
+  startDate: string // ISO date string
+  status: "PENDING" | "ACTIVE" | "COMPLETED" | "DEFAULTED"
 }
 
 export function LoanTable() {
@@ -54,13 +62,19 @@ export function LoanTable() {
         .find((c) => c.startsWith("authToken="))
         ?.split("=")[1]
 
-      const response = await HttpService.get<Loan[]>("/api/v1/loans", {
+      const response = await HttpService.get<any[]>("/api/v1/loans", {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
         },
       })
 
-      setLoans(response.data)
+      const mappedLoans: Loan[] = response.data.map((loan) => ({
+        ...loan,
+        userName: loan.user?.name ?? "Sin nombre",
+        motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
+      }))
+
+      setLoans(mappedLoans)
     } catch (error) {
       console.error("Error al obtener préstamos:", error)
       toast({
@@ -72,6 +86,7 @@ export function LoanTable() {
       setLoading(false)
     }
   }
+
 
   useEffect(() => {
     fetchLoans()
@@ -108,11 +123,12 @@ export function LoanTable() {
     }
   }
 
-  const filteredLoans = loans.filter(
-    (loan) =>
-      loan.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredLoans = loans.filter((loan) => {
+    const userMatch = loan.userName?.toLowerCase().includes(searchTerm.toLowerCase())
+    const motoMatch = loan.motorcycleModel?.toLowerCase().includes(searchTerm.toLowerCase())
+    return userMatch || motoMatch
+  })
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {

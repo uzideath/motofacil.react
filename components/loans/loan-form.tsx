@@ -37,12 +37,17 @@ const loanSchema = z.object({
   installments: z.coerce.number().min(1, { message: "El número de cuotas debe ser al menos 1." }),
   interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
   interestType: z.enum(["FIXED", "COMPOUND"]),
-  paymentFrequency: z.enum(["DAILY","MONTHLY", "BIWEEKLY", "WEEKLY"]),
+  paymentFrequency: z.enum(["DAILY", "MONTHLY", "BIWEEKLY", "WEEKLY"]),
+  dailyPaymentAmount: z.coerce.number().optional(),
 })
 
 type LoanFormValues = z.infer<typeof loanSchema>
 
 const formatCurrency = (amount: number) => {
+  // Check if amount is a valid number before formatting
+  if (isNaN(amount) || amount === undefined) {
+    return "COP 0"
+  }
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency: "COP",
@@ -50,7 +55,12 @@ const formatCurrency = (amount: number) => {
   }).format(amount)
 }
 
-export function LoanForm({ children, loanId, loanData, onSaved }: { children: React.ReactNode; loanId?: string; loanData?: any; onSaved?: (updatedLoan?: any) => void }) {
+export function LoanForm({
+  children,
+  loanId,
+  loanData,
+  onSaved,
+}: { children: React.ReactNode; loanId?: string; loanData?: any; onSaved?: (updatedLoan?: any) => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [users, setUsers] = useState<User[]>([])
@@ -61,18 +71,20 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
 
   const dataLoaded = useRef(false)
   const isMounted = useRef(false)
+  const calculationInProgress = useRef(false)
 
   const form = useForm<LoanFormValues>({
     resolver: zodResolver(loanSchema),
     defaultValues: {
       userId: "",
       motorcycleId: "",
-      totalAmount: 0,
+      totalAmount: 4000000,
       downPayment: 0,
-      installments: 12,
+      installments: 18,
       interestRate: 12,
       interestType: "FIXED",
-      paymentFrequency: "MONTHLY",
+      paymentFrequency: "DAILY",
+      dailyPaymentAmount: 34000,
     },
   })
 
@@ -86,41 +98,81 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
   }, [])
 
   const calculateLoanSummary = (values: LoanFormValues) => {
-    if (!values.totalAmount || !values.installments || !values.interestRate) return
+    if (calculationInProgress.current) return
+    calculationInProgress.current = true
 
-    const financedAmount = values.totalAmount - values.downPayment
-    let totalWithInterest: number
-    let monthlyPayment: number
+    try {
+      // Ensure all values are valid numbers
+      const totalAmount = Number(values.totalAmount) || 0
+      const downPayment = Number(values.downPayment) || 0
+      const installments = Number(values.installments) || 1
+      const interestRate = Number(values.interestRate) || 0
+      const dailyPaymentAmount = Number(values.dailyPaymentAmount) || 34000
 
-    if (values.interestType === "FIXED") {
-      const interestAmount = financedAmount * (values.interestRate / 100) * (values.installments / 12)
-      totalWithInterest = financedAmount + interestAmount
-    } else {
-      const monthlyRate = values.interestRate / 100 / 12
-      totalWithInterest = financedAmount * Math.pow(1 + monthlyRate, values.installments)
-    }
+      // Skip calculation if essential values are missing or invalid
+      if (totalAmount <= 0 || installments <= 0) {
+        return
+      }
 
-    monthlyPayment = totalWithInterest / values.installments
+      const financedAmount = totalAmount - downPayment
+      let totalWithInterest: number
+      let paymentAmount: number
+      let totalInstallments = installments
 
-    if (values.paymentFrequency === "BIWEEKLY") {
-      monthlyPayment = (totalWithInterest * 12) / (values.installments * 26)
-    } else if (values.paymentFrequency === "WEEKLY") {
-      monthlyPayment = (totalWithInterest * 12) / (values.installments * 52)
-    }
+      if (values.interestType === "FIXED") {
+        const interestAmount = financedAmount * (interestRate / 100) * (installments / 12)
+        totalWithInterest = financedAmount + interestAmount
+      } else {
+        const monthlyRate = interestRate / 100 / 12
+        totalWithInterest = financedAmount * Math.pow(1 + monthlyRate, installments)
+      }
 
-    if (isMounted.current) {
-      setLoanSummary({
-        financedAmount,
-        totalWithInterest,
-        monthlyPayment,
-        totalInterest: totalWithInterest - financedAmount,
-      })
+      if (values.paymentFrequency === "DAILY") {
+        // For daily payments, we use the fixed amount
+        paymentAmount = dailyPaymentAmount
+
+        // Calculate how many installments would be needed, but don't update the form
+        if (paymentAmount > 0) {
+          totalInstallments = Math.ceil(totalWithInterest / paymentAmount)
+        } else {
+          totalInstallments = 0
+        }
+      } else if (values.paymentFrequency === "BIWEEKLY") {
+        paymentAmount = (totalWithInterest * 12) / (installments * 26)
+      } else if (values.paymentFrequency === "WEEKLY") {
+        paymentAmount = (totalWithInterest * 12) / (installments * 52)
+      } else {
+        // Monthly
+        paymentAmount = totalWithInterest / installments
+      }
+
+      if (isMounted.current) {
+        setLoanSummary({
+          financedAmount,
+          totalWithInterest,
+          paymentAmount,
+          totalInstallments,
+          totalInterest: totalWithInterest - financedAmount,
+        })
+      }
+    } catch (error) {
+      console.error("Error calculating loan summary:", error)
+    } finally {
+      calculationInProgress.current = false
     }
   }
 
   const watchedValues = useWatch({
     control: form.control,
-    name: ["totalAmount", "downPayment", "installments", "interestRate", "interestType", "paymentFrequency"],
+    name: [
+      "totalAmount",
+      "downPayment",
+      "installments",
+      "interestRate",
+      "interestType",
+      "paymentFrequency",
+      "dailyPaymentAmount",
+    ],
   })
 
   useEffect(() => {
@@ -134,10 +186,15 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
     if (dataLoaded.current || !isMounted.current) return
     setLoadingData(true)
     try {
-      const token = document.cookie.split("; ").find((c) => c.startsWith("authToken="))?.split("=")[1]
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
       const [userRes, motoRes] = await Promise.all([
         HttpService.get<User[]>("/api/v1/users", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
-        HttpService.get<Motorcycle[]>("/api/v1/motorcycles", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
+        HttpService.get<Motorcycle[]>("/api/v1/motorcycles", {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+        }),
       ])
       setUsers(userRes.data)
       setMotorcycles(motoRes.data)
@@ -150,7 +207,8 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
           installments: loanData.installments,
           interestRate: loanData.interestRate ?? 12,
           interestType: loanData.interestType ?? "FIXED",
-          paymentFrequency: loanData.paymentFrequency ?? "MONTHLY",
+          paymentFrequency: loanData.paymentFrequency ?? "DAILY",
+          dailyPaymentAmount: loanData.dailyPaymentAmount ?? 34000,
         })
       }
     } catch (error) {
@@ -169,10 +227,28 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
   async function onSubmit(values: LoanFormValues) {
     try {
       setLoading(true)
-      const token = document.cookie.split("; ").find((c) => c.startsWith("authToken="))?.split("=")[1]
-      const response = loanId
-        ? await HttpService.put(`/api/v1/loans/${loanId}`, values, { headers: { Authorization: token ? `Bearer ${token}` : "" } })
-        : await HttpService.post("/api/v1/loans", values, { headers: { Authorization: token ? `Bearer ${token}` : "" } })
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
+
+      // Ensure all numeric values are valid numbers
+      const submissionValues = {
+        ...values,
+        totalAmount: Number(values.totalAmount) || 0,
+        downPayment: Number(values.downPayment) || 0,
+        installments:
+          values.paymentFrequency === "DAILY" && loanSummary
+            ? loanSummary.totalInstallments
+            : Number(values.installments) || 1,
+        interestRate: Number(values.interestRate) || 0,
+        dailyPaymentAmount: Number(values.dailyPaymentAmount) || 34000,
+      }
+
+      // Changed to post to /api/loans as requested
+      const response = await HttpService.post("/api/v1/loans", submissionValues, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      })
 
       toast({ title: loanId ? "Préstamo actualizado" : "Préstamo creado", description: "Operación exitosa" })
       setIsOpen(false)
@@ -278,7 +354,7 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                         <FormItem>
                           <FormLabel>Precio Total</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input type="number" {...field} min="1" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -292,7 +368,7 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                         <FormItem>
                           <FormLabel>Pago Inicial</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input type="number" {...field} min="0" />
                           </FormControl>
                           <FormDescription>Monto que el cliente paga por adelantado</FormDescription>
                           <FormMessage />
@@ -307,8 +383,18 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                         <FormItem>
                           <FormLabel>Número de Cuotas</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              min="1"
+                              disabled={formValues.paymentFrequency === "DAILY"}
+                            />
                           </FormControl>
+                          {formValues.paymentFrequency === "DAILY" && (
+                            <FormDescription>
+                              El número de cuotas se calcula automáticamente para pagos diarios
+                            </FormDescription>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -321,7 +407,7 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                         <FormItem>
                           <FormLabel>Tasa de Interés (%)</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" {...field} />
+                            <Input type="number" step="0.01" {...field} min="0" />
                           </FormControl>
                           <FormDescription>Tasa de interés anual</FormDescription>
                           <FormMessage />
@@ -373,6 +459,7 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="DAILY">Diario</SelectItem>
                               <SelectItem value="MONTHLY">Mensual</SelectItem>
                               <SelectItem value="BIWEEKLY">Quincenal</SelectItem>
                               <SelectItem value="WEEKLY">Semanal</SelectItem>
@@ -382,6 +469,23 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                         </FormItem>
                       )}
                     />
+
+                    {formValues.paymentFrequency === "DAILY" && (
+                      <FormField
+                        control={form.control}
+                        name="dailyPaymentAmount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Monto de Pago Diario</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} min="1" />
+                            </FormControl>
+                            <FormDescription>Cantidad fija a pagar por día</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
 
                   {loanSummary && (
@@ -410,17 +514,25 @@ export function LoanForm({ children, loanId, loanData, onSaved }: { children: Re
                           <div>
                             <p className="text-sm text-blue-300">
                               Cuota{" "}
-                              {formValues.paymentFrequency === "MONTHLY"
-                                ? "Mensual"
-                                : formValues.paymentFrequency === "BIWEEKLY"
-                                  ? "Quincenal"
-                                  : "Semanal"}
+                              {formValues.paymentFrequency === "DAILY"
+                                ? "Diaria"
+                                : formValues.paymentFrequency === "MONTHLY"
+                                  ? "Mensual"
+                                  : formValues.paymentFrequency === "BIWEEKLY"
+                                    ? "Quincenal"
+                                    : "Semanal"}
                               :
                             </p>
                             <p className="text-lg font-medium text-amber-400">
-                              {formatCurrency(loanSummary.monthlyPayment)}
+                              {formatCurrency(loanSummary.paymentAmount)}
                             </p>
                           </div>
+                          {formValues.paymentFrequency === "DAILY" && (
+                            <div>
+                              <p className="text-sm text-blue-300">Total de Pagos:</p>
+                              <p className="text-lg font-medium text-white">{loanSummary.totalInstallments}</p>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

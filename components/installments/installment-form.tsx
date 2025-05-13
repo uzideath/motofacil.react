@@ -1,59 +1,74 @@
+// IMPORTACIONES CORREGIDAS Y CONSOLIDADAS
 "use client"
-
-import type React from "react"
 
 import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Loan as BaseLoan } from "../loans/loan-table"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/components/ui/use-toast"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency } from "@/lib/utils"
+import { HttpService } from "@/lib/http"
 
 const installmentSchema = z.object({
-  loanId: z.string({
-    required_error: "Debe seleccionar un préstamo",
-  }),
-  amount: z.coerce.number().min(1, {
-    message: "El monto debe ser mayor a 0",
-  }),
+  loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
+  amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
   isLate: z.boolean().default(false),
 })
 
 type InstallmentFormValues = z.infer<typeof installmentSchema>
 
-type Loan = {
-  id: string
-  userName: string
-  motorcycleModel: string
-  debtRemaining: number
+type EnrichedLoan = BaseLoan & {
+  user: { name: string }
+  motorcycle: { model: string }
+  payments: { amount: number }[]
   monthlyPayment: number
-  interestRate: number
-  interestType: "FIXED" | "COMPOUND"
-  totalCapitalPaid: number
   financedAmount: number
+  totalCapitalPaid: number
   nextInstallmentNumber: number
 }
 
 export function InstallmentForm({
   children,
   loanId,
+  onSaved
 }: {
   children?: React.ReactNode
-  loanId?: string
+  loanId?: string,
+  onSaved?: () => void
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [loans, setLoans] = useState<Loan[]>([])
+  const [loans, setLoans] = useState<EnrichedLoan[]>([])
   const [loadingData, setLoadingData] = useState(true)
-  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null)
+  const [selectedLoan, setSelectedLoan] = useState<EnrichedLoan | null>(null)
   const [paymentBreakdown, setPaymentBreakdown] = useState<{
     principalAmount: number
     interestAmount: number
@@ -69,7 +84,6 @@ export function InstallmentForm({
     },
   })
 
-  // Observar cambios en el monto para actualizar el desglose
   const amount = form.watch("amount")
 
   useEffect(() => {
@@ -78,96 +92,80 @@ export function InstallmentForm({
     }
   }, [selectedLoan, amount])
 
-  // Función para calcular el desglose del pago
-  const calculatePaymentBreakdown = (loan: Loan, paymentAmount: number) => {
-    let principalAmount: number
-    let interestAmount: number
+  const calculatePaymentBreakdown = (loan: EnrichedLoan, paymentAmount: number) => {
     const monthlyRate = loan.interestRate / 100 / 12
+    const remainingPrincipal = loan.debtRemaining
 
-    if (loan.interestType === "FIXED") {
-      // Para interés fijo, el interés se distribuye uniformemente
-      interestAmount = Math.min(
-        paymentAmount,
-        (loan.financedAmount * (loan.interestRate / 100) * (loan.nextInstallmentNumber / 12)) /
-          loan.nextInstallmentNumber,
-      )
-    } else {
-      // Para interés compuesto, el interés se calcula sobre el saldo restante
-      const remainingPrincipal = loan.financedAmount - loan.totalCapitalPaid
-      interestAmount = Math.min(paymentAmount, remainingPrincipal * monthlyRate)
-    }
+    const interestAmount =
+      loan.interestType === "FIXED"
+        ? Math.min(
+          paymentAmount,
+          (loan.financedAmount * (loan.interestRate / 100) * (loan.installments / 12)) / loan.installments
+        )
+        : Math.min(paymentAmount, remainingPrincipal * monthlyRate)
 
-    principalAmount = paymentAmount - interestAmount
+    const principalAmount = paymentAmount - interestAmount
 
-    setPaymentBreakdown({
-      principalAmount,
-      interestAmount,
-    })
+    setPaymentBreakdown({ principalAmount, interestAmount })
   }
 
-  useEffect(() => {
-    if (open) {
-      // Simulación de carga de datos
-      const timer = setTimeout(() => {
-        const loansData = [
-          {
-            id: "1",
-            userName: "Carlos Rodríguez",
-            motorcycleModel: "Honda CB 125F",
-            debtRemaining: 6375000,
-            monthlyPayment: 354167,
-            interestRate: 12,
-            interestType: "FIXED" as const,
-            totalCapitalPaid: 2125000,
-            financedAmount: 8500000,
-            nextInstallmentNumber: 7,
-          },
-          {
-            id: "2",
-            userName: "María López",
-            motorcycleModel: "Yamaha FZ 150",
-            debtRemaining: 8000000,
-            monthlyPayment: 333333,
-            interestRate: 10,
-            interestType: "COMPOUND" as const,
-            totalCapitalPaid: 4000000,
-            financedAmount: 12000000,
-            nextInstallmentNumber: 13,
-          },
-          {
-            id: "4",
-            userName: "Ana Gómez",
-            motorcycleModel: "Bajaj Pulsar NS 200",
-            debtRemaining: 9041667,
-            monthlyPayment: 291667,
-            interestRate: 15,
-            interestType: "FIXED" as const,
-            totalCapitalPaid: 1458333,
-            financedAmount: 10500000,
-            nextInstallmentNumber: 6,
-          },
-        ]
+  const loadLoans = async () => {
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-        // Filtrar préstamos completados
-        setLoans(loansData)
+      const res = await HttpService.get<any[]>("/api/v1/loans", {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      })
 
-        // Si hay un loanId preseleccionado, establecer el monto de la cuota
-        if (loanId) {
-          const loan = loansData.find((l) => l.id === loanId)
-          if (loan) {
-            setSelectedLoan(loan)
-            form.setValue("loanId", loanId)
-            form.setValue("amount", loan.monthlyPayment)
-            calculatePaymentBreakdown(loan, loan.monthlyPayment)
-          }
+      const rawData = res.data
+
+      const mappedLoans: EnrichedLoan[] = rawData.map((loan) => {
+        const financedAmount = loan.totalAmount - loan.downPayment
+        const monthlyPayment =
+          loan.paymentFrequency === "MONTHLY" ? loan.dailyPaymentAmount : loan.dailyPaymentAmount * 30
+
+        return {
+          ...loan,
+          userName: loan.user?.name ?? "Sin nombre",
+          motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
+          monthlyPayment,
+          financedAmount,
+          totalCapitalPaid: loan.totalPaid,
+          nextInstallmentNumber: loan.paidInstallments + 1,
         }
+      })
 
-        setLoadingData(false)
-      }, 1000)
+      setLoans(mappedLoans)
 
-      return () => clearTimeout(timer)
+      if (loanId) {
+        const loan = mappedLoans.find((l) => l.id === loanId)
+        if (loan) {
+          setSelectedLoan(loan)
+          form.setValue("loanId", loanId)
+          form.setValue("amount", loan.monthlyPayment)
+          calculatePaymentBreakdown(loan, loan.monthlyPayment)
+        }
+      }
+
+      setLoadingData(false)
+    } catch (err) {
+      console.error("Error al cargar préstamos:", err)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron cargar los préstamos",
+      })
     }
-  }, [open, loanId, form])
+  }
+
+
+
+  useEffect(() => {
+    if (open) loadLoans()
+  }, [open])
 
   const handleLoanChange = (loanId: string) => {
     const loan = loans.find((l) => l.id === loanId)
@@ -181,25 +179,32 @@ export function InstallmentForm({
     }
   }
 
-  async function onSubmit(values: InstallmentFormValues) {
+  const onSubmit = async (values: InstallmentFormValues) => {
     try {
       setLoading(true)
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
 
-      // Simulación de guardado
-      console.log("Registrando pago:", {
-        ...values,
-        principalAmount: paymentBreakdown?.principalAmount,
-        interestAmount: paymentBreakdown?.interestAmount,
-      })
-
-      // Esperar un momento para simular la operación
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await HttpService.post(
+        "/api/v1/installments",
+        {
+          ...values,
+          principalAmount: paymentBreakdown?.principalAmount,
+          interestAmount: paymentBreakdown?.interestAmount,
+        },
+        {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+        }
+      )
 
       toast({
         title: "Pago registrado",
         description: "El pago ha sido registrado correctamente",
       })
 
+      onSaved?.() // ✅ Notificar éxito
       setOpen(false)
     } catch (error) {
       console.error("Error al registrar pago:", error)
@@ -213,16 +218,9 @@ export function InstallmentForm({
     }
   }
 
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(newOpen) => {
-        setOpen(newOpen)
-        if (!newOpen) {
-          setLoadingData(true)
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={(newOpen) => { setOpen(newOpen); if (!newOpen) setLoadingData(true) }}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
@@ -304,7 +302,7 @@ export function InstallmentForm({
               </div>
 
               {selectedLoan && (
-                <div className="space-y-4">
+                <>
                   <Card className="bg-blue-900/20 border-blue-800/30">
                     <CardContent className="pt-6">
                       <h3 className="font-medium mb-2 text-blue-200">Información del préstamo</h3>
@@ -332,13 +330,14 @@ export function InstallmentForm({
                         <div>
                           <p className="text-sm text-blue-300">Tasa de interés:</p>
                           <p className="text-base font-medium text-white">
-                            {selectedLoan.interestRate}% ({selectedLoan.interestType === "FIXED" ? "Fijo" : "Compuesto"}
-                            )
+                            {selectedLoan.interestRate}% ({selectedLoan.interestType === "FIXED" ? "Fijo" : "Compuesto"})
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-blue-300">Próxima cuota:</p>
-                          <p className="text-base font-medium text-white">#{selectedLoan.nextInstallmentNumber}</p>
+                          <p className="text-base font-medium text-white">
+                            #{selectedLoan.nextInstallmentNumber}
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -369,13 +368,11 @@ export function InstallmentForm({
                       </CardContent>
                     </Card>
                   )}
-                </div>
+                </>
               )}
 
               <div className="flex justify-end gap-4">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                  Cancelar
-                </Button>
+                <Button type="button" onClick={() => setOpen(false)}>Cancelar</Button>
                 <Button type="submit" disabled={loading}>
                   {loading ? "Registrando..." : "Registrar Pago"}
                 </Button>
