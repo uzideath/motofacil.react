@@ -13,18 +13,19 @@ import { CheckCircle2, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
 
-type Installment = {
+type SelectedTransaction = {
     id: string
     amount: number
     paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    type: "income" | "expense"
 }
 
 type Props = {
     token: string
-    selectedInstallments: Installment[]
+    selectedTransactions: SelectedTransaction[]
 }
 
-export function CashRegisterForm({ token, selectedInstallments }: Props) {
+export function CashRegisterForm({ token, selectedTransactions }: Props) {
     const [formState, setFormState] = useState({
         cashInRegister: "",
         cashFromTransfers: "",
@@ -35,19 +36,29 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
         error: false,
     })
 
-    // Autocompletar campos si hay cuotas seleccionadas
-    useEffect(() => {
-        if (selectedInstallments.length === 0) return
+    const incomes = useMemo(
+        () => selectedTransactions.filter((t) => t.type === "income"),
+        [selectedTransactions]
+    )
 
-        const cash = selectedInstallments
+    const expenses = useMemo(
+        () => selectedTransactions.filter((t) => t.type === "expense"),
+        [selectedTransactions]
+    )
+
+    // Autocompletar campos si hay ingresos seleccionados
+    useEffect(() => {
+        if (incomes.length === 0) return
+
+        const cash = incomes
             .filter((i) => i.paymentMethod === "CASH")
             .reduce((acc, i) => acc + i.amount, 0)
 
-        const transfers = selectedInstallments
+        const transfers = incomes
             .filter((i) => i.paymentMethod === "TRANSACTION")
             .reduce((acc, i) => acc + i.amount, 0)
 
-        const cards = selectedInstallments
+        const cards = incomes
             .filter((i) => i.paymentMethod === "CARD")
             .reduce((acc, i) => acc + i.amount, 0)
 
@@ -59,7 +70,7 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
             success: false,
             error: false,
         }))
-    }, [selectedInstallments])
+    }, [incomes])
 
     const handleInputChange = (field: string, value: string) => {
         setFormState((prev) => ({
@@ -71,8 +82,13 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
     }
 
     const totalExpected = useMemo(
-        () => selectedInstallments.reduce((acc, item) => acc + item.amount, 0),
-        [selectedInstallments]
+        () => incomes.reduce((acc, item) => acc + item.amount, 0),
+        [incomes]
+    )
+
+    const totalExpenses = useMemo(
+        () => expenses.reduce((acc, item) => acc + item.amount, 0),
+        [expenses]
     )
 
     const cashInRegister = parseFloat(formState.cashInRegister) || 0
@@ -86,12 +102,12 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
     const isFormValid = useMemo(() => {
         return (
             !formState.submitting &&
-            selectedInstallments.length > 0 &&
+            incomes.length > 0 &&
             hasAnyValue
         )
-    }, [formState, selectedInstallments, hasAnyValue])
+    }, [formState, incomes, hasAnyValue])
 
-    const isReadOnly = selectedInstallments.length > 0
+    const isReadOnly = incomes.length > 0
 
     const sharedInputClass = isReadOnly
         ? "bg-muted text-muted-foreground cursor-not-allowed"
@@ -109,11 +125,9 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                     cashFromTransfers,
                     cashFromCards,
                     notes: formState.notes,
-                    installmentIds: selectedInstallments.map((i) => i.id),
+                    installmentIds: incomes.map((i) => i.id),
+                    expenseIds: expenses.map((e) => e.id),
                 },
-                {
-                    headers: { Authorization: token ? `Bearer ${token}` : "" },
-                }
             )
 
             setFormState((prev) => ({
@@ -198,17 +212,21 @@ export function CashRegisterForm({ token, selectedInstallments }: Props) {
                         <CardContent className="pt-6">
                             <h3 className="text-lg font-medium mb-4">Resumen del Cierre</h3>
                             <div className="space-y-3">
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Total de cuotas seleccionadas:</span>
-                                    <span>{selectedInstallments.length}</span>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Cuotas seleccionadas:</span>
+                                    <span>{incomes.length}</span>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                    <span>Egresos seleccionados:</span>
+                                    <span>{expenses.length}</span>
                                 </div>
                                 <div className="flex justify-between font-medium">
-                                    <span>Total esperado:</span>
+                                    <span>Total ingresos:</span>
                                     <span>{formatCurrency(totalExpected)}</span>
                                 </div>
-                                <div className="flex justify-between font-medium">
-                                    <span>Total registrado:</span>
-                                    <span>{formatCurrency(totalRegistered)}</span>
+                                <div className="flex justify-between font-medium text-red-500">
+                                    <span>Total egresos:</span>
+                                    <span>{formatCurrency(totalExpenses)}</span>
                                 </div>
                                 <Separator className="my-2" />
                                 <div className="flex justify-between font-bold">

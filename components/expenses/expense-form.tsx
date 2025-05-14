@@ -79,8 +79,10 @@ export function ExpenseForm({ onSuccess, isModal = false }: ExpenseFormProps) {
         defaultValues: {
             date: new Date(),
             paymentMethod: PaymentMethod.CASH,
+            attachments: undefined, // ← Aquí está la solución
         },
     })
+
 
     async function onSubmit(data: ExpenseFormValues) {
         setIsSubmitting(true)
@@ -321,6 +323,7 @@ export function ExpenseForm({ onSuccess, isModal = false }: ExpenseFormProps) {
                                     }
                                 }}
                             />
+
 
                             <FormDescription>
                                 Adjunta facturas, recibos u otros documentos relacionados con este egreso.

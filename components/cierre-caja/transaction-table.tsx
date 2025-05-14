@@ -1,16 +1,28 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, ArrowUpToLine } from "lucide-react"
+import { Search, Eye, ArrowUpToLine, ArrowDownToLine } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { HttpService } from "@/lib/http"
-
 
 type Installment = {
     id: string
@@ -23,12 +35,23 @@ type Installment = {
     }
 }
 
-type SelectedInstallment = {
+type Expense = {
+    id: string
+    amount: number
+    date: string
+    category: string
+    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+    beneficiary: string
+    reference?: string
+    description: string
+}
+
+type SelectedTransaction = {
     id: string
     amount: number
     paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+    type: "income" | "expense"
 }
-
 
 type Transaction = {
     id: string
@@ -44,7 +67,7 @@ type Transaction = {
 
 type Props = {
     token: string
-    onSelect?: (installments: SelectedInstallment[]) => void
+    onSelect?: (transactions: SelectedTransaction[]) => void
 }
 
 export function TransactionTable({ token, onSelect }: Props) {
@@ -57,13 +80,19 @@ export function TransactionTable({ token, onSelect }: Props) {
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                const res = await HttpService.get<Installment[]>("/api/v1/closing/available-payments", {
+                const res = await HttpService.get<{
+                    installments: Installment[]
+                    expenses: Expense[]
+                }>("/api/v1/closing/available-payments", {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                 })
 
-                const formatted: Transaction[] = res.data.map((i) => ({
+                const incomes: Transaction[] = res.data.installments.map((i) => ({
                     id: i.id,
-                    time: new Date(i.paymentDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                    time: new Date(i.paymentDate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
                     description: `Pago cuota - ${i.loan.user.name}`,
                     category: "Cuota de préstamo",
                     amount: i.amount,
@@ -73,7 +102,21 @@ export function TransactionTable({ token, onSelect }: Props) {
                     client: i.loan.user.name,
                 }))
 
-                setTransactions(formatted)
+                const expenses: Transaction[] = res.data.expenses.map((e) => ({
+                    id: e.id,
+                    time: new Date(e.date).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                    description: e.description,
+                    category: e.category,
+                    amount: e.amount,
+                    paymentMethod: mapPaymentLabel(e.paymentMethod),
+                    type: "expense",
+                    reference: e.reference ?? "",
+                }))
+
+                setTransactions([...incomes, ...expenses])
             } catch (err) {
                 console.error("Error cargando transacciones:", err)
             } finally {
@@ -86,10 +129,14 @@ export function TransactionTable({ token, onSelect }: Props) {
 
     const mapPaymentLabel = (key: string) => {
         switch (key) {
-            case "CASH": return "Efectivo"
-            case "CARD": return "Tarjeta"
-            case "TRANSACTION": return "Transferencia"
-            default: return "Otro"
+            case "CASH":
+                return "Efectivo"
+            case "CARD":
+                return "Tarjeta"
+            case "TRANSACTION":
+                return "Transferencia"
+            default:
+                return "Otro"
         }
     }
 
@@ -100,7 +147,7 @@ export function TransactionTable({ token, onSelect }: Props) {
 
         setSelectedIds(updated)
 
-        const selectedInstallments: SelectedInstallment[] = transactions
+        const selectedTransactions: SelectedTransaction[] = transactions
             .filter((t) => updated.includes(t.id))
             .map((t) => ({
                 id: t.id,
@@ -111,18 +158,18 @@ export function TransactionTable({ token, onSelect }: Props) {
                         : t.paymentMethod === "Tarjeta"
                             ? "CARD"
                             : "TRANSACTION",
+                type: t.type,
             }))
 
-
-        onSelect?.(selectedInstallments)
+        onSelect?.(selectedTransactions)
     }
-
 
     const filteredTransactions = transactions.filter((transaction) => {
         const matchesSearch =
             transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
             transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (transaction.client && transaction.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (transaction.client &&
+                transaction.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
             transaction.reference.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesType =
@@ -204,20 +251,32 @@ export function TransactionTable({ token, onSelect }: Props) {
                                             <input
                                                 type="checkbox"
                                                 checked={selectedIds.includes(transaction.id)}
-                                                onChange={(e) => handleSelection(transaction.id, e.target.checked)}
+                                                onChange={(e) =>
+                                                    handleSelection(transaction.id, e.target.checked)
+                                                }
                                             />
                                         </TableCell>
                                         <TableCell>{transaction.time}</TableCell>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center">
-                                                <ArrowUpToLine className="h-4 w-4 text-green-500 mr-2" />
+                                                {transaction.type === "income" ? (
+                                                    <ArrowUpToLine className="h-4 w-4 text-green-500 mr-2" />
+                                                ) : (
+                                                    <ArrowDownToLine className="h-4 w-4 text-red-500 mr-2" />
+                                                )}
                                                 {transaction.description}
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline">{transaction.category}</Badge>
                                         </TableCell>
-                                        <TableCell className="text-green-500 font-medium">
+                                        <TableCell
+                                            className={
+                                                transaction.type === "income"
+                                                    ? "text-green-500 font-medium"
+                                                    : "text-red-500 font-medium"
+                                            }
+                                        >
                                             {formatCurrency(transaction.amount)}
                                         </TableCell>
                                         <TableCell>{transaction.paymentMethod}</TableCell>

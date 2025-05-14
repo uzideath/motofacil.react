@@ -12,15 +12,16 @@ import { TransactionTable } from "@/components/cierre-caja/transaction-table"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { CashRegisterHistory } from "@/components/cierre-caja/history"
 
-// 👇 Ajuste correcto del tipo de cuotas seleccionadas
-type Installment = {
+// 👇 Tipo combinado de ingresos y egresos
+type SelectedTransaction = {
     id: string
     amount: number
     paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    type: "income" | "expense"
 }
 
 export default function CierreCajaPage() {
-    const [selectedInstallments, setSelectedInstallments] = useState<Installment[]>([])
+    const [selectedTransactions, setSelectedTransactions] = useState<SelectedTransaction[]>([])
     const [token, setToken] = useState<string>("")
 
     useEffect(() => {
@@ -72,7 +73,7 @@ export default function CierreCajaPage() {
                 </div>
 
                 <Tabs defaultValue="summary" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-3"> {/* ← Cambié de 4 a 3 columnas */}
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="summary">Resumen del Día</TabsTrigger>
                         <TabsTrigger value="transactions">Transacciones</TabsTrigger>
                         <TabsTrigger value="register">Cierre de Caja</TabsTrigger>
@@ -98,7 +99,7 @@ export default function CierreCajaPage() {
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
                                     <CardTitle>Transacciones del Día</CardTitle>
-                                    <CardDescription>Detalle de todos los ingresos registrados hoy</CardDescription>
+                                    <CardDescription>Detalle de todos los ingresos y egresos del día</CardDescription>
                                 </div>
                                 <div className="flex space-x-2">
                                     <Button variant="outline" size="sm">
@@ -114,7 +115,7 @@ export default function CierreCajaPage() {
                             <CardContent>
                                 <TransactionTable
                                     token={token}
-                                    onSelect={(idsWithAmount) => setSelectedInstallments(idsWithAmount)}
+                                    onSelect={(selected) => setSelectedTransactions(selected)}
                                 />
                             </CardContent>
                         </Card>
@@ -130,21 +131,8 @@ export default function CierreCajaPage() {
                             <CardContent>
                                 <CashRegisterForm
                                     token={token}
-                                    selectedInstallments={selectedInstallments}
+                                    selectedTransactions={selectedTransactions}
                                 />
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Tab: Historial */}
-                    <TabsContent value="history" className="space-y-6">
-                        <Card className="card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Historial de Cierres</CardTitle>
-                                <CardDescription>Visualice todos los cierres realizados previamente</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <CashRegisterHistory />
                             </CardContent>
                         </Card>
                     </TabsContent>

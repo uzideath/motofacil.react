@@ -13,6 +13,7 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+
 export function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat("es-CO", {

@@ -24,8 +24,8 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-import { Eye, FileEdit, MoreVertical, Search, Trash2, FileDown } from "lucide-react"
-import { format } from "date-fns"
+import { Eye, FileEdit, MoreVertical, Search, Trash2, FileDown, ArrowUpDown } from "lucide-react"
+import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 // At the top of the file, add the import for ExpenseModal
 import { ExpenseModal } from "./expense-modal"
@@ -37,7 +37,7 @@ type Expense = {
     category: string
     amount: number
     paymentMethod: "CASH" | "CARD" | "TRANSACTION" | "CHECK" | "OTHER"
-    recipient: string
+    beneficiary: string
     reference: string
     description: string
     date: string
@@ -69,12 +69,17 @@ export function ExpenseTable() {
     const [categoryFilter, setCategoryFilter] = useState("todos")
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc') // Por defecto ordenamos por más reciente
 
     useEffect(() => {
         const fetchExpenses = async () => {
             try {
                 const res = await HttpService.get<Expense[]>("/api/v1/expense")
-                setExpenses(res.data)
+                // Ordenar por fecha al recibir los datos (más reciente primero)
+                const sortedExpenses = [...res.data].sort((a, b) => {
+                    return new Date(b.date).getTime() - new Date(a.date).getTime()
+                })
+                setExpenses(sortedExpenses)
             } catch (err) {
                 console.error("Error fetching expenses:", err)
             }
@@ -83,10 +88,25 @@ export function ExpenseTable() {
         fetchExpenses()
     }, [])
 
+    // Función para cambiar la dirección de ordenamiento
+    const toggleSortDirection = () => {
+        const newDirection = sortDirection === 'desc' ? 'asc' : 'desc'
+        setSortDirection(newDirection)
+
+        // Reordenar los gastos con la nueva dirección
+        const sortedExpenses = [...expenses].sort((a, b) => {
+            const comparison = new Date(b.date).getTime() - new Date(a.date).getTime()
+            return newDirection === 'desc' ? comparison : -comparison
+        })
+
+        setExpenses(sortedExpenses)
+        setCurrentPage(1) // Volver a la primera página al cambiar el orden
+    }
+
     const filteredExpenses = expenses.filter((expense) => {
         const matchesSearch =
             expense.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            expense.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            expense.beneficiary.toLowerCase().includes(searchTerm.toLowerCase()) ||
             expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
             expense.reference.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -195,7 +215,23 @@ export function ExpenseTable() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[100px]">ID</TableHead>
-                                <TableHead className="w-[120px]">Fecha</TableHead>
+                                <TableHead className="w-[120px]">
+                                    <div className="flex items-center">
+                                        Fecha
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="ml-1 p-0 h-6 w-6"
+                                            onClick={toggleSortDirection}
+                                            title={sortDirection === 'desc' ? "Ordenar del más antiguo al más reciente" : "Ordenar del más reciente al más antiguo"}
+                                        >
+                                            <ArrowUpDown className="h-4 w-4" />
+                                            <span className="sr-only">
+                                                {sortDirection === 'desc' ? "Ordenar ascendente" : "Ordenar descendente"}
+                                            </span>
+                                        </Button>
+                                    </div>
+                                </TableHead>
                                 <TableHead>Categoría</TableHead>
                                 <TableHead className="text-right">Monto</TableHead>
                                 <TableHead>Método</TableHead>
@@ -215,7 +251,7 @@ export function ExpenseTable() {
                                 currentItems.map((expense) => (
                                     <TableRow key={expense.id}>
                                         <TableCell className="font-medium">{expense.id}</TableCell>
-                                        <TableCell>{format(expense.date, "dd/MM/yyyy", { locale: es })}</TableCell>
+                                        <TableCell>{format(new Date(expense.date), "dd/MM/yyyy", { locale: es })}</TableCell>
                                         <TableCell>
                                             <Badge
                                                 className={`${categoryMap[expense.category]?.color || "bg-gray-100 text-gray-800"}`}
@@ -226,8 +262,8 @@ export function ExpenseTable() {
                                         </TableCell>
                                         <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
                                         <TableCell>{paymentMethodMap[expense.paymentMethod] || expense.paymentMethod}</TableCell>
-                                        <TableCell className="max-w-[150px] truncate" title={expense.recipient}>
-                                            {expense.recipient}
+                                        <TableCell className="max-w-[150px] truncate" title={expense.beneficiary}>
+                                            {expense.beneficiary}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell max-w-[150px] truncate" title={expense.reference}>
                                             {expense.reference}

@@ -1,21 +1,20 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useEffect, useState } from "react"
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, FileText, Download, Eye } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select"
+import {
+    Pagination, PaginationContent, PaginationEllipsis,
+    PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination"
 import { HttpService } from "@/lib/http"
 import { format } from "date-fns"
@@ -30,6 +29,17 @@ type Payment = {
     isLate: boolean
 }
 
+type Expense = {
+    id: string
+    amount: number
+    date: string
+    category: string
+    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    beneficiary: string
+    reference?: string
+    description: string
+}
+
 type CashRegister = {
     id: string
     date: string
@@ -39,10 +49,15 @@ type CashRegister = {
     balance: number
     status: "balanced" | "minor-diff" | "major-diff"
     time: string
+    raw: {
+        payments: Payment[]
+        expense: Expense[]
+        [key: string]: any
+    }
 }
 
 export function CashRegisterHistory() {
-    const [selectedPayments, setSelectedPayments] = useState<Payment[] | null>(null)
+    const [selectedRegister, setSelectedRegister] = useState<CashRegister | null>(null)
     const [registers, setRegisters] = useState<CashRegister[]>([])
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
@@ -55,7 +70,7 @@ export function CashRegisterHistory() {
                 const res = await HttpService.get("/api/v1/closing")
                 const mapped: CashRegister[] = res.data.map((item: any) => {
                     const totalIncome = item.payments.reduce((acc: number, p: Payment) => acc + p.amount, 0)
-                    const totalExpense = 0 // Ajustar si tienes egresos separados
+                    const totalExpense = item.expense.reduce((acc: number, e: Expense) => acc + e.amount, 0)
                     const balance = totalIncome - totalExpense
                     const createdAt = new Date(item.createdAt)
 
@@ -70,13 +85,19 @@ export function CashRegisterHistory() {
                         id: item.id,
                         date: format(createdAt, "dd/MM/yyyy", { locale: es }),
                         time: format(createdAt, "HH:mm", { locale: es }),
-                        user: "N/A", // Puedes ajustar si tienes usuario asociado
+                        user: "N/A",
                         totalIncome,
                         totalExpense,
                         balance,
                         status,
+                        raw: {
+                            payments: item.payments,
+                            expense: item.expense,
+                            ...item,
+                        },
                     }
                 })
+
                 setRegisters(mapped)
             } catch (err) {
                 console.error("Error al cargar los cierres de caja:", err)
@@ -88,18 +109,9 @@ export function CashRegisterHistory() {
 
     const getMonthFromFilter = (monthFilter: string) => {
         const months: Record<string, string> = {
-            "01": "/01/",
-            "02": "/02/",
-            "03": "/03/",
-            "04": "/04/",
-            "05": "/05/",
-            "06": "/06/",
-            "07": "/07/",
-            "08": "/08/",
-            "09": "/09/",
-            "10": "/10/",
-            "11": "/11/",
-            "12": "/12/",
+            "01": "/01/", "02": "/02/", "03": "/03/", "04": "/04/",
+            "05": "/05/", "06": "/06/", "07": "/07/", "08": "/08/",
+            "09": "/09/", "10": "/10/", "11": "/11/", "12": "/12/",
         }
         return months[monthFilter] || ""
     }
@@ -221,25 +233,16 @@ export function CashRegisterHistory() {
                                                     variant="outline"
                                                     size="icon"
                                                     title="Ver detalles"
-                                                    onClick={async () => {
-                                                        try {
-                                                            const res = await HttpService.get(`/api/v1/closing/search/${r.id}`)
-                                                            setSelectedPayments(res.data.payments)
-                                                        } catch (err) {
-                                                            console.error("Error al cargar los pagos del cierre:", err)
-                                                        }
-                                                    }}
+                                                    onClick={() => setSelectedRegister(r)}
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                     <span className="sr-only">Ver detalles</span>
                                                 </Button>
                                                 <Button variant="outline" size="icon" title="Descargar PDF">
                                                     <FileText className="h-4 w-4" />
-                                                    <span className="sr-only">Descargar PDF</span>
                                                 </Button>
                                                 <Button variant="outline" size="icon" title="Exportar Excel">
                                                     <Download className="h-4 w-4" />
-                                                    <span className="sr-only">Exportar Excel</span>
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -274,46 +277,34 @@ export function CashRegisterHistory() {
                 <Pagination>
                     <PaginationContent>
                         <PaginationItem>
-                            <PaginationPrevious
-                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                            />
+                            <PaginationPrevious onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} />
                         </PaginationItem>
-
-                        {getPageNumbers().map((pageNumber, index) =>
-                            typeof pageNumber === "string" ? (
-                                <PaginationItem key={index}>
-                                    <PaginationEllipsis />
-                                </PaginationItem>
+                        {getPageNumbers().map((n, idx) =>
+                            typeof n === "string" ? (
+                                <PaginationItem key={idx}><PaginationEllipsis /></PaginationItem>
                             ) : (
-                                <PaginationItem key={pageNumber}>
-                                    <PaginationLink
-                                        isActive={currentPage === pageNumber}
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                    >
-                                        {pageNumber}
+                                <PaginationItem key={n}>
+                                    <PaginationLink isActive={currentPage === n} onClick={() => setCurrentPage(n)}>
+                                        {n}
                                     </PaginationLink>
                                 </PaginationItem>
                             )
                         )}
-
                         <PaginationItem>
-                            <PaginationNext
-                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                            />
+                            <PaginationNext onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
             </div>
-            {selectedPayments && (
+
+            {selectedRegister && (
                 <CashRegisterDetailModal
-                    open={!!selectedPayments}
-                    onClose={() => setSelectedPayments(null)}
-                    payments={selectedPayments}
+                    open={!!selectedRegister}
+                    onClose={() => setSelectedRegister(null)}
+                    payments={selectedRegister.raw.payments}
+                    expenses={selectedRegister.raw.expense}
                 />
             )}
-
         </div>
     )
 }

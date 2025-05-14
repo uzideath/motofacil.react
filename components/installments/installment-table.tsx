@@ -56,6 +56,34 @@ export function InstallmentTable() {
     }
   }
 
+  const handlePrint = async (installment: Installment) => {
+    try {
+      const res = await HttpService.post("/api/v1/receipt", {
+        customerName: installment.userName,
+        customerId: installment.loanId,
+        concept: `Pago de cuota de ${installment.motorcycleModel}`,
+        total: installment.amount,
+      })
+
+      const { base64 } = res.data
+
+      const blob = new Blob(
+        [Uint8Array.from(atob(base64), c => c.charCodeAt(0))],
+        { type: "application/pdf" }
+      )
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank")
+    } catch (error) {
+      console.error("Error al generar recibo:", error)
+      toast({
+        title: "Error",
+        description: "No se pudo generar el recibo",
+        variant: "destructive",
+      })
+    }
+  }
+
+
   useEffect(() => {
     fetchInstallments()
   }, [])
@@ -108,7 +136,7 @@ export function InstallmentTable() {
                 ))
               ) : filteredInstallments.length === 0 ? (
                 <TableRow className="border-dark-blue-800/30">
-                  <TableCell colSpan={6} className="text-center text-blue-200/70">
+                  <TableCell colSpan={7} className="text-center text-blue-200/70">
                     No se encontraron cuotas
                   </TableCell>
                 </TableRow>
@@ -126,7 +154,6 @@ export function InstallmentTable() {
                         TRANSACTION: "Transferencia",
                       }[i.paymentMethod] ?? "Desconocido"}
                     </TableCell>
-
                     <TableCell>
                       {i.isLate ? (
                         <Badge variant="destructive" className="bg-red-500/80 hover:bg-red-500/70">
@@ -137,6 +164,15 @@ export function InstallmentTable() {
                           A tiempo
                         </Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <button
+                        className="text-blue-300 hover:text-white transition-colors"
+                        onClick={() => handlePrint(i)}
+                        title="Imprimir recibo"
+                      >
+                        🖨️
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))
