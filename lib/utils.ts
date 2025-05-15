@@ -1,3 +1,4 @@
+import { toast } from "@/components/ui/use-toast";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -21,4 +22,9 @@ export function formatDate(dateString: string): string {
     month: "long",
     day: "numeric",
   }).format(date)
+}
+
+export function getInterest(capital: number, tasaAnual: number, numeroPeriodos: number) {
+  const tasaPorPeriodo = tasaAnual / numeroPeriodos;
+  return (capital * tasaPorPeriodo) / (1 - Math.pow(1 + tasaPorPeriodo, -numeroPeriodos))
 }

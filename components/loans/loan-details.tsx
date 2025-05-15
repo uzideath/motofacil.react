@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency, formatDate, getInterest } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { CreditCard, Calculator, DollarSign, Percent } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -114,7 +114,8 @@ export function LoanDetails({
     setTimeout(async () => {
       try {
         const response = await fetchLoan(loanId);
-        setInterests(response.totalAmount * response.interestRate / 100);
+        const periods = response.paymentFrequency === 'DAILY' ? 365 : response.paymentFrequency === 'WEEKLY' ? 52 : response.paymentFrequency === 'BIWEEKLY' ? 24 : 12; // <- Monthly
+        setInterests(getInterest(response.totalAmount, response.interestRate, periods));
         setLoan(loanData);
       } catch (error) {
         console.error("Error al cargar datos del préstamo:", error)
@@ -194,14 +195,6 @@ export function LoanDetails({
       default:
         return type
     }
-  }
-
-  // Función para calcular la fecha estimada de finalización
-  function getEstimatedEndDate(loan: Loan) {
-    const startDate = new Date(loan.startDate)
-    const endDate = new Date()
-    endDate.setMonth(startDate.getMonth() + loan.installments)
-    return formatDate(`${endDate.getFullYear()}-${endDate.getMonth()}-${endDate.getDate()}`)
   }
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -359,7 +352,6 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">Total con Interés</p>
                     <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount + (interests * loan.installments))}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      {/* <span>Interés: {formatCurrency(loan.totalWithInterest - loan.financedAmount)}</span>} */}
                       <span>Tasa: {loan.interestRate}%</span>
                     </div>
                   </div>
@@ -368,7 +360,7 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">
                       Cuota {getPaymentFrequencyText(loan.paymentFrequency)}
                     </p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.dailyPaymentAmount)}</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(loan.installmentPaymentAmmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
                       <span>Tipo: {getInterestTypeText(loan.interestType)}</span>
                       <span>Cuotas: {loan.installments}</span>
@@ -416,7 +408,8 @@ export function LoanDetails({
                       <Percent className="h-4 w-4 text-blue-400 mr-1" />
                       <p className="text-sm font-medium text-blue-200/80">Interés Pagado</p>
                     </div>
-                    {/* <p className="text-xl font-bold text-blue-400">{formatCurrency(loan.totalInterestPaid)}</p> */}
+                    <p className="text-xl font-bold text-blue-400">{formatCurrency(interests * loan.paidInstallments)}</p>
+
                     {/* <p className="text-xs text-blue-200/60 mt-1">
                       {((loan.totalInterestPaid / (loan.totalWithInterest - loan.financedAmount)) * 100).toFixed(0)}%
                       del interés total
@@ -431,19 +424,10 @@ export function LoanDetails({
                     <p className="text-base font-medium text-white">{loan.startDate ? formatDate(loan.startDate.split('T')[0]): ""}</p>
                   </div>
 
-                  {/* <div className="glass-card p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-200/80">Próximo Pago</p>
-                    <p className="text-base font-medium text-white">
-                      
-                      {loan.amortizationTable && loan.amortizationTable.length > loan.paidInstallments
-                        ? formatDate(loan.amortizationTable[loan.paidInstallments].date.split('T')[0])
-                        : "N/A"}
-                    </p>
-                  </div> */}
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha Estimada de Finalización</p>
-                    <p className="text-base font-medium text-white">{getEstimatedEndDate(loan)}</p>
+                    <p className="text-base font-medium text-white">{loan.endDate ? formatDate(loan.endDate.split('T')[0]): ""}</p>
                   </div>
                 </div>
               </CardContent>

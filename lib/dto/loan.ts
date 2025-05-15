@@ -12,7 +12,7 @@ export interface Loan {
     interestRate: number;
     interestType: string;
     paymentFrequency: string;
-    dailyPaymentAmount: number;
+    installmentPaymentAmmount: number;
     startDate: string;
     endDate: string;
     status: string;
