@@ -43,7 +43,7 @@ export type Loan = {
   interestRate: number
   interestType: "FIXED" | "COMPOUND" // aligned with frontend enum
   paymentFrequency: "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY"
-  dailyPaymentAmount: number
+  installmentPaymentAmmount: number
   startDate: string // ISO date string
   status: "PENDING" | "ACTIVE" | "COMPLETED" | "DEFAULTED"
 }

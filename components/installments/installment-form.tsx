@@ -129,7 +129,7 @@ export function InstallmentForm({
       const mappedLoans: EnrichedLoan[] = rawData.map((loan) => {
         const financedAmount = loan.totalAmount - loan.downPayment
         const monthlyPayment =
-          loan.paymentFrequency === "MONTHLY" ? loan.dailyPaymentAmount : loan.dailyPaymentAmount * 30
+          loan.paymentFrequency === "MONTHLY" ? loan.installmentPaymentAmmount : loan.installmentPaymentAmmount * 30
 
         return {
           ...loan,

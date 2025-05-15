@@ -38,7 +38,7 @@ const loanSchema = z.object({
   interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
   interestType: z.enum(["FIXED", "COMPOUND"]),
   paymentFrequency: z.enum(["DAILY", "MONTHLY", "BIWEEKLY", "WEEKLY"]),
-  dailyPaymentAmount: z.coerce.number().optional(),
+  installmentPaymentAmmount: z.coerce.number().optional(),
 })
 
 type LoanFormValues = z.infer<typeof loanSchema>
@@ -84,7 +84,7 @@ export function LoanForm({
       interestRate: 12,
       interestType: "FIXED",
       paymentFrequency: "DAILY",
-      dailyPaymentAmount: 34000,
+      installmentPaymentAmmount: 34000,
     },
   })
 
@@ -107,7 +107,7 @@ export function LoanForm({
       const downPayment = Number(values.downPayment) || 0
       const installments = Number(values.installments) || 1
       const interestRate = Number(values.interestRate) || 0
-      const dailyPaymentAmount = Number(values.dailyPaymentAmount) || 34000
+      const installmentPaymentAmmount = Number(values.installmentPaymentAmmount) || 34000
 
       // Skip calculation if essential values are missing or invalid
       if (totalAmount <= 0 || installments <= 0) {
@@ -129,7 +129,7 @@ export function LoanForm({
 
       if (values.paymentFrequency === "DAILY") {
         // For daily payments, we use the fixed amount
-        paymentAmount = dailyPaymentAmount
+        paymentAmount = installmentPaymentAmmount
 
         // Calculate how many installments would be needed, but don't update the form
         if (paymentAmount > 0) {
@@ -171,7 +171,7 @@ export function LoanForm({
       "interestRate",
       "interestType",
       "paymentFrequency",
-      "dailyPaymentAmount",
+      "installmentPaymentAmmount",
     ],
   })
 
@@ -208,7 +208,7 @@ export function LoanForm({
           interestRate: loanData.interestRate ?? 12,
           interestType: loanData.interestType ?? "FIXED",
           paymentFrequency: loanData.paymentFrequency ?? "DAILY",
-          dailyPaymentAmount: loanData.dailyPaymentAmount ?? 34000,
+          installmentPaymentAmmount: loanData.installmentPaymentAmmount ?? 34000,
         })
       }
     } catch (error) {
@@ -242,7 +242,7 @@ export function LoanForm({
             ? loanSummary.totalInstallments
             : Number(values.installments) || 1,
         interestRate: Number(values.interestRate) || 0,
-        dailyPaymentAmount: Number(values.dailyPaymentAmount) || 34000,
+        installmentPaymentAmmount: Number(values.installmentPaymentAmmount) || 34000,
       }
 
       // Changed to post to /api/loans as requested
@@ -473,7 +473,7 @@ export function LoanForm({
                     {formValues.paymentFrequency === "DAILY" && (
                       <FormField
                         control={form.control}
-                        name="dailyPaymentAmount"
+                        name="installmentPaymentAmmount"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Monto de Pago Diario</FormLabel>
