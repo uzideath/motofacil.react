@@ -9,14 +9,25 @@ import { useToast } from "@/components/ui/use-toast"
 import { UserForm } from "./user-form"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HttpService } from "@/lib/http"
-import { Client } from "@/lib/types"
-
+import type { Client } from "@/lib/types"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function UserTable() {
   const [users, setUsers] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(5)
 
   const fetchUsers = async () => {
     try {
@@ -53,9 +64,7 @@ export function UserTable() {
     if (newUser) {
       setUsers((prev) => {
         const exists = prev.some((user) => user.id === newUser.id)
-        return exists
-          ? prev.map((u) => (u.id === newUser.id ? newUser : u))
-          : [newUser, ...prev]
+        return exists ? prev.map((u) => (u.id === newUser.id ? newUser : u)) : [newUser, ...prev]
       })
     } else {
       fetchUsers()
@@ -93,10 +102,37 @@ export function UserTable() {
   }
 
   const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.identification.includes(searchTerm),
+    (user) => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.identification.includes(searchTerm),
   )
+
+  const totalItems = filteredUsers.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const currentItems = filteredUsers.slice(startIndex, endIndex)
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      let startPage = Math.max(2, currentPage - 1)
+      let endPage = Math.min(totalPages - 1, currentPage + 1)
+
+      if (currentPage <= 3) endPage = Math.min(totalPages - 1, 4)
+      else if (currentPage >= totalPages - 2) startPage = Math.max(2, totalPages - 3)
+
+      if (startPage > 2) pages.push("ellipsis-start")
+      for (let i = startPage; i <= endPage; i++) pages.push(i)
+      if (endPage < totalPages - 1) pages.push("ellipsis-end")
+      pages.push(totalPages)
+    }
+
+    return pages
+  }
 
   return (
     <div className="space-y-4">
@@ -111,12 +147,31 @@ export function UserTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <UserForm onCreated={handleUserCreated}>
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Usuario
-          </Button>
-        </UserForm>
+        <div className="flex gap-2">
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => {
+              setItemsPerPage(Number(value))
+              setCurrentPage(1)
+            }}
+          >
+            <SelectTrigger className="w-[130px] glass-input">
+              <SelectValue placeholder="Mostrar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 por página</SelectItem>
+              <SelectItem value="10">10 por página</SelectItem>
+              <SelectItem value="20">20 por página</SelectItem>
+              <SelectItem value="50">50 por página</SelectItem>
+            </SelectContent>
+          </Select>
+          <UserForm onCreated={handleUserCreated}>
+            <Button className="bg-primary hover:bg-primary/90 text-white">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Usuario
+            </Button>
+          </UserForm>
+        </div>
       </div>
 
       <div className="glass-table border border-dark-blue-800/30">
@@ -159,14 +214,14 @@ export function UserTable() {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : filteredUsers.length === 0 ? (
+              ) : currentItems.length === 0 ? (
                 <TableRow className="border-dark-blue-800/30">
                   <TableCell colSpan={6} className="text-center text-blue-200/70">
                     No se encontraron usuarios
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
+                currentItems.map((user) => (
                   <TableRow key={user.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
                     <TableCell className="text-white">{user.name}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{user.identification}</TableCell>
@@ -202,6 +257,58 @@ export function UserTable() {
             </TableBody>
           </Table>
         </div>
+      </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 mt-4">
+        <div className="text-sm text-blue-200/70">
+          Mostrando {startIndex + 1}-{endIndex} de {totalItems} usuarios
+        </div>
+
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage > 1) setCurrentPage(currentPage - 1)
+                }}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+
+            {getPageNumbers().map((page, i) =>
+              page === "ellipsis-start" || page === "ellipsis-end" ? (
+                <PaginationItem key={`ellipsis-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={`page-${page}`}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setCurrentPage(page as number)
+                    }}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ),
+            )}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                }}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   )

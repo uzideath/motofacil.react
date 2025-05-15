@@ -1,23 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Edit,
-  Trash2,
-  Search,
-  Eye,
-  CreditCard,
-} from "lucide-react"
+import { Edit, Trash2, Search, Eye, CreditCard } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +13,16 @@ import { LoanDetails } from "./loan-details"
 import { InstallmentForm } from "../installments/installment-form"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HttpService } from "@/lib/http"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export type Loan = {
   id: string
@@ -53,11 +50,13 @@ export function LoanTable() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(5)
 
   const fetchLoans = async () => {
     try {
       setLoading(true)
-      
+
       const token = document.cookie
         .split("; ")
         .find((c) => c.startsWith("authToken="))
@@ -87,7 +86,6 @@ export function LoanTable() {
       setLoading(false)
     }
   }
-
 
   useEffect(() => {
     fetchLoans()
@@ -130,6 +128,34 @@ export function LoanTable() {
     return userMatch || motoMatch
   })
 
+  const totalItems = filteredLoans.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems)
+  const currentItems = filteredLoans.slice(startIndex, endIndex)
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      let startPage = Math.max(2, currentPage - 1)
+      let endPage = Math.min(totalPages - 1, currentPage + 1)
+
+      if (currentPage <= 3) endPage = Math.min(totalPages - 1, 4)
+      else if (currentPage >= totalPages - 2) startPage = Math.max(2, totalPages - 3)
+
+      if (startPage > 2) pages.push("ellipsis-start")
+      for (let i = startPage; i <= endPage; i++) pages.push(i)
+      if (endPage < totalPages - 1) pages.push("ellipsis-end")
+      pages.push(totalPages)
+    }
+
+    return pages
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -146,7 +172,7 @@ export function LoanTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-300/70" />
           <Input
@@ -156,6 +182,25 @@ export function LoanTable() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+        <div>
+          <Select
+            value={itemsPerPage.toString()}
+            onValueChange={(value) => {
+              setItemsPerPage(Number(value))
+              setCurrentPage(1)
+            }}
+          >
+            <SelectTrigger className="w-[130px] glass-input">
+              <SelectValue placeholder="Mostrar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 por página</SelectItem>
+              <SelectItem value="10">10 por página</SelectItem>
+              <SelectItem value="20">20 por página</SelectItem>
+              <SelectItem value="50">50 por página</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -205,14 +250,14 @@ export function LoanTable() {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : filteredLoans.length === 0 ? (
+              ) : currentItems.length === 0 ? (
                 <TableRow className="border-dark-blue-800/30">
                   <TableCell colSpan={7} className="text-center text-blue-200/70">
                     No se encontraron préstamos
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredLoans.map((loan) => (
+                currentItems.map((loan) => (
                   <TableRow key={loan.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
                     <TableCell className="font-medium text-white">{loan.userName}</TableCell>
                     <TableCell className="hidden md:table-cell text-blue-200">{loan.motorcycleModel}</TableCell>
@@ -275,6 +320,58 @@ export function LoanTable() {
             </TableBody>
           </Table>
         </div>
+      </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 mt-4">
+        <div className="text-sm text-blue-200/70">
+          Mostrando {startIndex + 1}-{endIndex} de {totalItems} préstamos
+        </div>
+
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage > 1) setCurrentPage(currentPage - 1)
+                }}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+
+            {getPageNumbers().map((page, i) =>
+              page === "ellipsis-start" || page === "ellipsis-end" ? (
+                <PaginationItem key={`ellipsis-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={`page-${page}`}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setCurrentPage(page as number)
+                    }}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ),
+            )}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                }}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   )
