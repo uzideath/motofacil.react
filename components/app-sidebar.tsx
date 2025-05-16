@@ -1,5 +1,9 @@
 "use client"
 
+import { useAuth } from "@/hooks/use-auth"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { useSidebar } from "@/components/ui/sidebar"
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +16,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import {
   Home,
@@ -32,37 +35,29 @@ import {
   Calculator,
   ArrowDownRight,
 } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState } from "react"
+import { hasAccess } from "@/lib/services/route-access"
 
 export function AppSidebar() {
+  const { user, logout } = useAuth()
   const { open } = useSidebar()
   const pathname = usePathname()
-  const { user, logout } = useAuth()
   const router = useRouter()
+
   const [notifications, setNotifications] = useState(3)
   const [searchValue, setSearchValue] = useState("")
 
-  const handleLogout = () => {
-    logout()
-    router.push("/login")
-  }
-
-  // Si no hay usuario autenticado y no estamos en una ruta de autenticación, no mostrar la barra lateral
   if (!user && !pathname.startsWith("/(auth)")) {
     return null
   }
 
   const mainMenuItems = [
-    { path: "/", label: "Dashboard", icon: Home },
+    { path: "/dashboard", label: "Dashboard", icon: Home },
     { path: "/usuarios", label: "Usuarios", icon: Users },
     { path: "/motocicletas", label: "Motocicletas", icon: Bike },
     { path: "/prestamos", label: "Préstamos", icon: CreditCard, badge: 2 },
@@ -72,7 +67,6 @@ export function AppSidebar() {
     { path: "/flujo-caja", label: "Flujo de Caja", icon: DollarSign },
     { path: "/reportes", label: "Reportes", icon: BarChart4 },
     { path: "/calculadora", label: "Calculadora", icon: Calculator },
-
   ]
 
   const adminMenuItem = {
@@ -86,8 +80,14 @@ export function AppSidebar() {
     { path: "/ayuda", label: "Ayuda", icon: HelpCircle },
   ]
 
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   return (
     <Sidebar collapsible="icon" className="border-r-0 bg-gradient-to-br from-[#1a2c4e] to-[#0f172a]">
+      {/* Header */}
       <SidebarHeader className="flex flex-col p-4 border-b border-sky-900/30">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
@@ -131,7 +131,6 @@ export function AppSidebar() {
             <SidebarTrigger className="text-white hover:bg-slate-800/50 h-8 w-8" />
           </div>
         </div>
-
         {open && (
           <div className="relative mt-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -139,12 +138,13 @@ export function AppSidebar() {
               placeholder="Buscar..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="h-9 pl-9 bg-slate-800/40 border-slate-700/50 text-white placeholder:text-slate-400 focus-visible:ring-primary/30 focus-visible:ring-offset-0 focus-visible:border-primary/50"
+              className="h-9 pl-9 bg-slate-800/40 border-slate-700/50 text-white placeholder:text-slate-400"
             />
           </div>
         )}
       </SidebarHeader>
 
+      {/* Content */}
       <SidebarContent className="px-2 py-3">
         <SidebarGroup>
           {open && (
@@ -154,35 +154,38 @@ export function AppSidebar() {
           )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.path}
-                    tooltip={item.label}
-                    className="group relative text-white hover:bg-transparent hover:text-white data-[active=true]:bg-slate-800/60 data-[active=true]:font-medium rounded-lg my-1 h-10 overflow-hidden"
-                  >
-                    <Link href={item.path} className="relative">
-                      <div
-                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-blue-500 transition-all duration-200 ${pathname === item.path ? "h-[70%]" : "h-0"}`}
-                      ></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <item.icon className="h-5 w-5 mr-3" />
-                      <span>{item.label}</span>
-                      {item.badge && (
-                        <Badge className="ml-auto bg-primary/90 hover:bg-primary text-xs font-normal">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainMenuItems
+                .filter((item) => user && hasAccess(item.path, user.roles))
+                .map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.path}
+                      tooltip={item.label}
+                      className="group relative text-white hover:bg-transparent hover:text-white data-[active=true]:bg-slate-800/60 data-[active=true]:font-medium rounded-lg my-1 h-10 overflow-hidden"
+                    >
+                      <Link href={item.path} className="relative">
+                        <div
+                          className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-blue-500 transition-all duration-200 ${pathname === item.path ? "h-[70%]" : "h-0"}`}
+                        ></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <item.icon className="h-5 w-5 mr-3" />
+                        <span>{item.label}</span>
+                        {item.badge && (
+                          <Badge className="ml-auto bg-primary/90 hover:bg-primary text-xs font-normal">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {user?.role === "ADMIN" && (
+        {/* Administración */}
+        {user && hasAccess(adminMenuItem.path, user.roles) && (
           <SidebarGroup className="relative pt-2 pb-2 mt-2">
             <div className="absolute bottom-0 left-4 right-4 h-[1px] bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/10"></div>
             {open && (
@@ -201,7 +204,8 @@ export function AppSidebar() {
                   >
                     <Link href={adminMenuItem.path} className="relative">
                       <div
-                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-blue-500 transition-all duration-200 ${pathname.startsWith("/admin") ? "h-[70%]" : "h-0"}`}
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-blue-500 transition-all duration-200 ${pathname.startsWith("/admin") ? "h-[70%]" : "h-0"
+                          }`}
                       ></div>
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <adminMenuItem.icon className="h-5 w-5 mr-3" />
@@ -215,6 +219,7 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
+      {/* Footer */}
       <SidebarFooter className="p-4 border-t border-sky-900/30">
         {user && (
           <div className={`${open ? "mb-4" : "mb-4 flex justify-center"}`}>
@@ -257,7 +262,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Cerrar Sesión"

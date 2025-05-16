@@ -60,18 +60,6 @@ export default function CierreCajaPage() {
 
             {/* Contenido */}
             <div className="p-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                            <Calendar className="h-5 w-5 text-green-500" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Fecha de Cierre</p>
-                            <DatePickerWithRange />
-                        </div>
-                    </div>
-                </div>
-
                 <Tabs defaultValue="summary" className="space-y-6">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="summary">Resumen del Día</TabsTrigger>

@@ -1,9 +1,7 @@
 "use client"
 
-import { TableHeader } from "@/components/ui/table"
-
 import { useEffect, useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -48,8 +46,11 @@ type Installment = {
   date: string
   isLate: boolean
   paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+  createdBy?: {
+    id: string
+    username: string
+  }
 }
-
 
 type SortField = "userName" | "motorcycleModel" | "amount" | "date" | null
 type SortDirection = "asc" | "desc"
@@ -82,6 +83,7 @@ export function InstallmentTable() {
         date: item.paymentDate,
         isLate: item.isLate,
         paymentMethod: item.paymentMethod ?? "CASH",
+        createdBy: item.createdBy ?? null,
       }))
 
       setInstallments(mapped)
@@ -387,7 +389,6 @@ export function InstallmentTable() {
                       GPS
                     </div>
                   </TableHead>
-
                   <TableHead
                     className="hidden md:table-cell text-blue-200 font-medium cursor-pointer"
                     onClick={() => handleSort("date")}
@@ -410,6 +411,12 @@ export function InstallmentTable() {
                       Estado
                     </div>
                   </TableHead>
+                  <TableHead className="text-blue-200 font-medium">
+                    <div className="flex items-center">
+                      <User className="mr-2 h-4 w-4 text-blue-300/70" />
+                      Registrado por
+                    </div>
+                  </TableHead>
                   <TableHead className="text-blue-200 font-medium text-right">
                     <span className="sr-only">Acciones</span>
                   </TableHead>
@@ -428,11 +435,17 @@ export function InstallmentTable() {
                       <TableCell>
                         <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
                       </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                      </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
                       </TableCell>
                       <TableCell>
                         <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-[80px] bg-dark-blue-800/50" />
                       </TableCell>
                       <TableCell>
                         <Skeleton className="h-6 w-[80px] bg-dark-blue-800/50" />
@@ -444,7 +457,7 @@ export function InstallmentTable() {
                   ))
                 ) : filteredInstallments.length === 0 ? (
                   <TableRow className="border-dark-blue-800/30">
-                    <TableCell colSpan={7} className="text-center py-8 text-blue-200/70">
+                    <TableCell colSpan={9} className="text-center py-8 text-blue-200/70">
                       <div className="flex flex-col items-center justify-center">
                         <Search className="h-8 w-8 mb-2 text-blue-300/50" />
                         <p className="text-lg">No se encontraron cuotas</p>
@@ -482,7 +495,6 @@ export function InstallmentTable() {
                           {formatCurrency(i.gps)}
                         </div>
                       </TableCell>
-
                       <TableCell className="hidden md:table-cell text-blue-200">
                         <div className="flex items-center">
                           <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
@@ -513,6 +525,12 @@ export function InstallmentTable() {
                             <span>A tiempo</span>
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-blue-200">
+                        <div className="flex items-center">
+                          <User className="mr-2 h-4 w-4 text-blue-400" />
+                          {i.createdBy?.username ?? "—"}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

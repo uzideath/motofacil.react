@@ -22,7 +22,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { loginRequest } from "@/lib/services/auth"
-import { roleMap } from "@/lib/types"
+import { AuthService } from "@/lib/services/auth.service"
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -49,30 +49,15 @@ export function LoginForm() {
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
 
     try {
-      const data = await loginRequest({
+      const user = await AuthService.login({
         username: values.username,
         password: values.password,
+        rememberMe: values.rememberMe,
       })
-
-      document.cookie = `authToken=${data.access_token}; path=/; max-age=${values.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24
-        }`
-
-      const validRoles = data.user.roles
-        .map((r: string) => roleMap[r.toUpperCase()])
-        .filter(Boolean) as ("admin" | "manager" | "user")[]
-
-      const rolePriority: ("admin" | "manager" | "user")[] = ["admin", "manager", "user"]
-      const primaryRole = rolePriority.find((r) => validRoles.includes(r)) ?? "user"
-
-      const user = {
-        id: data.user.id,
-        username: data.user.username,
-        role: primaryRole,
-      }
 
       login(user)
 
@@ -81,7 +66,7 @@ export function LoginForm() {
         description: "Has iniciado sesión correctamente.",
       })
 
-      window.location.href = "/"
+      window.location.href = "/" // o usa router.push("/") si prefieres navegación controlada
     } catch (error) {
       console.error("Error al iniciar sesión:", error)
       toast({

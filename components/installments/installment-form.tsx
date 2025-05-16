@@ -29,6 +29,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
 import { CreditCard, Calendar, Bike, User, DollarSign } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
 
 const installmentSchema = z.object({
   loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
@@ -71,7 +72,7 @@ export function InstallmentForm({
     interestAmount: number
   } | null>(null)
   const { toast } = useToast()
-
+  const { user } = useAuth();
   const form = useForm<InstallmentFormValues>({
     resolver: zodResolver(installmentSchema),
     defaultValues: {
@@ -188,6 +189,7 @@ export function InstallmentForm({
         gps: values.gps,
         principalAmount: paymentBreakdown?.principalAmount,
         interestAmount: paymentBreakdown?.interestAmount,
+        createdById: user?.id
       })
 
       toast({

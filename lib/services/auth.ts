@@ -20,10 +20,6 @@ export function getRequiredRole(pathname: string): Role | null {
 
 export const routeRoleMap: Record<string, Role> = {
     "/admin": "ADMIN",
-}
-
-export function hasAccess(pathname: string, userRoles: string[]): boolean {
-    const requiredRole = getRequiredRole(pathname)
-    if (!requiredRole) return true
-    return userRoles.includes(requiredRole)
+    "/dashboard": "ADMIN",
+    "/flujo-caja": "ADMIN",
 }

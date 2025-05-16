@@ -100,9 +100,11 @@ export type Loan = {
     id: string
     name: string
     identification: string
+    idIssuedAt: string
     age: number
     phone: string
     address: string
+    city: string
     refName: string
     refID: string
     refPhone: string
@@ -247,6 +249,7 @@ export function LoanTable() {
           customerName: loan.user.name,
           customerId: loan.user.identification,
           customerAddress: loan.user.address || "Dirección no disponible",
+          customerCity: loan.user.city || "Ciudad no disponible",
           customerPhone: loan.user.phone || "Teléfono no disponible",
           plate: loan.motorcycle.plate || "Placa no disponible",
           brand: loan.motorcycle.brand || "Marca no disponible",

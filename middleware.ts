@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { hasAccess } from "./lib/services/auth"
+import { hasAccess } from "./lib/services/route-access"
+import { Role } from "./hooks/use-auth"
+
 
 
 const publicRoutes = ["/login"]
 
-function parseJwt(token: string): any {
+export function parseJwt(token: string): any {
   try {
     const base64Url = token.split(".")[1]
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
@@ -36,7 +38,7 @@ export function middleware(request: NextRequest) {
 
   if (token) {
     const decoded = parseJwt(token)
-    const userRoles: string[] = decoded?.roles || []
+    const userRoles: Role[] = decoded?.roles || []
 
     if (!hasAccess(pathname, userRoles)) {
       return NextResponse.redirect(new URL("/", request.url))

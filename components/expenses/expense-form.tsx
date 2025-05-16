@@ -1,373 +1,345 @@
 "use client"
 
-import { useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon, Receipt, Upload } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { cn } from "@/lib/utils"
-import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "@/hooks/use-toast"
+import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-
-export enum ExpenseCategory {
-    RENT = "RENT",
-    SERVICES = "SERVICES",
-    SALARIES = "SALARIES",
-    TAXES = "TAXES",
-    MAINTENANCE = "MAINTENANCE",
-    PURCHASES = "PURCHASES",
-    MARKETING = "MARKETING",
-    TRANSPORT = "TRANSPORT",
-    OTHER = "OTHER",
-}
-
-export enum PaymentMethod {
-    CASH = "CASH",
-    CARD = "CARD",
-    TRANSACTION = "TRANSACTION",
-}
+import { Card, CardContent } from "@/components/ui/card"
+import { Loader2, Save, Calendar, Tag, DollarSign, CreditCard, User, Hash, FileText } from "lucide-react"
+import { format } from "date-fns"
+import type { Expense } from "./expense-table"
+import { useAuth } from "@/hooks/use-auth"
 
 
-
-const expenseFormSchema = z.object({
-    amount: z
-        .string()
-        .min(1, "El monto es obligatorio")
-        .transform((val) => Number(val))
-        .refine((val) => !isNaN(val) && val > 0, {
-            message: "Debe ser un número mayor a 0",
-        }),
-    date: z.date({ required_error: "La fecha es obligatoria" }),
-    category: z.nativeEnum(ExpenseCategory, { errorMap: () => ({ message: "Categoría inválida" }) }),
-    paymentMethod: z.nativeEnum(PaymentMethod, { errorMap: () => ({ message: "Método inválido" }) }),
-    beneficiary: z.string().min(2, "Debe tener al menos 2 caracteres"),
+const expenseSchema = z.object({
+    category: z.string().min(1, { message: "La categoría es obligatoria" }),
+    amount: z.coerce.number().positive({ message: "El monto debe ser mayor a 0" }),
+    paymentMethod: z.string().min(1, { message: "El método de pago es obligatorio" }),
+    beneficiary: z.string().min(1, { message: "El beneficiario es obligatorio" }),
     reference: z.string().optional(),
-    description: z.string().min(5, "Debe tener al menos 5 caracteres"),
-    attachments: z
-        .any()
-        .refine((val) => val instanceof FileList || val === undefined, {
-            message: "Debe ser una lista de archivos válida",
-        })
-        .optional(),
+    description: z.string().min(1, { message: "La descripción es obligatoria" }),
+    date: z.string().min(1, { message: "La fecha es obligatoria" }),
 })
 
-type ExpenseFormValues = z.infer<typeof expenseFormSchema>
+type ExpenseFormValues = z.infer<typeof expenseSchema>
 
 interface ExpenseFormProps {
     onSuccess?: () => void
     isModal?: boolean
+    expenseData?: Expense
+    isEditing?: boolean
 }
 
-export function ExpenseForm({ onSuccess, isModal = false }: ExpenseFormProps) {
-    const router = useRouter()
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
+export function ExpenseForm({ onSuccess, isModal = false, expenseData, isEditing = false }: ExpenseFormProps) {
+    const [loading, setLoading] = useState(false)
+    const { toast } = useToast()
+    const { user } = useAuth();
+
     const form = useForm<ExpenseFormValues>({
-        resolver: zodResolver(expenseFormSchema),
+        resolver: zodResolver(expenseSchema),
         defaultValues: {
-            date: new Date(),
-            paymentMethod: PaymentMethod.CASH,
-            attachments: undefined, // ← Aquí está la solución
+            category: "",
+            amount: 0,
+            paymentMethod: "",
+            beneficiary: "",
+            reference: "",
+            description: "",
+            date: format(new Date(), "yyyy-MM-dd"),
         },
     })
 
-
-    async function onSubmit(data: ExpenseFormValues) {
-        setIsSubmitting(true)
-
-        try {
-            let attachmentUrl: string | undefined
-
-            // 1. Subir imagen si hay archivos
-            if (data.attachments && data.attachments.length > 0) {
-                const file = (data.attachments as FileList)[0] // Solo uno, o itera si deseas varios
-                const imageForm = new FormData()
-                imageForm.append("file", file)
-
-                const imageRes = await HttpService.post("/api/v1/cloudinary/upload", imageForm)
-                console.log(imageRes.data)
-                console.log(imageForm)
-                attachmentUrl = imageRes.data.imageUrl
-            }
-
-            // 2. Construir objeto JSON para el egreso
-            const payload = {
-                amount: data.amount,
-                date: data.date.toISOString(),
-                category: data.category,
-                paymentMethod: data.paymentMethod,
-                beneficiary: data.beneficiary,
-                reference: data.reference || null,
-                description: data.description,
-                attachments: attachmentUrl ? [attachmentUrl] : [], // o solo string si es una URL
-            }
-
-            await HttpService.post("/api/v1/expense", payload)
-
-            toast({
-                title: "Egreso registrado",
-                description: "Egreso guardado exitosamente",
+    useEffect(() => {
+        if (expenseData && isEditing) {
+            form.reset({
+                category: expenseData.category,
+                amount: expenseData.amount,
+                paymentMethod: expenseData.paymentMethod,
+                beneficiary: expenseData.beneficiary,
+                reference: expenseData.reference || "",
+                description: expenseData.description,
+                date: format(new Date(expenseData.date), "yyyy-MM-dd"),
             })
+        }
+    }, [expenseData, isEditing, form])
 
-            onSuccess?.() || router.push("/egresos")
+    async function onSubmit(values: ExpenseFormValues) {
+        try {
+            setLoading(true)
+
+            const payload = {
+                ...values,
+                createdById: user?.id,
+            }
+
+            console.log(user?.id)
+            if (isEditing && expenseData) {
+                await HttpService.put(`/api/v1/expense/${expenseData.id}`, payload)
+                toast({
+                    title: "Egreso actualizado",
+                    description: "El egreso ha sido actualizado correctamente",
+                })
+            } else {
+                await HttpService.post("/api/v1/expense", payload)
+                toast({
+                    title: "Egreso registrado",
+                    description: "El egreso ha sido registrado correctamente",
+                })
+            }
+
+            if (onSuccess) onSuccess()
+
+            if (!isModal) {
+                form.reset({
+                    category: "",
+                    amount: 0,
+                    paymentMethod: "",
+                    beneficiary: "",
+                    reference: "",
+                    description: "",
+                    date: format(new Date(), "yyyy-MM-dd"),
+                })
+            }
         } catch (error) {
-            console.error(error)
+            console.error("Error al guardar egreso:", error)
             toast({
-                title: "Error",
-                description: "Hubo un error al guardar el egreso",
                 variant: "destructive",
+                title: "Error",
+                description: isEditing
+                    ? "No se pudo actualizar el egreso. Intente nuevamente."
+                    : "No se pudo registrar el egreso. Intente nuevamente.",
             })
         } finally {
-            setIsSubmitting(false)
+            setLoading(false)
         }
     }
 
-
-
-    const formContent = (
+    return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="amount"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Monto</FormLabel>
-                                <FormControl>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-                                        <Input placeholder="0.00" {...field} className="pl-8" />
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                    <CardContent className="pt-6">
+                        <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                            <Tag className="h-5 w-5" />
+                            Información del egreso
+                        </h3>
 
-                    <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>Fecha</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                variant={"outline"}
-                                                className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                            >
-                                                {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value}
-                                            onSelect={field.onChange}
-                                            disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <Tag className="h-4 w-4 text-blue-500" />
+                                            Categoría
+                                        </FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                                    <SelectValue placeholder="Seleccione una categoría" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="RENT">Alquiler</SelectItem>
+                                                <SelectItem value="SERVICES">Servicios</SelectItem>
+                                                <SelectItem value="SALARIES">Salarios</SelectItem>
+                                                <SelectItem value="TAXES">Impuestos</SelectItem>
+                                                <SelectItem value="MAINTENANCE">Mantenimiento</SelectItem>
+                                                <SelectItem value="PURCHASES">Compras</SelectItem>
+                                                <SelectItem value="MARKETING">Marketing</SelectItem>
+                                                <SelectItem value="TRANSPORT">Transporte</SelectItem>
+                                                <SelectItem value="OTHER">Otros</SelectItem>
 
-                    <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Categoría</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccionar categoría" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="RENT">Alquiler</SelectItem>
-                                        <SelectItem value="SERVICES">Servicios</SelectItem>
-                                        <SelectItem value="SALARIES">Salarios</SelectItem>
-                                        <SelectItem value="TAXES">Impuestos</SelectItem>
-                                        <SelectItem value="MAINTENANCE">Mantenimiento</SelectItem>
-                                        <SelectItem value="PURCHASES">Compras</SelectItem>
-                                        <SelectItem value="MARKETING">Marketing</SelectItem>
-                                        <SelectItem value="TRANSPORT">Transporte</SelectItem>
-                                        <SelectItem value="OTHER">Otros</SelectItem>
-
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="paymentMethod"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Método de pago</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccionar método" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="CASH">Efectivo</SelectItem>
-                                        <SelectItem value="CARD">Tarjeta</SelectItem>
-                                        <SelectItem value="TRANSACTION">Transferencia</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="beneficiary"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Beneficiario/Proveedor</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Nombre del beneficiario" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-
-                    <FormField
-                        control={form.control}
-                        name="reference"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Referencia (opcional)</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Número de factura, recibo, etc." {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Descripción</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="Detalle del egreso" className="min-h-[120px]" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="attachments"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Comprobantes (opcional)</FormLabel>
-                            <FormControl>
-                                <div
-                                    className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                                    <p className="text-sm font-medium">
-                                        Arrastra archivos aquí o haz clic para seleccionar
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Soporta: JPG, PNG, PDF (máx. 5MB)
-                                    </p>
-                                </div>
-                            </FormControl>
-
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                className="hidden"
-                                multiple
-                                accept="image/jpeg, image/png, application/pdf"
-                                onChange={(e) => {
-                                    const files = e.target.files
-                                    if (files && files.length > 0) {
-                                        field.onChange(files)
-                                    } else {
-                                        field.onChange(undefined)
-                                    }
-                                }}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription className="text-xs">Seleccione la categoría del egreso</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
 
+                            <FormField
+                                control={form.control}
+                                name="date"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <Calendar className="h-4 w-4 text-blue-500" />
+                                            Fecha
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="date"
+                                                {...field}
+                                                className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs">Fecha en que se realizó el egreso</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                            <FormDescription>
-                                Adjunta facturas, recibos u otros documentos relacionados con este egreso.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                            <FormField
+                                control={form.control}
+                                name="amount"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <DollarSign className="h-4 w-4 text-blue-500" />
+                                            Monto
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                {...field}
+                                                className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs">Valor del egreso</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
+                            <FormField
+                                control={form.control}
+                                name="paymentMethod"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <CreditCard className="h-4 w-4 text-blue-500" />
+                                            Método de pago
+                                        </FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                                    <SelectValue placeholder="Seleccione un método de pago" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="CASH">Efectivo</SelectItem>
+                                                <SelectItem value="CARD">Tarjeta</SelectItem>
+                                                <SelectItem value="TRANSACTION">Transferencia</SelectItem>
+                                                <SelectItem value="CHECK">Cheque</SelectItem>
+                                                <SelectItem value="OTHER">Otro</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription className="text-xs">Método utilizado para el pago</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
 
-                <div className="flex justify-end gap-3">
+                <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                    <CardContent className="pt-6">
+                        <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                            <User className="h-5 w-5" />
+                            Detalles adicionales
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="beneficiary"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <User className="h-4 w-4 text-blue-500" />
+                                            Beneficiario
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Nombre del beneficiario"
+                                                {...field}
+                                                className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs">Persona o entidad que recibe el pago</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="reference"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="flex items-center gap-1.5">
+                                            <Hash className="h-4 w-4 text-blue-500" />
+                                            Referencia
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Número de factura o referencia"
+                                                {...field}
+                                                className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs">Número de factura o referencia (opcional)</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem className="col-span-1 md:col-span-2">
+                                        <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
+                                            <FileText className="h-4 w-4 text-blue-500" />
+                                            Descripción
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Descripción detallada del egreso"
+                                                {...field}
+                                                className="min-h-[100px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                            />
+                                        </FormControl>
+                                        <FormDescription className="text-xs">Detalle el propósito del egreso</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="flex justify-end gap-4 pt-2">
                     <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => (isModal ? onSuccess && onSuccess() : router.push("/egresos"))}
-                        disabled={isSubmitting}
+                        type="submit"
+                        disabled={loading}
+                        className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-md hover:shadow-lg transition-all"
                     >
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? (
+                        {loading ? (
                             <>
-                                <span className="animate-spin mr-2">⏳</span>
-                                Guardando...
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                {isEditing ? "Actualizando..." : "Guardando..."}
                             </>
                         ) : (
                             <>
-                                <Receipt className="mr-2 h-4 w-4" />
-                                Registrar Egreso
+                                <Save className="mr-2 h-4 w-4" />
+                                {isEditing ? "Actualizar Egreso" : "Guardar Egreso"}
                             </>
                         )}
                     </Button>
                 </div>
             </form>
         </Form>
-    )
-
-    if (isModal) {
-        return formContent
-    }
-
-    return (
-        <Card>
-            <CardContent className="pt-6">{formContent}</CardContent>
-        </Card>
     )
 }

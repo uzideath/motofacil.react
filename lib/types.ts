@@ -20,14 +20,18 @@ export interface LoginPayload {
 
 export interface LoginResponse {
     access_token: string
+    refresh_token: string
     user: {
         id: string
         username: string
         roles: string[]
+        status: string
         createdAt: string
         updatedAt: string
+        lastAccess: string
     }
 }
+
 
 
 export type Motorcycle = {
@@ -46,9 +50,11 @@ export type Client = {
     id: string
     name: string
     identification: string
+    idIssuedAt: string
     age: number
     phone: string
     address: string
+    city: string
     refName: string
     refID: string
     refPhone: string
