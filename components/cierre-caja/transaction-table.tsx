@@ -1,303 +1,356 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, ArrowUpToLine, ArrowDownToLine } from "lucide-react"
+import {
+  Search,
+  Eye,
+  ArrowUpToLine,
+  ArrowDownToLine,
+  Home,
+  FileText,
+  User,
+  Receipt,
+  Wallet,
+  CreditCard,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { HttpService } from "@/lib/http"
+import type React from "react"
 
 type Installment = {
-    id: string
-    paymentDate: string
-    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
-    amount: number
-    loan: {
-        user: { name: string }
-        motorcycle: { plate: string }
-    }
+  id: string
+  paymentDate: string
+  paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+  amount: number
+  loan: {
+    user: { name: string }
+    motorcycle: { plate: string }
+  }
 }
 
 type Expense = {
-    id: string
-    amount: number
-    date: string
-    category: string
-    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
-    beneficiary: string
-    reference?: string
-    description: string
+  id: string
+  amount: number
+  date: string
+  category: string
+  paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+  beneficiary: string
+  reference?: string
+  description: string
 }
 
 type SelectedTransaction = {
-    id: string
-    amount: number
-    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
-    type: "income" | "expense"
+  id: string
+  amount: number
+  paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+  type: "income" | "expense"
 }
 
 type Transaction = {
-    id: string
-    time: string
-    description: string
-    category: string
-    amount: number
-    paymentMethod: string
-    type: "income" | "expense"
-    reference: string
-    client?: string
+  id: string
+  time: string
+  description: string
+  category: string
+  amount: number
+  paymentMethod: string
+  type: "income" | "expense"
+  reference: string
+  client?: string
+}
+
+const categoryMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  RENT: {
+    label: "Alquiler",
+    color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800/30",
+    icon: <Home className="h-3 w-3" />,
+  },
+  SERVICES: {
+    label: "Servicios",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800/30",
+    icon: <FileText className="h-3 w-3" />,
+  },
+  SALARIES: {
+    label: "Salarios",
+    color:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800/30",
+    icon: <User className="h-3 w-3" />,
+  },
+  TAXES: {
+    label: "Impuestos",
+    color:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/30",
+    icon: <Receipt className="h-3 w-3" />,
+  },
+  MAINTENANCE: {
+    label: "Mantenimiento",
+    color:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800/30",
+    icon: <FileText className="h-3 w-3" />,
+  },
+  PURCHASES: {
+    label: "Compras",
+    color: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300 border-pink-200 dark:border-pink-800/30",
+    icon: <Wallet className="h-3 w-3" />,
+  },
+  MARKETING: {
+    label: "Marketing",
+    color:
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/30",
+    icon: <FileText className="h-3 w-3" />,
+  },
+  TRANSPORT: {
+    label: "Transporte",
+    color:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800/30",
+    icon: <FileText className="h-3 w-3" />,
+  },
+  OTHER: {
+    label: "Otros",
+    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border-gray-200 dark:border-gray-800/30",
+    icon: <FileText className="h-3 w-3" />,
+  },
+  "Cuota de préstamo": {
+    label: "Cuota de préstamo",
+    color:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30",
+    icon: <CreditCard className="h-3 w-3" />,
+  },
 }
 
 type Props = {
-    token: string
-    onSelect?: (transactions: SelectedTransaction[]) => void
+  token: string
+  onSelect?: (transactions: SelectedTransaction[]) => void
 }
 
 export function TransactionTable({ token, onSelect }: Props) {
-    const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [loading, setLoading] = useState(true)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [typeFilter, setTypeFilter] = useState<string>("all")
-    const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-    useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const res = await HttpService.get<{
-                    installments: Installment[]
-                    expenses: Expense[]
-                }>("/api/v1/closing/available-payments", {
-                    headers: { Authorization: token ? `Bearer ${token}` : "" },
-                })
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await HttpService.get<{
+          installments: Installment[]
+          expenses: Expense[]
+        }>("/api/v1/closing/available-payments", {
+          headers: { Authorization: token ? `Bearer ${token}` : "" },
+        })
 
-                const incomes: Transaction[] = res.data.installments.map((i) => ({
-                    id: i.id,
-                    time: new Date(i.paymentDate).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    }),
-                    description: `Pago cuota - ${i.loan.user.name}`,
-                    category: "Cuota de préstamo",
-                    amount: i.amount,
-                    paymentMethod: mapPaymentLabel(i.paymentMethod),
-                    type: "income",
-                    reference: i.id,
-                    client: i.loan.user.name,
-                }))
+        const incomes: Transaction[] = res.data.installments.map((i) => ({
+          id: i.id,
+          time: new Date(i.paymentDate).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          description: `Pago cuota - ${i.loan.user.name}`,
+          category: "Cuota de préstamo",
+          amount: i.amount,
+          paymentMethod: mapPaymentLabel(i.paymentMethod),
+          type: "income",
+          reference: i.id,
+          client: i.loan.user.name,
+        }))
 
-                const expenses: Transaction[] = res.data.expenses.map((e) => ({
-                    id: e.id,
-                    time: new Date(e.date).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    }),
-                    description: e.description,
-                    category: e.category,
-                    amount: e.amount,
-                    paymentMethod: mapPaymentLabel(e.paymentMethod),
-                    type: "expense",
-                    reference: e.reference ?? "",
-                }))
+        const expenses: Transaction[] = res.data.expenses.map((e) => ({
+          id: e.id,
+          time: new Date(e.date).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          description: e.description,
+          category: e.category,
+          amount: e.amount,
+          paymentMethod: mapPaymentLabel(e.paymentMethod),
+          type: "expense",
+          reference: e.reference ?? "",
+        }))
 
-                setTransactions([...incomes, ...expenses])
-            } catch (err) {
-                console.error("Error cargando transacciones:", err)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchTransactions()
-    }, [token])
-
-    const mapPaymentLabel = (key: string) => {
-        switch (key) {
-            case "CASH":
-                return "Efectivo"
-            case "CARD":
-                return "Tarjeta"
-            case "TRANSACTION":
-                return "Transferencia"
-            default:
-                return "Otro"
-        }
+        setTransactions([...incomes, ...expenses])
+      } catch (err) {
+        console.error("Error cargando transacciones:", err)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    const handleSelection = (id: string, checked: boolean) => {
-        const updated = checked
-            ? [...selectedIds, id]
-            : selectedIds.filter((x) => x !== id)
+    fetchTransactions()
+  }, [token])
 
-        setSelectedIds(updated)
-
-        const selectedTransactions: SelectedTransaction[] = transactions
-            .filter((t) => updated.includes(t.id))
-            .map((t) => ({
-                id: t.id,
-                amount: t.amount,
-                paymentMethod:
-                    t.paymentMethod === "Efectivo"
-                        ? "CASH"
-                        : t.paymentMethod === "Tarjeta"
-                            ? "CARD"
-                            : "TRANSACTION",
-                type: t.type,
-            }))
-
-        onSelect?.(selectedTransactions)
+  const mapPaymentLabel = (key: string) => {
+    switch (key) {
+      case "CASH":
+        return "Efectivo"
+      case "CARD":
+        return "Tarjeta"
+      case "TRANSACTION":
+        return "Transferencia"
+      default:
+        return "Otro"
     }
+  }
 
-    const filteredTransactions = transactions.filter((transaction) => {
-        const matchesSearch =
-            transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (transaction.client &&
-                transaction.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            transaction.reference.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSelection = (id: string, checked: boolean) => {
+    const updated = checked ? [...selectedIds, id] : selectedIds.filter((x) => x !== id)
 
-        const matchesType =
-            typeFilter === "all" ||
-            (typeFilter === "income" && transaction.type === "income") ||
-            (typeFilter === "expense" && transaction.type === "expense")
+    setSelectedIds(updated)
 
-        return matchesSearch && matchesType
-    })
+    const selectedTransactions: SelectedTransaction[] = transactions
+      .filter((t) => updated.includes(t.id))
+      .map((t) => ({
+        id: t.id,
+        amount: t.amount,
+        paymentMethod: t.paymentMethod === "Efectivo" ? "CASH" : t.paymentMethod === "Tarjeta" ? "CARD" : "TRANSACTION",
+        type: t.type,
+      }))
 
-    return (
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="relative flex-1 w-full sm:max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Buscar por cliente, descripción o referencia..."
-                        className="pl-8"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex items-center space-x-2 w-full sm:w-auto">
-                    <Select value={typeFilter} onValueChange={setTypeFilter}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filtrar por tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos los movimientos</SelectItem>
-                            <SelectItem value="income">Solo ingresos</SelectItem>
-                            <SelectItem value="expense">Solo egresos</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+    onSelect?.(selectedTransactions)
+  }
 
-            <div className="rounded-md border overflow-hidden">
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead />
-                                <TableHead>Hora</TableHead>
-                                <TableHead>Descripción</TableHead>
-                                <TableHead>Categoría</TableHead>
-                                <TableHead>Monto</TableHead>
-                                <TableHead>Método de Pago</TableHead>
-                                <TableHead>Referencia</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, index) => (
-                                    <TableRow key={index}>
-                                        {Array.from({ length: 7 }).map((__, i) => (
-                                            <TableCell key={i}>
-                                                <Skeleton className="h-5 w-full" />
-                                            </TableCell>
-                                        ))}
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Skeleton className="h-8 w-8 rounded-md" />
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : filteredTransactions.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={8} className="text-center">
-                                        No se encontraron transacciones
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredTransactions.map((transaction) => (
-                                    <TableRow key={transaction.id}>
-                                        <TableCell>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedIds.includes(transaction.id)}
-                                                onChange={(e) =>
-                                                    handleSelection(transaction.id, e.target.checked)
-                                                }
-                                            />
-                                        </TableCell>
-                                        <TableCell>{transaction.time}</TableCell>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center">
-                                                {transaction.type === "income" ? (
-                                                    <ArrowUpToLine className="h-4 w-4 text-green-500 mr-2" />
-                                                ) : (
-                                                    <ArrowDownToLine className="h-4 w-4 text-red-500 mr-2" />
-                                                )}
-                                                {transaction.description}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{transaction.category}</Badge>
-                                        </TableCell>
-                                        <TableCell
-                                            className={
-                                                transaction.type === "income"
-                                                    ? "text-green-500 font-medium"
-                                                    : "text-red-500 font-medium"
-                                            }
-                                        >
-                                            {formatCurrency(transaction.amount)}
-                                        </TableCell>
-                                        <TableCell>{transaction.paymentMethod}</TableCell>
-                                        <TableCell>
-                                            <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
-                                                {transaction.reference}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon">
-                                                <Eye className="h-4 w-4" />
-                                                <span className="sr-only">Ver detalles</span>
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch =
+      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (transaction.client && transaction.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      transaction.reference.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesType =
+      typeFilter === "all" ||
+      (typeFilter === "income" && transaction.type === "income") ||
+      (typeFilter === "expense" && transaction.type === "expense")
+
+    return matchesSearch && matchesType
+  })
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative flex-1 w-full sm:max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar por cliente, descripción o referencia..."
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-    )
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filtrar por tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los movimientos</SelectItem>
+              <SelectItem value="income">Solo ingresos</SelectItem>
+              <SelectItem value="expense">Solo egresos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead />
+                <TableHead>Hora</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Monto</TableHead>
+                <TableHead>Método de Pago</TableHead>
+                <TableHead>Referencia</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    {Array.from({ length: 7 }).map((__, i) => (
+                      <TableCell key={i}>
+                        <Skeleton className="h-5 w-full" />
+                      </TableCell>
+                    ))}
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : filteredTransactions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">
+                    No se encontraron transacciones
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(transaction.id)}
+                        onChange={(e) => handleSelection(transaction.id, e.target.checked)}
+                      />
+                    </TableCell>
+                    <TableCell>{transaction.time}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center">
+                        {transaction.type === "income" ? (
+                          <ArrowUpToLine className="h-4 w-4 text-green-500 mr-2" />
+                        ) : (
+                          <ArrowDownToLine className="h-4 w-4 text-red-500 mr-2" />
+                        )}
+                        {transaction.description}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`flex items-center justify-center gap-1.5 text-sm px-3 py-1 rounded-full ${
+                          categoryMap[transaction.category]?.color ||
+                          "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+                        }`}
+                        variant="outline"
+                      >
+                        {categoryMap[transaction.category]?.icon || <FileText className="h-3 w-3" />}
+                        <span>{categoryMap[transaction.category]?.label || transaction.category}</span>
+                      </Badge>
+                    </TableCell>
+                    <TableCell
+                      className={
+                        transaction.type === "income" ? "text-green-500 font-medium" : "text-red-500 font-medium"
+                      }
+                    >
+                      {formatCurrency(transaction.amount)}
+                    </TableCell>
+                    <TableCell>{transaction.paymentMethod}</TableCell>
+                    <TableCell>
+                      <span className="text-xs font-mono bg-muted px-2 py-1 rounded">{transaction.reference}</span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon">
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">Ver detalles</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </div>
+  )
 }
