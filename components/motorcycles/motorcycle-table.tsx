@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search, Plus } from "lucide-react"
+import { Edit, Trash2, Search, Plus, MoreHorizontal, RefreshCw, Bike, FileSpreadsheet, SlidersHorizontal } from 'lucide-react'
 import { useToast } from "@/components/ui/use-toast"
 import { MotorcycleForm } from "./motorcycle-form"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -21,6 +21,17 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function MotorcycleTable() {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([])
@@ -31,6 +42,7 @@ export function MotorcycleTable() {
   const [motorcycleToDelete, setMotorcycleToDelete] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(5)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const fetchMotorcycles = async () => {
     try {
@@ -61,17 +73,31 @@ export function MotorcycleTable() {
 
   useEffect(() => {
     fetchMotorcycles()
-  }, [])
+  }, [refreshKey])
 
-  // Handle new motorcycle creation
-  const handleMotorcycleCreated = (newMotorcycle?: Motorcycle) => {
-    if (newMotorcycle) {
-      // Add the new motorcycle to the state directly
-      setMotorcycles((prev) => [newMotorcycle, ...prev])
-    } else {
+  // Handle motorcycle creation or update
+  const handleMotorcycleCreated = (updatedMotorcycle?: Motorcycle) => {
+    if (!updatedMotorcycle) {
       // If no motorcycle data is provided, fetch all motorcycles
       fetchMotorcycles()
+      return
     }
+
+    // Check if this is an update (edit) or a new motorcycle
+    setMotorcycles(prev => {
+      // Check if the motorcycle already exists in our list
+      const existingIndex = prev.findIndex(moto => moto.id === updatedMotorcycle.id)
+
+      if (existingIndex >= 0) {
+        // This is an update - replace the existing motorcycle
+        const updatedList = [...prev]
+        updatedList[existingIndex] = updatedMotorcycle
+        return updatedList
+      } else {
+        // This is a new motorcycle - add it to the beginning of the list
+        return [updatedMotorcycle, ...prev]
+      }
+    })
   }
 
   const handleDelete = async (id: string) => {
@@ -114,7 +140,9 @@ export function MotorcycleTable() {
     (moto) =>
       moto.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       moto.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      moto.plate.toLowerCase().includes(searchTerm.toLowerCase()),
+      moto.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (moto.chassis && moto.chassis.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (moto.engine && moto.engine.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
   const totalItems = filteredMotorcycles.length
@@ -146,178 +174,353 @@ export function MotorcycleTable() {
     return pages
   }
 
+  const refreshData = () => {
+    setRefreshKey((prev) => prev + 1)
+  }
+
+  const exportToCSV = () => {
+    // Simple CSV export function
+    const headers = ["Marca", "Modelo", "Placa", "Color", "Cilindraje", "GPS", "Motor", "Chasis"]
+
+    const csvRows = [
+      headers.join(","),
+      ...filteredMotorcycles.map((moto) =>
+        [
+          moto.brand,
+          moto.model,
+          moto.plate,
+          moto.color || "",
+          moto.cc || "",
+          moto.gps || "",
+          moto.engine || "",
+          moto.chassis || "",
+        ].join(","),
+      ),
+    ]
+
+    const csvContent = csvRows.join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.setAttribute("href", url)
+    link.setAttribute("download", "motocicletas.csv")
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-300/70" />
-          <Input
-            type="search"
-            placeholder="Buscar por marca, modelo o placa..."
-            className="pl-8 glass-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={(value) => {
-              setItemsPerPage(Number(value))
-              setCurrentPage(1)
-            }}
-          >
-            <SelectTrigger className="w-[130px] glass-input">
-              <SelectValue placeholder="Mostrar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5 por página</SelectItem>
-              <SelectItem value="10">10 por página</SelectItem>
-              <SelectItem value="20">20 por página</SelectItem>
-              <SelectItem value="50">50 por página</SelectItem>
-            </SelectContent>
-          </Select>
-          <MotorcycleForm onCreated={handleMotorcycleCreated}>
-            <Button className="bg-primary hover:bg-primary/90 text-white">
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva Motocicleta
-            </Button>
-          </MotorcycleForm>
-        </div>
-      </div>
+    <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+      <CardHeader className="bg-gradient-to-r from-blue-600 to-sky-500 text-white p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
+              <Bike className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold">Gestión de Motocicletas</CardTitle>
+              <CardDescription className="text-blue-100">Administra el inventario de motocicletas</CardDescription>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={refreshData}
+                    className="bg-white/10 hover:bg-white/20 text-white"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Actualizar datos</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-      <div className="glass-table border border-dark-blue-800/30">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                <TableHead className="text-blue-200">Marca</TableHead>
-                <TableHead className="text-blue-200">Modelo</TableHead>
-                <TableHead className="text-blue-200">Placa</TableHead>
-                <TableHead className="text-blue-200">Color</TableHead>
-                <TableHead className="text-blue-200">Cilindraje (cc)</TableHead>
-                <TableHead className="text-blue-200">GPS</TableHead>
-                <TableHead className="text-right text-blue-200">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 4 }).map((_, index) => (
-                  <TableRow key={index} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <TableCell key={i}>
-                        <Skeleton className="h-5 w-full bg-dark-blue-800/50" />
-                      </TableCell>
-                    ))}
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Skeleton className="h-8 w-8 rounded-md bg-dark-blue-800/50" />
-                        <Skeleton className="h-8 w-8 rounded-md bg-dark-blue-800/50" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : currentItems.length === 0 ? (
-                <TableRow className="border-dark-blue-800/30">
-                  <TableCell colSpan={7} className="text-center text-blue-200/70">
-                    No se encontraron motocicletas
-                  </TableCell>
-                </TableRow>
-              ) : (
-                currentItems.map((moto) => (
-                  <TableRow key={moto.id} className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-                    <TableCell className="text-white">{moto.brand}</TableCell>
-                    <TableCell className="text-blue-200">{moto.model}</TableCell>
-                    <TableCell className="text-blue-200">{moto.plate}</TableCell>
-                    <TableCell className="text-blue-200">{moto.color ?? "No encontrado"}</TableCell>
-                    <TableCell className="text-blue-200">{moto.cc?.toString() ?? "No encontrado"}</TableCell>
-                    <TableCell className="text-blue-200">{moto.gps ?? "No encontrado"}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <MotorcycleForm
-                          motorcycleId={moto.id}
-                          motorcycleData={moto}
-                          onCreated={handleMotorcycleCreated}
-                        >
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="border-dark-blue-700 bg-dark-blue-800/30 text-blue-300 hover:bg-dark-blue-700/50 hover:text-white"
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Editar</span>
-                          </Button>
-                        </MotorcycleForm>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleDelete(moto.id)}
-                          className="border-dark-blue-700 bg-dark-blue-800/30 text-blue-300 hover:bg-dark-blue-700/50 hover:text-white"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="bg-white/10 hover:bg-white/20 text-white">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Opciones</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={exportToCSV}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Exportar a CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <SlidersHorizontal className="mr-2 h-4 w-4" />
+                  Configuración
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 mt-4">
-        <div className="text-sm text-blue-200/70">
-          Mostrando {startIndex + 1}-{endIndex} de {totalItems} motocicletas
-        </div>
+      </CardHeader>
 
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (currentPage > 1) setCurrentPage(currentPage - 1)
-                }}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+      <CardContent className="p-6">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
+              <Input
+                type="search"
+                placeholder="Buscar por marca, modelo, placa, motor o chasis..."
+                className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </PaginationItem>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(Number(value))
+                  setCurrentPage(1)
+                }}
+              >
+                <SelectTrigger className="w-[130px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                  <SelectValue placeholder="Mostrar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 por página</SelectItem>
+                  <SelectItem value="10">10 por página</SelectItem>
+                  <SelectItem value="20">20 por página</SelectItem>
+                  <SelectItem value="50">50 por página</SelectItem>
+                </SelectContent>
+              </Select>
+              <MotorcycleForm onCreated={handleMotorcycleCreated}>
+                <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nueva Motocicleta
+                </Button>
+              </MotorcycleForm>
+            </div>
+          </div>
 
-            {getPageNumbers().map((page, i) =>
-              page === "ellipsis-start" || page === "ellipsis-end" ? (
-                <PaginationItem key={`ellipsis-${i}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={`page-${page}`}>
-                  <PaginationLink
+          <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50">
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Marca</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Modelo</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Placa</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Color</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Cilindraje</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Motor</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Chasis</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">GPS</TableHead>
+                    <TableHead className="text-right text-blue-700 dark:text-blue-300 font-medium">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    Array.from({ length: 4 }).map((_, index) => (
+                      <TableRow
+                        key={`skeleton-${index}`}
+                        className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                      >
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <TableCell key={`skeleton-cell-${index}-${i}`}>
+                            <Skeleton className="h-5 w-full bg-blue-100/50 dark:bg-blue-900/20" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : currentItems.length === 0 ? (
+                    <TableRow className="border-blue-100 dark:border-blue-900/30">
+                      <TableCell colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <Bike className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
+                          <p className="text-sm">No se encontraron motocicletas</p>
+                          {searchTerm && (
+                            <Button
+                              variant="link"
+                              onClick={() => setSearchTerm("")}
+                              className="text-blue-500 dark:text-blue-400"
+                            >
+                              Limpiar búsqueda
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    currentItems.map((moto, index) => (
+                      <TableRow
+                        key={`moto-row-${moto.id}-${index}`}
+                        className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                      >
+                        <TableCell className="font-medium">{moto.brand}</TableCell>
+                        <TableCell>{moto.model}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                          >
+                            {moto.plate}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{moto.color ?? "—"}</TableCell>
+                        <TableCell>{moto.cc ? `${moto.cc} cc` : "—"}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {moto.engine ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger className="cursor-default">
+                                  <span className="bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded border border-blue-100 dark:border-blue-900/30">
+                                    {moto.engine}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Número de motor</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {moto.chassis ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger className="cursor-default">
+                                  <span className="bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded border border-blue-100 dark:border-blue-900/30">
+                                    {moto.chassis}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Número de chasis</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {moto.gps ? (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50">
+                              {moto.gps}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-500 dark:text-gray-400">
+                              No asignado
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            {/* Usar un ID único para cada botón de editar */}
+                            <div key={`edit-wrapper-${moto.id}-${index}`}>
+                              <MotorcycleForm
+                                motorcycleId={moto.id}
+                                motorcycleData={moto}
+                                onCreated={handleMotorcycleCreated}
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  <span className="sr-only">Editar</span>
+                                </Button>
+                              </MotorcycleForm>
+                            </div>
+
+                            <TooltipProvider key={`delete-tooltip-${moto.id}-${index}`}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleDelete(moto.id)}
+                                    className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:hover:text-red-300"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Eliminar motocicleta</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
+              Mostrando {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} de {totalItems} motocicletas
+            </div>
+
+            <Pagination className="order-1 sm:order-2">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
                     href="#"
                     onClick={(e) => {
                       e.preventDefault()
-                      setCurrentPage(page as number)
+                      if (currentPage > 1) setCurrentPage(currentPage - 1)
                     }}
-                    isActive={currentPage === page}
-                  >
-                    {page}
-                  </PaginationLink>
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
                 </PaginationItem>
-              ),
-            )}
 
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (currentPage < totalPages) setCurrentPage(currentPage + 1)
-                }}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+                {getPageNumbers().map((page, i) =>
+                  page === "ellipsis-start" || page === "ellipsis-end" ? (
+                    <PaginationItem key={`ellipsis-${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={`page-${page}-${i}`}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(page as number)
+                        }}
+                        isActive={currentPage === page}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ),
+                )}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
+      </CardContent>
+
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -325,6 +528,6 @@ export function MotorcycleTable() {
         title="Confirmar eliminación"
         description="¿Está seguro que desea eliminar esta motocicleta? Esta acción no se puede deshacer."
       />
-    </div>
+    </Card>
   )
 }

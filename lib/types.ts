@@ -35,6 +35,8 @@ export type Motorcycle = {
     brand: string
     model: string
     plate: string
+    engine: string
+    chassis: string
     color?: string | null
     cc?: number | null
     gps?: number | null
@@ -50,5 +52,4 @@ export type Client = {
     refName: string
     refID: string
     refPhone: string
-  }
-  
+}

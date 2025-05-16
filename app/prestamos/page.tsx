@@ -10,13 +10,6 @@ export default function LoansPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Préstamos</h2>
         <div className="flex items-center space-x-2">
-          <LoanForm>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline-block">Nuevo Préstamo</span>
-              <span className="sm:hidden">Nuevo</span>
-            </Button>
-          </LoanForm>
           <MobileSidebar />
         </div>
       </div>
