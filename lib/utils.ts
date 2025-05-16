@@ -15,14 +15,58 @@ export function formatCurrency(amount: number): string {
 }
 
 
-export function formatDate(dateString: string): string {
-  console.log(dateString);
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat("es-CO", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date)
+/**
+ * Formatea una fecha en el formato especificado
+ * @param date Fecha a formatear (string, Date o timestamp)
+ * @param formatStr Formato deseado (por defecto: 'dd/MM/yyyy')
+ * @returns Fecha formateada como string
+ */
+export function formatDate(date: string | Date | number, formatStr = 'dd/MM/yyyy'): string {
+  if (!date) return '';
+
+  const dateObj = typeof date === 'object' ? date : new Date(date);
+
+  if (isNaN(dateObj.getTime())) {
+    console.error('Fecha inválida:', date);
+    return 'Fecha inválida';
+  }
+
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const year = dateObj.getFullYear();
+
+  // Nombres de meses en español
+  const monthNames = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+
+  // Nombres cortos de meses en español
+  const shortMonthNames = [
+    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+    'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+  ];
+
+  // Reemplazar patrones en el formato
+  return formatStr
+    .replace('dd', day)
+    .replace('d', dateObj.getDate().toString())
+    .replace('MMMM', monthNames[dateObj.getMonth()])
+    .replace('MMM', shortMonthNames[dateObj.getMonth()])
+    .replace('MM', month)
+    .replace('M', (dateObj.getMonth() + 1).toString())
+    .replace('yyyy', year.toString())
+    .replace('yy', year.toString().slice(-2));
+}
+
+/**
+ * Capitaliza la primera letra de un texto
+ * @param text Texto a capitalizar
+ * @returns Texto con la primera letra en mayúscula
+ */
+export function capitalize(text: string): string {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 export function getInterest(capital: number, tasaAnual: number, numeroPeriodos: number) {

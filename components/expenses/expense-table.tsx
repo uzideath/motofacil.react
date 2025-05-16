@@ -69,6 +69,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import type { DateRange } from "react-day-picker"
+import { DateRangePicker } from "../date-range-picker"
 
 export type Expense = {
     id: string
@@ -169,6 +171,7 @@ export function ExpenseTable() {
     const [viewExpense, setViewExpense] = useState<Expense | null>(null)
     const [viewDialogOpen, setViewDialogOpen] = useState(false)
     const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(undefined)
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
     useEffect(() => {
         fetchExpenses()
@@ -177,8 +180,23 @@ export function ExpenseTable() {
     const fetchExpenses = async () => {
         try {
             setLoading(true)
-            const res = await HttpService.get<any[]>("/api/v1/expense")
-            // Ordenar por fecha al recibir los datos (más reciente primero)
+
+            // Construir la URL con los parámetros de fecha si existen
+            let url = "/api/v1/expense"
+            const params = new URLSearchParams()
+
+            if (dateRange?.from) {
+                params.append("startDate", dateRange.from.toISOString().split("T")[0])
+            }
+            if (dateRange?.to) {
+                params.append("endDate", dateRange.to.toISOString().split("T")[0])
+            }
+
+            if (params.toString()) {
+                url += `?${params.toString()}`
+            }
+
+            const res = await HttpService.get<any[]>(url)
             const sortedExpenses = [...res.data]
                 .map((item) => ({
                     ...item,
@@ -194,6 +212,14 @@ export function ExpenseTable() {
             console.error("Error fetching expenses:", err)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleDateRangeChange = (range: DateRange | undefined) => {
+        setDateRange(range)
+        // Refrescar los datos cuando cambia el rango de fechas
+        if (range === undefined || (range.from && range.to)) {
+            setRefreshKey((prev) => prev + 1)
         }
     }
 
@@ -405,11 +431,12 @@ export function ExpenseTable() {
                             />
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <DateRangePicker onRangeChange={handleDateRangeChange} className="w-full sm:w-[280px]" />
                             <Select
                                 value={categoryFilter}
                                 onValueChange={(value) => {
                                     setCategoryFilter(value)
-                                    setCurrentPage(1) // Resetear a primera página al filtrar
+                                    setCurrentPage(1)
                                 }}
                             >
                                 <SelectTrigger className="w-full sm:w-[180px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
@@ -476,9 +503,15 @@ export function ExpenseTable() {
                             <div>
                                 <p className="text-sm text-blue-700 dark:text-blue-300">Período</p>
                                 <p className="text-md font-medium text-blue-800 dark:text-blue-200">
-                                    {format(new Date(), "MMMM yyyy", { locale: es }).replace(/^./, (c) => c.toUpperCase())}
+                                    {dateRange?.from && dateRange?.to ? (
+                                        <>
+                                            {format(dateRange.from, "dd MMM", { locale: es })} -{" "}
+                                            {format(dateRange.to, "dd MMM yyyy", { locale: es })}
+                                        </>
+                                    ) : (
+                                        format(new Date(), "MMMM yyyy", { locale: es }).replace(/^./, (c) => c.toUpperCase())
+                                    )}
                                 </p>
-
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -693,7 +726,7 @@ export function ExpenseTable() {
                                                 <TableCell className="hidden md:table-cell max-w-[150px] truncate">
                                                     <div className="flex items-center gap-1.5">
                                                         <User className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                                                        <span className="truncate">{expense.createdBy?.username || "—"}</span>
+                                                        <span className="truncate">{expense.createdBy?.name || "—"}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -891,7 +924,7 @@ export function ExpenseTable() {
                                     <p className="text-sm text-gray-500 dark:text-gray-400">Creado por</p>
                                     <p className="flex items-center gap-1.5">
                                         <User className="h-4 w-4 text-purple-500" />
-                                        {viewExpense.createdBy?.username || "—"}
+                                        {viewExpense.createdBy?.name || "—"}
                                     </p>
                                 </div>
                                 <div className="space-y-1 col-span-1 md:col-span-2">

@@ -8,33 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
-import {
-  Search,
-  Printer,
-  Calendar,
-  CreditCard,
-  Banknote,
-  RefreshCw,
-  User,
-  BikeIcon as Motorcycle,
-  DollarSign,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  ArrowDownUp,
-  FileText,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  BikeIcon,
-  BadgeCent,
-} from "lucide-react"
+import { Search, Printer, Calendar, CreditCard, Banknote, RefreshCw, User, BikeIcon as Motorcycle, DollarSign, Clock, AlertTriangle, CheckCircle2, ArrowDownUp, FileText, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BikeIcon, BadgeCent } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DateRangePicker } from "@/components/date-range-picker"
+import type { DateRange } from "react-day-picker"
+import { formatDate as formatDateCustom } from "@/lib/utils"
 
 type Installment = {
   id: string
@@ -67,11 +48,29 @@ export function InstallmentTable() {
   const [statusFilter, setStatusFilter] = useState<boolean | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const { toast } = useToast()
 
   const fetchInstallments = async () => {
     try {
-      const res = await HttpService.get("/api/v1/installments")
+      setLoading(true)
+
+      // Construir la URL con los parámetros de fecha si existen
+      let url = "/api/v1/installments"
+      const params = new URLSearchParams()
+
+      if (dateRange?.from) {
+        params.append("startDate", dateRange.from.toISOString().split("T")[0])
+      }
+      if (dateRange?.to) {
+        params.append("endDate", dateRange.to.toISOString().split("T")[0])
+      }
+
+      if (params.toString()) {
+        url += `?${params.toString()}`
+      }
+
+      const res = await HttpService.get(url)
       const rawData = res.data
 
       const mapped: Installment[] = rawData.map((item: any) => ({
@@ -97,6 +96,15 @@ export function InstallmentTable() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range)
+    // Refrescar los datos cuando cambia el rango de fechas
+    if (range === undefined || (range.from && range.to)) {
+      setCurrentPage(1) // Resetear a la primera página
+      fetchInstallments()
     }
   }
 
@@ -175,7 +183,9 @@ export function InstallmentTable() {
     setSortDirection("asc")
     setPaymentFilter(null)
     setStatusFilter(null)
+    setDateRange(undefined)
     setCurrentPage(1)
+    fetchInstallments()
   }
 
   const filteredInstallments = installments
@@ -274,6 +284,8 @@ export function InstallmentTable() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
+            <DateRangePicker onRangeChange={handleDateRangeChange} className="w-full sm:w-[280px]"/>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -329,7 +341,7 @@ export function InstallmentTable() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {(searchTerm || paymentFilter !== null || statusFilter !== null || sortField) && (
+            {(searchTerm || paymentFilter !== null || statusFilter !== null || sortField || dateRange) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -351,6 +363,22 @@ export function InstallmentTable() {
             </Button>
           </div>
         </div>
+
+        {/* Resumen de período seleccionado */}
+        {dateRange?.from && dateRange?.to && (
+          <div className="bg-dark-blue-800/50 border border-dark-blue-700/50 rounded-lg p-3 flex items-center gap-3">
+            <div className="bg-dark-blue-700/50 p-2 rounded-full">
+              <Calendar className="h-5 w-5 text-blue-300" />
+            </div>
+            <div>
+              <p className="text-sm text-blue-300/70">Período seleccionado</p>
+              <p className="text-blue-100">
+                {formatDateCustom(dateRange.from, 'dd MMM')} -{" "}
+                {formatDateCustom(dateRange.to, 'dd MMM yyyy')}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-lg border border-dark-blue-800/50 overflow-hidden shadow-md">
           <div className="overflow-x-auto">
@@ -648,9 +676,16 @@ export function InstallmentTable() {
               </p>
             )}
           </div>
-          <div>
+          <div className="flex flex-wrap gap-2 justify-end">
+            {dateRange?.from && dateRange?.to && (
+              <Badge variant="outline" className="border-blue-500/30 text-blue-300">
+                <Calendar className="mr-1 h-3 w-3 text-blue-400" />
+                {formatDateCustom(dateRange.from, 'dd/MM/yyyy')} -{" "}
+                {formatDateCustom(dateRange.to, 'dd/MM/yyyy')}
+              </Badge>
+            )}
             {paymentFilter && (
-              <Badge variant="outline" className="mr-2 border-blue-500/30 text-blue-300">
+              <Badge variant="outline" className="border-blue-500/30 text-blue-300">
                 {getPaymentMethodIcon(paymentFilter)}
                 {getPaymentMethodLabel(paymentFilter)}
               </Badge>
