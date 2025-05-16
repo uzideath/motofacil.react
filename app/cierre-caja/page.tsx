@@ -12,6 +12,7 @@ import { TransactionTable } from "@/components/cierre-caja/transaction-table"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { CashRegisterHistory } from "@/components/cierre-caja/history"
 
+
 // 👇 Tipo combinado de ingresos y egresos
 type SelectedTransaction = {
     id: string

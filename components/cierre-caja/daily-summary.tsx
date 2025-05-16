@@ -39,6 +39,7 @@ export function DailySummary() {
         const fetchSummary = async () => {
             try {
                 const res = await HttpService.get<SummaryData>("/api/v1/closing/summary")
+                console.log(res.data)
                 setData(res.data)
             } catch (error) {
                 console.error("Error cargando el resumen diario:", error)

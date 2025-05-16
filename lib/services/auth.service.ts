@@ -81,7 +81,7 @@ const AuthService = {
         if (!refreshToken) return null
 
         try {
-            const res = await HttpService.post<{ access_token: string }>("/auth/refresh", {
+            const res = await HttpService.post<{ access_token: string }>("/api/v1/auth/refresh", {
                 refresh_token: refreshToken,
             })
 

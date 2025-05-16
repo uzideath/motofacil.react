@@ -359,11 +359,6 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
                             <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-dark-blue-700" />
-                          <DropdownMenuItem className="hover:bg-dark-blue-700/50 cursor-pointer">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Cambiar rol
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
