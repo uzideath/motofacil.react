@@ -48,6 +48,7 @@ type Installment = {
   paymentMethod: "CASH" | "CARD" | "TRANSACTION"
   createdBy?: {
     id: string
+    name: string
     username: string
   }
 }
@@ -529,7 +530,7 @@ export function InstallmentTable() {
                       <TableCell className="text-blue-200">
                         <div className="flex items-center">
                           <User className="mr-2 h-4 w-4 text-blue-400" />
-                          {i.createdBy?.username ?? "—"}
+                          {i.createdBy?.name ?? "—"}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

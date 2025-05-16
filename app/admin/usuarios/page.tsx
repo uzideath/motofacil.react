@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
 import { UserManagement } from "@/components/admin/user-management"
-import { UserRoles } from "@/components/admin/user-roles"
 import { Download, Filter, UserPlus } from "lucide-react"
 
 export default function AdminUsersPage() {
@@ -35,7 +34,7 @@ export default function AdminUsersPage() {
 
       <div className="p-6 bg-gray-900">
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 p-1">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-800/50 p-1">
             <TabsTrigger value="all" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">
               Todos los Usuarios
             </TabsTrigger>
@@ -44,9 +43,6 @@ export default function AdminUsersPage() {
             </TabsTrigger>
             <TabsTrigger value="inactive" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">
               Usuarios Inactivos
-            </TabsTrigger>
-            <TabsTrigger value="roles" className="data-[state=active]:bg-gray-700 data-[state=active]:text-white">
-              Roles y Permisos
             </TabsTrigger>
           </TabsList>
 
@@ -86,20 +82,6 @@ export default function AdminUsersPage() {
               </CardHeader>
               <CardContent>
                 <UserManagement filter="inactive" />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="roles" className="space-y-6">
-            <Card className="bg-gray-800/50 border-gray-700 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-white">Roles y Permisos</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Gestiona los roles y permisos de los usuarios
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UserRoles />
               </CardContent>
             </Card>
           </TabsContent>

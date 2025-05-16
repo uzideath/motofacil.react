@@ -26,16 +26,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
 import { UserForm } from "./user-form"
-
-type User = {
-  id: string
-  name: string
-  email: string
-  role: "admin" | "user" | "manager"
-  status: "active" | "inactive"
-  lastLogin: string
-  createdAt: string
-}
+import { HttpService } from "@/lib/http"
+import type { User } from "./types"
 
 export function UserManagement({ filter = "all" }: { filter?: "all" | "active" | "inactive" }) {
   const [users, setUsers] = useState<User[]>([])
@@ -46,117 +38,108 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
   const [isFormOpen, setIsFormOpen] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      const mockUsers: User[] = [
-        {
-          id: "1",
-          name: "Admin Usuario",
-          email: "admin@motocredit.com",
-          role: "admin",
-          status: "active",
-          lastLogin: "2023-06-15T10:30:00",
-          createdAt: "2023-01-10T08:00:00",
-        },
-        {
-          id: "2",
-          name: "Carlos Rodríguez",
-          email: "carlos@ejemplo.com",
-          role: "manager",
-          status: "active",
-          lastLogin: "2023-06-14T14:20:00",
-          createdAt: "2023-02-15T09:30:00",
-        },
-        {
-          id: "3",
-          name: "María López",
-          email: "maria@ejemplo.com",
-          role: "user",
-          status: "active",
-          lastLogin: "2023-06-10T11:45:00",
-          createdAt: "2023-03-05T10:15:00",
-        },
-        {
-          id: "4",
-          name: "Juan Pérez",
-          email: "juan@ejemplo.com",
-          role: "user",
-          status: "inactive",
-          lastLogin: "2023-05-20T16:30:00",
-          createdAt: "2023-03-10T14:00:00",
-        },
-        {
-          id: "5",
-          name: "Ana Gómez",
-          email: "ana@ejemplo.com",
-          role: "manager",
-          status: "active",
-          lastLogin: "2023-06-12T09:15:00",
-          createdAt: "2023-04-01T11:30:00",
-        },
-        {
-          id: "6",
-          name: "Pedro Martínez",
-          email: "pedro@ejemplo.com",
-          role: "user",
-          status: "inactive",
-          lastLogin: "2023-05-05T13:45:00",
-          createdAt: "2023-04-15T08:45:00",
-        },
-      ]
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      const res = await HttpService.get("/api/v1/owners")
+      const rawData = res.data
 
-      setUsers(mockUsers)
+      const mapped: User[] = rawData.map((item: any) => ({
+        id: item.id,
+        username: item.username,
+        name: item.name || item.username, // Usar el campo name si existe, sino usar username como fallback
+        role: item.roles[0] || "USER",
+        status: item.status.toUpperCase(), // Convert to uppercase
+        lastLogin: item.lastAccess,
+        createdAt: item.createdAt,
+      }))
+
+      setUsers(mapped)
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron obtener los usuarios del servidor",
+      })
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
+  }
 
-    return () => clearTimeout(timer)
+  useEffect(() => {
+    fetchUsers()
   }, [])
 
   const filteredUsers = users
     .filter((user) => {
-      if (filter === "active") return user.status === "active"
-      if (filter === "inactive") return user.status === "inactive"
+      if (filter === "active") return user.status === "ACTIVE"
+      if (filter === "inactive") return user.status === "INACTIVE"
       return true
     })
     .filter(
       (user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!selectedUser) return
 
-    // Simulación de eliminación
-    setUsers(users.filter((user) => user.id !== selectedUser.id))
+    try {
+      await HttpService.delete(`/api/v1/owners/${selectedUser.id}`)
 
-    toast({
-      title: "Usuario eliminado",
-      description: `El usuario ${selectedUser.name} ha sido eliminado correctamente.`,
-    })
+      setUsers(users.filter((user) => user.id !== selectedUser.id))
 
-    setIsDeleteDialogOpen(false)
-    setSelectedUser(null)
+      toast({
+        title: "Usuario eliminado",
+        description: `El usuario ${selectedUser.name} ha sido eliminado correctamente.`,
+      })
+
+      setIsDeleteDialogOpen(false)
+      setSelectedUser(null)
+    } catch (error: any) {
+      console.error("Error al eliminar usuario:", error)
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Ocurrió un error al eliminar el usuario. Inténtalo de nuevo.",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleStatusChange = (userId: string, newStatus: "active" | "inactive") => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId
-          ? {
+  const handleStatusChange = async (userId: string, newStatus: "ACTIVE" | "INACTIVE") => {
+    try {
+      await HttpService.put(`/api/v1/owners/${userId}`, {
+        status: newStatus,
+      })
+
+      setUsers(
+        users.map((user) =>
+          user.id === userId
+            ? {
               ...user,
               status: newStatus,
             }
-          : user,
-      ),
-    )
+            : user,
+        ),
+      )
 
-    toast({
-      title: `Usuario ${newStatus === "active" ? "activado" : "desactivado"}`,
-      description: `El estado del usuario ha sido actualizado correctamente.`,
-    })
+      toast({
+        title: `Usuario ${newStatus === "ACTIVE" ? "activado" : "desactivado"}`,
+        description: `El estado del usuario ha sido actualizado correctamente.`,
+      })
+    } catch (error: any) {
+      console.error(`Error al ${newStatus === "ACTIVE" ? "activar" : "desactivar"} usuario:`, error)
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          `Ocurrió un error al ${newStatus === "ACTIVE" ? "activar" : "desactivar"} el usuario. Inténtalo de nuevo.`,
+        variant: "destructive",
+      })
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -181,12 +164,12 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "admin":
+      case "ADMIN":
         return <Badge className="bg-red-500/80 hover:bg-red-500/70 text-white">Administrador</Badge>
-      case "manager":
+      case "MANAGER":
         return <Badge className="bg-blue-500/80 hover:bg-blue-500/70 text-white">Gerente</Badge>
-      case "user":
-        return <Badge className="bg-green-500/80 hover:bg-green-500/70 text-white">Usuario</Badge>
+      case "USER":
+        return <Badge className="bg-green-500/80 hover:bg-green-500/70 text-white">Empleado</Badge>
       default:
         return <Badge>{role}</Badge>
     }
@@ -194,9 +177,9 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
+      case "ACTIVE":
         return <Badge className="bg-green-500/80 hover:bg-green-500/70 text-white">Activo</Badge>
-      case "inactive":
+      case "INACTIVE":
         return (
           <Badge variant="outline" className="text-gray-400 border-dark-blue-700">
             Inactivo
@@ -223,7 +206,7 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-300/70" />
           <Input
             type="search"
-            placeholder="Buscar por nombre, email o rol..."
+            placeholder="Buscar por nombre, usuario o rol..."
             className="pl-8 glass-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -309,7 +292,7 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
                         </Avatar>
                         <div>
                           <div className="font-medium text-white">{user.name}</div>
-                          <div className="text-sm text-blue-200/70">{user.email}</div>
+                          <div className="text-sm text-blue-200/70">{user.username}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -349,9 +332,9 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          {user.status === "active" ? (
+                          {user.status === "ACTIVE" ? (
                             <DropdownMenuItem
-                              onClick={() => handleStatusChange(user.id, "inactive")}
+                              onClick={() => handleStatusChange(user.id, "INACTIVE")}
                               className="hover:bg-dark-blue-700/50 cursor-pointer"
                             >
                               <UserX className="mr-2 h-4 w-4" />
@@ -359,7 +342,7 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
                             </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem
-                              onClick={() => handleStatusChange(user.id, "active")}
+                              onClick={() => handleStatusChange(user.id, "ACTIVE")}
                               className="hover:bg-dark-blue-700/50 cursor-pointer"
                             >
                               <UserCheck className="mr-2 h-4 w-4" />

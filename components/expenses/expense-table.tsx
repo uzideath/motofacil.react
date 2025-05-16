@@ -81,6 +81,7 @@ export type Expense = {
     date: string
     createdBy?: {
         id: string
+        name: string
         username: string
     }
 }
@@ -271,7 +272,7 @@ export function ExpenseTable() {
                     expense.beneficiary,
                     expense.reference,
                     expense.description,
-                    expense.createdBy?.username || "—",
+                    expense.createdBy?.name || "—",
                 ].join(","),
             ),
         ]
