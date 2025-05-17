@@ -176,7 +176,7 @@ const mapped: Installment[] = rawData.map((item: any) => ({
       const fileURL = URL.createObjectURL(blob)
       const printWindow = window.open(fileURL)
 
-      if (!printWindow) throw new Error("No se pudo abrir la ventana")
+      if (!printWindow) throw new Error("No se pudo abrir la ventana.")
 
       printWindow.addEventListener("load", () => {
         printWindow.focus()
