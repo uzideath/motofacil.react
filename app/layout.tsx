@@ -1,27 +1,20 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { Toaster } from "@/components/ui/toaster"
-import { AppSidebar } from "@/components/app-sidebar"
-import { AuthProvider } from "@/hooks/use-auth"
-import { useEffect, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
-import { useNavigationStore } from "@/lib/nav"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "react-day-picker"
+import type React from 'react'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/toaster'
+import { AppSidebar } from '@/components/app-sidebar'
+import { AuthProvider } from '@/hooks/use-auth'
+import { useEffect, Suspense, lazy } from 'react'
+import { usePathname } from 'next/navigation'
+import { useNavigationStore } from '@/lib/nav'
 
-const inter = Inter({ subsets: ["latin"] })
+const ExpiredSessionHandler = lazy(() => import('@/components/SessionHandler'))
+
+const inter = Inter({ subsets: ['latin'] })
 
 export default function RootLayout({
   children,
@@ -30,25 +23,16 @@ export default function RootLayout({
 }>) {
   const { setPageLoaded, isNavigatingFromLogin } = useNavigationStore()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const [showExpiredDialog, setShowExpiredDialog] = useState(false)
 
   useEffect(() => {
-    const expired = searchParams.get("expired")
-    if (expired === "true") {
-      setShowExpiredDialog(true)
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    const hasToken = document.cookie.includes("authToken=")
+    const hasToken = document.cookie.includes('authToken=')
     if (!hasToken) {
-      localStorage.removeItem("refreshToken")
+      localStorage.removeItem('refreshToken')
     }
   }, [])
 
   useEffect(() => {
-    if (isNavigatingFromLogin && !pathname.includes("/login")) {
+    if (isNavigatingFromLogin && !pathname.includes('/login')) {
       const timer = setTimeout(() => {
         setPageLoaded(true)
       }, 600)
@@ -71,20 +55,10 @@ export default function RootLayout({
                 </div>
               </div>
 
-              <Dialog open={showExpiredDialog} onOpenChange={setShowExpiredDialog}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Sesión expirada</DialogTitle>
-                    <DialogDescription>
-                      Tu sesión ha expirado por inactividad o por tiempo límite. Por favor, inicia sesión nuevamente.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button onClick={() => setShowExpiredDialog(false)}>Entendido</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
+              {/* Suspense para cargar el diálogo solo si hace falta */}
+              <Suspense fallback={null}>
+                <ExpiredSessionHandler />
+              </Suspense>
 
               <Toaster />
             </SidebarProvider>
