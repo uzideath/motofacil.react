@@ -124,7 +124,10 @@ const mapped: Installment[] = rawData.map((item: any) => ({
   paymentMethod: item.paymentMethod ?? "CASH",
   createdBy: item.createdBy ?? null,
   attachmentUrl: item.attachmentUrl ?? null,
+  loan: item.loan,
+  motorcycle: item.loan?.motorcycle,
 }))
+
 
       setInstallments(mapped)
     } catch (error) {
