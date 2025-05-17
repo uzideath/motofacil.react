@@ -1,4 +1,3 @@
-// lib/route-access.ts
 import { Role } from "@/hooks/use-auth"
 import { getRequiredRole } from "./auth"
 

@@ -42,6 +42,7 @@ function decodeJWT(token: string): User | null {
 
         return {
             id: payload.sub,
+            name: payload.name,
             username: payload.username,
             roles: payload.roles,
         }

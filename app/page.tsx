@@ -1,4 +1,3 @@
-// app/page.tsx
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import type { Role } from "@/hooks/use-auth"
@@ -32,7 +31,7 @@ export default async function Page() {
   const roles: Role[] = decoded?.roles || []
 
   if (roles.includes("ADMIN")) {
-    redirect("/dashboard")
+    redirect("/usuarios")
   } else {
     redirect("/prestamos")
   }

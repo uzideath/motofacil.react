@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import type React from 'react'
 import { Inter } from 'next/font/google'
@@ -6,11 +6,11 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/toaster'
-import { AppSidebar } from '@/components/app-sidebar'
 import { AuthProvider } from '@/hooks/use-auth'
 import { useEffect, Suspense, lazy } from 'react'
 import { usePathname } from 'next/navigation'
 import { useNavigationStore } from '@/lib/nav'
+import { AppSidebar } from '@/components/sidebar/sidebar'
 
 const ExpiredSessionHandler = lazy(() => import('@/components/SessionHandler'))
 
@@ -54,12 +54,9 @@ export default function RootLayout({
                   </div>
                 </div>
               </div>
-
-              {/* Suspense para cargar el diálogo solo si hace falta */}
               <Suspense fallback={null}>
                 <ExpiredSessionHandler />
               </Suspense>
-
               <Toaster />
             </SidebarProvider>
           </AuthProvider>
