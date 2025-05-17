@@ -2,8 +2,8 @@ import ReportsDashboard from "@/components/reports/reports-dashboard"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Reportes | Sistema de Gestión de Préstamos",
-  description: "Visualiza y exporta reportes detallados sobre préstamos, pagos, clientes y motocicletas.",
+  title: "Reportes | Sistema de Gestión de arrendamientos",
+  description: "Visualiza y exporta reportes detallados sobre arrendamientos, pagos, clientes y motocicletas.",
 }
 
 export default function ReportsPage() {

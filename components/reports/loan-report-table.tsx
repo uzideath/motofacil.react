@@ -74,8 +74,8 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Reporte de Préstamos</CardTitle>
-            <CardDescription>Listado detallado de préstamos y su estado</CardDescription>
+            <CardTitle>Reporte de arrendamientos</CardTitle>
+            <CardDescription>Listado detallado de arrendamientos y su estado</CardDescription>
           </div>
           <Button variant="outline" size="sm" className="flex items-center gap-1">
             <DownloadIcon className="h-4 w-4" />
@@ -87,7 +87,7 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
             <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Buscar préstamos..."
+              placeholder="Buscar arrendamientos..."
               className="pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -201,7 +201,7 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-4">
-                    No se encontraron préstamos
+                    No se encontraron arrendamientos
                   </TableCell>
                 </TableRow>
               )}
@@ -214,7 +214,7 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
               Mostrando {(page - 1) * itemsPerPage + 1} a {Math.min(page * itemsPerPage, filteredData.length)} de{" "}
-              {filteredData.length} préstamos
+              {filteredData.length} arrendamientos
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>

@@ -142,7 +142,7 @@ export function ClientReportTable({ data }: ClientReportTableProps) {
                     className="flex items-center gap-1 p-0 font-medium mx-auto"
                     onClick={() => handleSort("activeLoans")}
                   >
-                    Préstamos
+                    arrendamientos
                     <ArrowUpDownIcon className="h-3 w-3" />
                   </Button>
                 </TableHead>

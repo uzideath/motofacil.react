@@ -40,8 +40,8 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
     switch (activeTab) {
       case "prestamos":
         return {
-          title: "Análisis de Préstamos",
-          description: "Distribución y tendencias de préstamos",
+          title: "Análisis de arrendamientos",
+          description: "Distribución y tendencias de arrendamientos",
           pieData: [
             { name: "Activos", value: data.loans.active },
             { name: "Completados", value: data.loans.completed },
@@ -202,7 +202,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
                       activeTab === "pagos"
                         ? "Pagos"
                         : activeTab === "prestamos"
-                          ? "Préstamos"
+                          ? "arrendamientos"
                           : activeTab === "clientes"
                             ? "Clientes"
                             : "Motocicletas",

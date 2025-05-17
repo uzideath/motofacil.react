@@ -93,9 +93,9 @@ export function DashboardStats() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-200/80">Préstamos Activos</p>
+              <p className="text-sm font-medium text-blue-200/80">arrendamientos Activos</p>
               <h3 className="text-2xl font-bold mt-1 text-white">{loading ? "..." : stats.totalLoans}</h3>
-              <p className="text-xs text-blue-200/60 mt-1">Préstamos en curso</p>
+              <p className="text-xs text-blue-200/60 mt-1">arrendamientos en curso</p>
             </div>
             <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center">
               <CreditCard className="h-6 w-6 text-blue-400 animated-icon" />

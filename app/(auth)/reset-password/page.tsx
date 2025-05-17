@@ -5,7 +5,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 
 export const metadata: Metadata = {
   title: "Restablecer Contraseña | MotoFácil Atlántico",
-  description: "Restablece tu contraseña del sistema de préstamos de motocicletas",
+  description: "Restablece tu contraseña del sistema de arrendamientos de motocicletas",
 }
 
 export default function ResetPasswordPage() {
@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">MotoFácil Atlántico</h1>
-          <p className="text-gray-400 mt-1 text-center">Sistema de gestión de préstamos</p>
+          <p className="text-gray-400 mt-1 text-center">Sistema de gestión de arrendamientos</p>
         </div>
 
         <div className="bg-gray-900/50 backdrop-blur-md border border-gray-800 rounded-xl shadow-2xl overflow-hidden">

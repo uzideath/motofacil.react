@@ -40,7 +40,7 @@ export function LoanStatusChart() {
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip formatter={(value: number) => [`${value} préstamos`, ""]} contentStyle={{ borderRadius: "8px" }} />
+          <Tooltip formatter={(value: number) => [`${value} arrendamientos`, ""]} contentStyle={{ borderRadius: "8px" }} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

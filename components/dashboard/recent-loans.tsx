@@ -157,7 +157,7 @@ export function RecentLoans() {
       ))}
       <div className="flex justify-center pt-2">
         <Button variant="outline" asChild>
-          <Link href="/prestamos">Ver todos los préstamos</Link>
+          <Link href="/prestamos">Ver todos los arrendamientos</Link>
         </Button>
       </div>
     </div>

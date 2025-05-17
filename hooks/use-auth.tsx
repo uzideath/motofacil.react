@@ -15,6 +15,7 @@ export type User = {
   id: string
   username: string
   roles: Role[]
+  exp?: number
 }
 
 type AuthContextType = {
@@ -39,17 +40,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const decoded = token ? decodeJWT(token) : null
 
     if (decoded) {
-      setUser(decoded)
+      setUser({ ...decoded, exp: decoded.exp })
       setIsLoading(false)
     } else {
       AuthService.refresh().then((refreshedUser) => {
         if (refreshedUser) {
-          setUser(refreshedUser)
+          setUser({ ...refreshedUser, exp: refreshedUser.exp })
         }
         setIsLoading(false)
       })
     }
   }, [])
+
+  // ⏱️ Manejo de expiración y refresh automático
+  useEffect(() => {
+    if (!user?.exp) return
+
+    const now = Math.floor(Date.now() / 1000)
+    const timeUntilExpiration = user.exp - now
+    const timeUntilRefresh = Math.max(timeUntilExpiration - 60, 0) // 1 minuto antes
+
+    const refreshTimeout = setTimeout(async () => {
+      const refreshedUser = await AuthService.refresh()
+      if (refreshedUser) {
+        setUser({ ...refreshedUser, exp: refreshedUser.exp })
+      } else {
+        logout()
+      }
+    }, timeUntilRefresh * 1000)
+
+    const forceLogoutTimeout = setTimeout(() => {
+      logout()
+    }, timeUntilExpiration * 1000)
+
+    return () => {
+      clearTimeout(refreshTimeout)
+      clearTimeout(forceLogoutTimeout)
+    }
+  }, [user])
 
   const login = (userData: User) => {
     setUser(userData)

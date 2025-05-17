@@ -81,14 +81,24 @@ const AuthService = {
         if (!refreshToken) return null
 
         try {
-            const res = await HttpService.post<{ access_token: string }>("/api/v1/auth/refresh", {
+            const res = await HttpService.post<{
+                access_token: string
+                refresh_token?: string
+            }>("/api/v1/auth/refresh", {
                 refresh_token: refreshToken,
             })
 
-            const user = decodeJWT(res.data.access_token)
+            const { access_token, refresh_token: newRefreshToken } = res.data
+
+            const user = decodeJWT(access_token)
             if (!user) return null
 
-            setAccessToken(res.data.access_token, false)
+            setAccessToken(access_token, false)
+
+            if (newRefreshToken) {
+                setRefreshToken(newRefreshToken)
+            }
+
             return user
         } catch {
             return null

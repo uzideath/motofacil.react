@@ -131,7 +131,7 @@ export function LoanCalculator() {
                 <CardHeader>
                     <CardTitle className="flex items-center">
                         <Calculator className="mr-2 h-5 w-5 text-blue-400" />
-                        Calculadora de Préstamos
+                        Calculadora de arrendamientos
                     </CardTitle>
                 </CardHeader>
                 <CardContent>

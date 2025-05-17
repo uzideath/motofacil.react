@@ -30,11 +30,11 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
     switch (activeTab) {
       case "prestamos":
         return {
-          title: "Resumen de Préstamos",
-          description: "Estadísticas generales de préstamos",
+          title: "Resumen de arrendamientos",
+          description: "Estadísticas generales de arrendamientos",
           stats: [
             {
-              title: "Total de Préstamos",
+              title: "Total de arrendamientos",
               value: data.loans.total,
               icon: <CalendarIcon className="h-4 w-4 text-blue-500" />,
               description: `${data.loans.active} activos, ${data.loans.completed} completados`,
@@ -46,7 +46,7 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
               description: `Interés: ${formatCurrency(data.loans.totalInterest)}`,
             },
             {
-              title: "Préstamos en Mora",
+              title: "arrendamientos en Mora",
               value: data.loans.defaulted,
               icon: <ArrowDownIcon className="h-4 w-4 text-red-500" />,
               description: `${((data.loans.defaulted / data.loans.total) * 100).toFixed(1)}% del total`,
@@ -55,7 +55,7 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
               title: "Tasa de Finalización",
               value: `${((data.loans.completed / data.loans.total) * 100).toFixed(1)}%`,
               icon: <ArrowUpIcon className="h-4 w-4 text-emerald-500" />,
-              description: `${data.loans.completed} préstamos completados`,
+              description: `${data.loans.completed} arrendamientos completados`,
             },
           ],
         }
@@ -102,7 +102,7 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
               description: `${data.clients.active} activos, ${data.clients.inactive} inactivos`,
             },
             {
-              title: "Clientes con Préstamos",
+              title: "Clientes con arrendamientos",
               value: data.clients.active,
               icon: <DollarSignIcon className="h-4 w-4 text-green-500" />,
               description: `${((data.clients.active / data.clients.total) * 100).toFixed(1)}% del total`,

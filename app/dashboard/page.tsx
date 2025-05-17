@@ -49,7 +49,7 @@ export default function DashboardPage() {
                         <AlertCircle className="h-4 w-4 text-amber-500" />
                         <AlertTitle className="text-amber-500">Atención</AlertTitle>
                         <AlertDescription>
-                            Hay 5 préstamos con pagos pendientes esta semana.{" "}
+                            Hay 5 arrendamientos con pagos pendientes esta semana.{" "}
                             <a href="#" className="font-medium underline">
                                 Ver detalles
                             </a>
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                         <Card className="card-hover-effect">
                             <CardHeader>
-                                <CardTitle>Estado de Préstamos</CardTitle>
+                                <CardTitle>Estado de arrendamientos</CardTitle>
                                 <CardDescription>Distribución actual</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -111,15 +111,15 @@ export default function DashboardPage() {
                     <Tabs defaultValue="overview" className="mt-6">
                         <TabsList className="grid w-full grid-cols-3 mb-4">
                             <TabsTrigger value="overview">Resumen General</TabsTrigger>
-                            <TabsTrigger value="recent">Préstamos Recientes</TabsTrigger>
+                            <TabsTrigger value="recent">arrendamientos Recientes</TabsTrigger>
                             <TabsTrigger value="analytics">Análisis Detallado</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="space-y-6">
                             <Card className="card-hover-effect">
                                 <CardHeader>
-                                    <CardTitle>Resumen de Préstamos</CardTitle>
-                                    <CardDescription>Préstamos activos en los últimos 30 días</CardDescription>
+                                    <CardTitle>Resumen de arrendamientos</CardTitle>
+                                    <CardDescription>arrendamientos activos en los últimos 30 días</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <Overview />
@@ -130,8 +130,8 @@ export default function DashboardPage() {
                         <TabsContent value="recent" className="space-y-6">
                             <Card className="card-hover-effect">
                                 <CardHeader>
-                                    <CardTitle>Préstamos Recientes</CardTitle>
-                                    <CardDescription>Últimos préstamos realizados</CardDescription>
+                                    <CardTitle>arrendamientos Recientes</CardTitle>
+                                    <CardDescription>Últimos arrendamientos realizados</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <RecentLoans />
@@ -143,7 +143,7 @@ export default function DashboardPage() {
                             <Card className="card-hover-effect">
                                 <CardHeader>
                                     <CardTitle>Análisis Detallado</CardTitle>
-                                    <CardDescription>Estadísticas detalladas de préstamos y pagos</CardDescription>
+                                    <CardDescription>Estadísticas detalladas de arrendamientos y pagos</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-center py-8 text-muted-foreground">

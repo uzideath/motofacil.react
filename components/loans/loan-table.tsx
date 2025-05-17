@@ -116,8 +116,8 @@ export type Loan = {
     brand: string
     model: string
     plate: string
-    engine: string;
-    chassis: string;
+    engine: string
+    chassis: string
     color: string
     cc: number
     gps: number
@@ -171,11 +171,11 @@ export function LoanTable() {
 
       setLoans(mappedLoans)
     } catch (error) {
-      console.error("Error al obtener préstamos:", error)
+      console.error("Error al obtener arrendamientos:", error)
       toast({
         variant: "destructive",
         title: "Error al cargar datos",
-        description: "No se pudieron obtener los préstamos del servidor",
+        description: "No se pudieron obtener los arrendamientos del servidor",
       })
     } finally {
       setLoading(false)
@@ -303,7 +303,8 @@ export function LoanTable() {
     const userMatch = loan.user.name?.toLowerCase().includes(searchTerm.toLowerCase())
     const motoMatch = loan.motorcycle.model?.toLowerCase().includes(searchTerm.toLowerCase())
     const idMatch = loan.user.identification?.toLowerCase().includes(searchTerm.toLowerCase())
-    return userMatch || motoMatch || idMatch
+    const plateMatch = loan.motorcycle.plate?.toLowerCase().includes(searchTerm.toLowerCase())
+    return userMatch || motoMatch || idMatch || plateMatch
   })
 
   const totalItems = filteredLoans.length
@@ -442,8 +443,10 @@ export function LoanTable() {
               <DollarSign className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold">Gestión de Préstamos</CardTitle>
-              <CardDescription className="text-blue-100">Administra los préstamos y financiamientos</CardDescription>
+              <CardTitle className="text-xl font-bold">Gestión de arrendamientos</CardTitle>
+              <CardDescription className="text-blue-100">
+                Administra los arrendamientos y financiamientos
+              </CardDescription>
             </div>
           </div>
           <div className="flex gap-2">
@@ -619,7 +622,7 @@ export function LoanTable() {
                       <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <DollarSign className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
-                          <p className="text-sm">No se encontraron préstamos</p>
+                          <p className="text-sm">No se encontraron arrendamientos</p>
                           {searchTerm && (
                             <Button
                               variant="link"
@@ -821,7 +824,7 @@ export function LoanTable() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
-              Mostrando {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} de {totalItems} préstamos
+              Mostrando {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} de {totalItems} arrendamientos
             </div>
 
             <Pagination className="order-1 sm:order-2">

@@ -205,11 +205,11 @@ export function InstallmentForm({
 
       setLoadingData(false)
     } catch (err) {
-      console.error("Error al cargar préstamos:", err)
+      console.error("Error al cargar arrendamientos:", err)
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudieron cargar los préstamos",
+        description: "No se pudieron cargar los arrendamientos",
       })
     }
   }

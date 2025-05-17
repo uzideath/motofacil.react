@@ -169,7 +169,7 @@ export default function ReportsDashboard() {
         <TabsList className="grid grid-cols-4 mb-6">
           <TabsTrigger value="prestamos" className="flex items-center gap-2">
             <BarChart3Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">Préstamos</span>
+            <span className="hidden sm:inline">arrendamientos</span>
           </TabsTrigger>
           <TabsTrigger value="pagos" className="flex items-center gap-2">
             <TrendingUpIcon className="h-4 w-4" />

@@ -82,7 +82,7 @@ export async function deleteMotorcycle(id: string) {
   return {}
 }
 
-// Préstamos
+// arrendamientos
 /* export async function fetchLoans() {
   const authCookie = document.cookie
     .split('; ')

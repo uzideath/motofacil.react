@@ -175,7 +175,7 @@ export function DailySummary() {
                         ) : (
                             <div className="space-y-4">
                                 {[
-                                    { label: "Pagos de Préstamos", value: data.categories.loanPayments },
+                                    { label: "Pagos de arrendamientos", value: data.categories.loanPayments },
                                     { label: "Otros Ingresos", value: data.categories.otherIncome },
                                 ].map((cat) => (
                                     <div className="space-y-2" key={cat.label}>

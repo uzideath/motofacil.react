@@ -9,7 +9,7 @@ export function CashFlowSummary() {
     {
       category: "Ingresos",
       items: [
-        { name: "Cuotas de préstamos", amount: 112500000 },
+        { name: "Cuotas de arrendamientos", amount: 112500000 },
         { name: "Intereses", amount: 8500000 },
         { name: "Otros ingresos", amount: 4500000 },
       ],

@@ -157,7 +157,7 @@ export function Overview() {
               />
               <Bar
                 dataKey="total"
-                name="Préstamos"
+                name="arrendamientos"
                 fill="hsl(var(--primary))"
                 radius={[4, 4, 0, 0]}
                 barSize={timeframe === "monthly" ? 20 : 12}
@@ -207,7 +207,7 @@ export function Overview() {
               <Line
                 type="monotone"
                 dataKey="total"
-                name="Préstamos"
+                name="arrendamientos"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 dot={{ r: 4, strokeWidth: 2 }}

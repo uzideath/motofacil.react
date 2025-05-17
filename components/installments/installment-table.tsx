@@ -50,8 +50,10 @@ type Installment = {
   motorcycleModel: string
   amount: number
   gps: number
+  paymentDate?: string
   date: string
   isLate: boolean
+  latePaymentDate?: string
   paymentMethod: "CASH" | "CARD" | "TRANSACTION"
   createdBy?: {
     id: string
@@ -112,6 +114,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         gps: item.gps,
         date: item.paymentDate,
         isLate: item.isLate,
+        latePaymentDate: item.latePaymentDate,
         paymentMethod: item.paymentMethod ?? "CASH",
         createdBy: item.createdBy ?? null,
         attachmentUrl: item.attachmentUrl ?? null,
@@ -149,9 +152,11 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           identification: installment.loanId,
           concept: `Pago de cuota de ${installment.motorcycleModel}`,
           amount: installment.amount,
+          latePaymentDate: installment.latePaymentDate,
           gps: installment.gps,
           total: installment.amount,
           date: installment.date,
+          receiptNumber: installment.id,
         },
         {
           responseType: "blob",
@@ -447,7 +452,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         <div className="rounded-lg border border-dark-blue-800/50 overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-dark-blue-800/70">
+              <TableHeader className="bg-dark-blue-800/70 sticky top-0">
                 <TableRow className="border-dark-blue-700 hover:bg-dark-blue-700/50">
                   <TableHead
                     className="text-blue-200 font-medium cursor-pointer"
@@ -498,8 +503,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                       Método
                     </div>
                   </TableHead>
-                  <TableHead className="text-blue-200 font-medium">
-                    <div className="flex items-center">
+                  <TableHead className="text-blue-200 font-medium text-center">
+                    <div className="flex items-center justify-center">
                       <Clock className="mr-2 h-4 w-4 text-blue-300/70" />
                       Estado
                     </div>
@@ -565,7 +570,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                   paginatedInstallments.map((i) => (
                     <TableRow
                       key={i.id}
-                      className="border-dark-blue-800/30 hover:bg-dark-blue-800/30 transition-colors"
+                      className="border-dark-blue-800/30 hover:bg-dark-blue-800/30 transition-colors duration-150"
                     >
                       <TableCell className="font-medium text-white">
                         <div className="flex items-center">
@@ -603,21 +608,21 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                           {getPaymentMethodLabel(i.paymentMethod)}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         {i.isLate ? (
                           <Badge
                             variant="destructive"
-                            className="bg-red-500/80 hover:bg-red-500/70 flex items-center gap-1 px-2 py-1"
+                            className="bg-red-500/80 hover:bg-red-500/70 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-xs font-medium"
                           >
-                            <AlertTriangle className="h-3 w-3" />
+                            <AlertTriangle className="h-3 w-3 mr-1" />
                             <span>Atrasada</span>
                           </Badge>
                         ) : (
                           <Badge
                             variant="default"
-                            className="bg-green-500/80 hover:bg-green-500/70 flex items-center gap-1 px-2 py-1"
+                            className="bg-green-500/80 hover:bg-green-500/70 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-xs font-medium"
                           >
-                            <CheckCircle2 className="h-3 w-3" />
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
                             <span>A tiempo</span>
                           </Badge>
                         )}
