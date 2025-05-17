@@ -10,13 +10,6 @@ export default function InstallmentsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Cuotas</h2>
         <div className="flex items-center space-x-2">
-          <InstallmentForm>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline-block">Nueva Cuota</span>
-              <span className="sm:hidden">Nueva</span>
-            </Button>
-          </InstallmentForm>
           <MobileSidebar />
         </div>
       </div>

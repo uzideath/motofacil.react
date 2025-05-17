@@ -8,6 +8,7 @@ import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { HttpService } from "@/lib/http"
@@ -30,6 +31,9 @@ const motorcycleSchema = z.object({
   ),
   engine: z.string().min(5, { message: "El número de motor debe tener al menos 5 caracteres" }),
   chassis: z.string().min(5, { message: "El número de chasis debe tener al menos 5 caracteres" }),
+  provider: z.enum(["MOTOFACIL", "OBRASOCIAL", "PORCENTAJETITO"], {
+    required_error: "El proveedor es obligatorio",
+  }),
 })
 
 type MotorcycleFormValues = z.infer<typeof motorcycleSchema>
@@ -57,6 +61,7 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
       gps: undefined,
       engine: "",
       chassis: "",
+      provider: undefined,
     },
     mode: "onChange",
   })
@@ -64,6 +69,7 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
   useEffect(() => {
     if (motorcycleData) {
       form.reset({
+        provider: motorcycleData.provider,
         brand: motorcycleData.brand,
         model: motorcycleData.model,
         plate: motorcycleData.plate,
@@ -121,6 +127,7 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
         gps: undefined,
         engine: "",
         chassis: "",
+        provider: undefined,
       })
     } catch (error) {
       console.error("Error al guardar motocicleta:", error)
@@ -338,7 +345,7 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Número de identificación del chasis"
+                                placeholder="Chasis"
                                 value={field.value ?? ""}
                                 onChange={field.onChange}
                                 className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700 font-mono uppercase"
@@ -368,6 +375,36 @@ export function MotorcycleForm({ children, motorcycleId, motorcycleData, onCreat
                               />
                             </FormControl>
                             <FormDescription className="text-xs">Código del dispositivo GPS instalado</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="mt-6">
+                      <FormField
+                        control={form.control}
+                        name="provider"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="after:content-['*'] after:text-red-500 after:ml-0.5">
+                              Proveedor
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                  <SelectValue placeholder="Selecciona un proveedor" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="MOTOFACIL">Moto Facil</SelectItem>
+                                <SelectItem value="OBRASOCIAL">Obra Social</SelectItem>
+                                <SelectItem value="PORCENTAJETITO">Porcentaje Tito</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription className="text-xs">
+                              Selecciona el proveedor para esta motocicleta
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

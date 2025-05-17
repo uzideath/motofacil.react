@@ -175,7 +175,7 @@ export function AppSidebar() {
     <TooltipProvider>
       <Sidebar collapsible="icon" className="border-r-0 bg-gradient-to-br from-[#0c1322] to-[#070b15] shadow-xl">
         {/* Logo with blue overlay */}
-        <div className="relative w-full h-28 overflow-hidden bg-[url('/abstract-geometric-pattern.png')] bg-cover bg-center">
+        <div className="relative w-full h-28 overflow-hidden bg-cover bg-center">
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="flex flex-col items-center">
               {open ? (

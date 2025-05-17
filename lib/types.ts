@@ -32,10 +32,11 @@ export interface LoginResponse {
     }
 }
 
-
+type Providers = "MOTOFACIL" | "OBRASOCIAL" | "PORCENTAJETITO"
 
 export type Motorcycle = {
     id: string
+    provider: Providers
     brand: string
     model: string
     plate: string

@@ -51,6 +51,9 @@ import {
     Filter,
     Wallet,
     Home,
+    Bike,
+    Building,
+    Percent,
 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -80,6 +83,8 @@ export type Expense = {
     beneficiary: string
     reference: string
     description: string
+    attachmentUrl: string
+    provider: string
     date: string
     createdBy?: {
         id: string
@@ -149,12 +154,47 @@ const paymentMethodMap: Record<string, { label: string; icon: React.ReactNode }>
     OTHER: { label: "Otro", icon: <FileText className="h-4 w-4 text-gray-500" /> },
 }
 
+const providerMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+    MOTOFACIL: {
+        label: "Moto Facil",
+        color: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800/30",
+        icon: <Bike className="h-3 w-3" />,
+    },
+    OBRASOCIAL: {
+        label: "Obra Social",
+        color:
+            "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800/30",
+        icon: <Building className="h-3 w-3" />,
+    },
+    PORCENTAJETITO: {
+        label: "Porcentaje Tito",
+        color:
+            "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300 border-violet-200 dark:border-violet-800/30",
+        icon: <Percent className="h-3 w-3" />,
+    },
+}
+
 // Función para formatear montos con separadores de miles
 const formatMoney = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(amount)
+}
+
+const formatProviderName = (provider: string | undefined): string => {
+    if (!provider) return "—"
+
+    switch (provider) {
+        case "MOTOFACIL":
+            return "Moto Facil"
+        case "OBRASOCIAL":
+            return "Obra Social"
+        case "PORCENTAJETITO":
+            return "Porcentaje Tito"
+        default:
+            return provider
+    }
 }
 
 export function ExpenseTable() {
@@ -172,11 +212,15 @@ export function ExpenseTable() {
     const [viewDialogOpen, setViewDialogOpen] = useState(false)
     const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(undefined)
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+    const [attachmentDialogOpen, setAttachmentDialogOpen] = useState(false)
+    const [selectedAttachmentUrl, setSelectedAttachmentUrl] = useState("")
+    const [providerFilter, setProviderFilter] = useState("todos")
 
     useEffect(() => {
         fetchExpenses()
     }, [refreshKey])
 
+    // Update the fetchExpenses function to preserve the backend ordering
     const fetchExpenses = async () => {
         try {
             setLoading(true)
@@ -197,17 +241,12 @@ export function ExpenseTable() {
             }
 
             const res = await HttpService.get<any[]>(url)
-            const sortedExpenses = [...res.data]
-                .map((item) => ({
-                    ...item,
-                    createdBy: item.createdBy || null,
-                }))
-                .sort((a, b) => {
-                    return sortDirection === "desc"
-                        ? new Date(b.date).getTime() - new Date(a.date).getTime()
-                        : new Date(a.date).getTime() - new Date(b.date).getTime()
-                })
-            setExpenses(sortedExpenses)
+            // Use the backend ordering directly without additional sorting
+            const mappedExpenses = res.data.map((item) => ({
+                ...item,
+                createdBy: item.createdBy || null,
+            }))
+            setExpenses(mappedExpenses)
         } catch (err) {
             console.error("Error fetching expenses:", err)
         } finally {
@@ -223,14 +262,17 @@ export function ExpenseTable() {
         }
     }
 
-    // Función para cambiar la dirección de ordenamiento
+    // Update the toggleSortDirection function to sort by createdAt if available, otherwise by date
     const toggleSortDirection = () => {
         const newDirection = sortDirection === "desc" ? "asc" : "desc"
         setSortDirection(newDirection)
 
         // Reordenar los gastos con la nueva dirección
         const sortedExpenses = [...expenses].sort((a, b) => {
-            const comparison = new Date(b.date).getTime() - new Date(a.date).getTime()
+            const dateA = new Date(a.date)
+            const dateB = new Date(b.date)
+
+            const comparison = dateB.getTime() - dateA.getTime()
             return newDirection === "desc" ? comparison : -comparison
         })
 
@@ -267,6 +309,13 @@ export function ExpenseTable() {
         setExpenseToEdit(expense)
         // Abrir el modal directamente en lugar de configurar un estado separado
         document.getElementById(`edit-expense-trigger-${expense.id}`)?.click()
+    }
+
+    const handleViewAttachment = (attachmentUrl: string) => {
+        if (attachmentUrl) {
+            setSelectedAttachmentUrl(attachmentUrl)
+            setAttachmentDialogOpen(true)
+        }
     }
 
     const refreshData = () => {
@@ -324,7 +373,9 @@ export function ExpenseTable() {
 
         const matchesCategory = categoryFilter === "todos" || expense.category === categoryFilter
 
-        return matchesSearch && matchesCategory
+        const matchesProvider = providerFilter === "todos" || expense.provider === providerFilter
+
+        return matchesSearch && matchesCategory && matchesProvider
     })
 
     const totalItems = filteredExpenses.length
@@ -456,6 +507,23 @@ export function ExpenseTable() {
                                 </SelectContent>
                             </Select>
                             <Select
+                                value={providerFilter}
+                                onValueChange={(value) => {
+                                    setProviderFilter(value)
+                                    setCurrentPage(1)
+                                }}
+                            >
+                                <SelectTrigger className="w-full sm:w-[180px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                    <SelectValue placeholder="Proveedor" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="todos">Todos los proveedores</SelectItem>
+                                    <SelectItem value="MOTOFACIL">Moto Facil</SelectItem>
+                                    <SelectItem value="OBRASOCIAL">Obra Social</SelectItem>
+                                    <SelectItem value="PORCENTAJETITO">Porcentaje Tito</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select
                                 value={itemsPerPage.toString()}
                                 onValueChange={(value) => {
                                     setItemsPerPage(Number(value))
@@ -551,7 +619,7 @@ export function ExpenseTable() {
                                                     className="ml-1 p-0 h-6 w-6 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
                                                     onClick={toggleSortDirection}
                                                 >
-                                                    <ArrowUpDown className="h-4 w-4" />
+                                                    <ArrowUpDown className={`h-4 w-4 ${sortDirection === "desc" ? "" : "rotate-180"}`} />
                                                     <span className="sr-only">Ordenar</span>
                                                 </Button>
                                             </div>
@@ -562,6 +630,14 @@ export function ExpenseTable() {
                                             <div className="flex items-center justify-center gap-1.5">
                                                 <Tag className="h-4 w-4" />
                                                 <span>Categoría</span>
+                                            </div>
+                                        </TableHead>
+
+                                        {/* Proveedor */}
+                                        <TableHead className="text-center">
+                                            <div className="flex items-center justify-center gap-1.5">
+                                                <Bike className="h-4 w-4" />
+                                                <span>Proveedor</span>
                                             </div>
                                         </TableHead>
 
@@ -632,6 +708,9 @@ export function ExpenseTable() {
                                                     <Skeleton className="h-6 w-[100px] bg-blue-100/50 dark:bg-blue-900/20 rounded-full" />
                                                 </TableCell>
                                                 <TableCell>
+                                                    <Skeleton className="h-6 w-[100px] bg-blue-100/50 dark:bg-blue-900/20 rounded-full mx-auto" />
+                                                </TableCell>
+                                                <TableCell>
                                                     <Skeleton className="h-5 w-[80px] bg-blue-100/50 dark:bg-blue-900/20 ml-auto" />
                                                 </TableCell>
                                                 <TableCell>
@@ -700,6 +779,19 @@ export function ExpenseTable() {
                                                         <span>{categoryMap[expense.category]?.label || expense.category}</span>
                                                     </Badge>
                                                 </TableCell>
+                                                <TableCell>
+                                                    {expense.provider ? (
+                                                        <Badge
+                                                            className={`flex items-center justify-center gap-1.5 text-sm px-3 py-1 rounded-full ${providerMap[expense.provider]?.color || "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"}`}
+                                                            variant="outline"
+                                                        >
+                                                            {providerMap[expense.provider]?.icon || <FileText className="h-3 w-3" />}
+                                                            <span>{formatProviderName(expense.provider)}</span>
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-center block">—</span>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className="text-right font-medium text-emerald-600 dark:text-emerald-400">
                                                     ${formatMoney(expense.amount)}
                                                 </TableCell>
@@ -730,40 +822,56 @@ export function ExpenseTable() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {expense.attachmentUrl && (
                                                             <Button
                                                                 variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleViewAttachment(expense.attachmentUrl)}
                                                                 className="h-8 w-8 p-0 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                                                                title="Ver comprobante"
                                                             >
-                                                                <span className="sr-only">Abrir menú</span>
-                                                                <MoreVertical className="h-4 w-4" />
+                                                                <Eye className="h-4 w-4" />
+                                                                <span className="sr-only">Ver comprobante</span>
                                                             </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                                            <DropdownMenuItem onClick={() => handleViewDetails(expense)}>
-                                                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                                                                <span>Ver detalles</span>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
-                                                                <FileEdit className="mr-2 h-4 w-4 text-amber-500" />
-                                                                <span>Editar</span>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem>
-                                                                <FileDown className="mr-2 h-4 w-4 text-green-500" />
-                                                                <span>Descargar comprobante</span>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem
-                                                                className="text-red-600 dark:text-red-400"
-                                                                onClick={() => handleDelete(expense.id)}
-                                                            >
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                <span>Eliminar</span>
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                        )}
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    className="h-8 w-8 p-0 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                                                                >
+                                                                    <span className="sr-only">Abrir menú</span>
+                                                                    <MoreVertical className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                                                <DropdownMenuItem onClick={() => handleViewDetails(expense)}>
+                                                                    <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                                                    <span>Ver detalles</span>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
+                                                                    <FileEdit className="mr-2 h-4 w-4 text-amber-500" />
+                                                                    <span>Editar</span>
+                                                                </DropdownMenuItem>
+                                                                {expense.attachmentUrl && (
+                                                                    <DropdownMenuItem onClick={() => handleViewAttachment(expense.attachmentUrl)}>
+                                                                        <FileDown className="mr-2 h-4 w-4 text-green-500" />
+                                                                        <span>Ver comprobante</span>
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                    onClick={() => handleDelete(expense.id)}
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    <span>Eliminar</span>
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -890,6 +998,23 @@ export function ExpenseTable() {
                                         <span>{categoryMap[viewExpense.category]?.label || viewExpense.category}</span>
                                     </Badge>
                                 </div>
+
+                                <div className="space-y-1">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Proveedor</p>
+                                    {viewExpense.provider ? (
+                                        <Badge
+                                            className={`${providerMap[viewExpense.provider]?.color ||
+                                                "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+                                                } flex items-center gap-1.5`}
+                                            variant="outline"
+                                        >
+                                            {providerMap[viewExpense.provider]?.icon || <FileText className="h-3 w-3" />}
+                                            <span>{formatProviderName(viewExpense.provider)}</span>
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-muted-foreground">No asignado</span>
+                                    )}
+                                </div>
                                 <div className="space-y-1">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">Monto</p>
                                     <p className="font-medium text-lg text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
@@ -950,6 +1075,44 @@ export function ExpenseTable() {
                             </div>
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Diálogo para ver comprobante */}
+            <Dialog open={attachmentDialogOpen} onOpenChange={setAttachmentDialogOpen}>
+                <DialogContent className="sm:max-w-[700px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                            <FileText className="h-5 w-5" />
+                            Comprobante de Egreso
+                        </DialogTitle>
+                        <DialogDescription>Imagen del comprobante adjunto</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex justify-center p-4">
+                        {selectedAttachmentUrl ? (
+                            <img
+                                src={selectedAttachmentUrl || "/placeholder.svg"}
+                                alt="Comprobante de egreso"
+                                className="max-h-[70vh] object-contain rounded-md border border-gray-200 dark:border-gray-800"
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center p-8 text-gray-500 dark:text-gray-400">
+                                <AlertTriangle className="h-10 w-10 mb-2 text-amber-500" />
+                                <p>No se pudo cargar la imagen del comprobante</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end mt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setAttachmentDialogOpen(false)}
+                            className="border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/30"
+                        >
+                            Cerrar
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 

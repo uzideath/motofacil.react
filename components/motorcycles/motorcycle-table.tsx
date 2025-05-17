@@ -4,7 +4,18 @@ import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Trash2, Search, Plus, MoreHorizontal, RefreshCw, Bike, FileSpreadsheet, SlidersHorizontal } from 'lucide-react'
+import {
+  Edit,
+  Trash2,
+  Search,
+  Plus,
+  MoreHorizontal,
+  RefreshCw,
+  Bike,
+  FileSpreadsheet,
+  SlidersHorizontal,
+  Filter,
+} from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { MotorcycleForm } from "./motorcycle-form"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -33,10 +44,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+// Provider mapping for display
+const providerLabels: Record<string, string> = {
+  MOTOFACIL: "Moto Facil",
+  OBRASOCIAL: "Obra Social",
+  PORCENTAJETITO: "Porcentaje Tito",
+}
+
 export function MotorcycleTable() {
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [providerFilter, setProviderFilter] = useState<string>("all") // Updated default value to "all"
   const { toast } = useToast()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [motorcycleToDelete, setMotorcycleToDelete] = useState<string | null>(null)
@@ -84,9 +103,9 @@ export function MotorcycleTable() {
     }
 
     // Check if this is an update (edit) or a new motorcycle
-    setMotorcycles(prev => {
+    setMotorcycles((prev) => {
       // Check if the motorcycle already exists in our list
-      const existingIndex = prev.findIndex(moto => moto.id === updatedMotorcycle.id)
+      const existingIndex = prev.findIndex((moto) => moto.id === updatedMotorcycle.id)
 
       if (existingIndex >= 0) {
         // This is an update - replace the existing motorcycle
@@ -136,14 +155,21 @@ export function MotorcycleTable() {
     }
   }
 
-  const filteredMotorcycles = motorcycles.filter(
-    (moto) =>
+  // Apply both search and provider filters
+  const filteredMotorcycles = motorcycles.filter((moto) => {
+    // Apply text search filter
+    const matchesSearch =
       moto.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
       moto.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
       moto.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (moto.chassis && moto.chassis.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (moto.engine && moto.engine.toLowerCase().includes(searchTerm.toLowerCase())),
-  )
+      (moto.engine && moto.engine.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    // Apply provider filter if one is selected
+    const matchesProvider = providerFilter === "all" || moto.provider === providerFilter
+
+    return matchesSearch && matchesProvider
+  })
 
   const totalItems = filteredMotorcycles.length
   const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -180,7 +206,7 @@ export function MotorcycleTable() {
 
   const exportToCSV = () => {
     // Simple CSV export function
-    const headers = ["Marca", "Modelo", "Placa", "Color", "Cilindraje", "GPS", "Motor", "Chasis"]
+    const headers = ["Marca", "Modelo", "Placa", "Color", "Cilindraje", "GPS", "Motor", "Chasis", "Proveedor"]
 
     const csvRows = [
       headers.join(","),
@@ -194,6 +220,7 @@ export function MotorcycleTable() {
           moto.gps || "",
           moto.engine || "",
           moto.chassis || "",
+          providerLabels[moto.provider as keyof typeof providerLabels] || "",
         ].join(","),
       ),
     ]
@@ -209,6 +236,9 @@ export function MotorcycleTable() {
     link.click()
     document.body.removeChild(link)
   }
+
+  // Get unique providers from the data
+  const uniqueProviders = Array.from(new Set(motorcycles.map((moto) => moto.provider).filter(Boolean))) as string[]
 
   return (
     <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
@@ -268,16 +298,42 @@ export function MotorcycleTable() {
       <CardContent className="p-6">
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
-              <Input
-                type="search"
-                placeholder="Buscar por marca, modelo, placa, motor o chasis..."
-                className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
+                <Input
+                  type="search"
+                  placeholder="Buscar por marca, modelo, placa, motor o chasis..."
+                  className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-blue-500/70" />
+                <Select
+                  value={providerFilter}
+                  onValueChange={(value) => {
+                    setProviderFilter(value)
+                    setCurrentPage(1)
+                  }}
+                >
+                  <SelectTrigger className="w-[180px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                    <SelectValue placeholder="Todos los proveedores" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los proveedores</SelectItem>
+                    {uniqueProviders.map((provider) => (
+                      <SelectItem key={provider} value={provider}>
+                        {providerLabels[provider as keyof typeof providerLabels] || provider}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div className="flex gap-2 w-full sm:w-auto">
               <Select
                 value={itemsPerPage.toString()}
@@ -318,6 +374,7 @@ export function MotorcycleTable() {
                     <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Motor</TableHead>
                     <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Chasis</TableHead>
                     <TableHead className="text-blue-700 dark:text-blue-300 font-medium">GPS</TableHead>
+                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Proveedor</TableHead>
                     <TableHead className="text-right text-blue-700 dark:text-blue-300 font-medium">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -328,7 +385,7 @@ export function MotorcycleTable() {
                         key={`skeleton-${index}`}
                         className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
                       >
-                        {Array.from({ length: 9 }).map((_, i) => (
+                        {Array.from({ length: 10 }).map((_, i) => (
                           <TableCell key={`skeleton-cell-${index}-${i}`}>
                             <Skeleton className="h-5 w-full bg-blue-100/50 dark:bg-blue-900/20" />
                           </TableCell>
@@ -337,17 +394,20 @@ export function MotorcycleTable() {
                     ))
                   ) : currentItems.length === 0 ? (
                     <TableRow className="border-blue-100 dark:border-blue-900/30">
-                      <TableCell colSpan={9} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <TableCell colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Bike className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
                           <p className="text-sm">No se encontraron motocicletas</p>
-                          {searchTerm && (
+                          {(searchTerm || providerFilter !== "all") && (
                             <Button
                               variant="link"
-                              onClick={() => setSearchTerm("")}
+                              onClick={() => {
+                                setSearchTerm("")
+                                setProviderFilter("all")
+                              }}
                               className="text-blue-500 dark:text-blue-400"
                             >
-                              Limpiar búsqueda
+                              Limpiar filtros
                             </Button>
                           )}
                         </div>
@@ -411,6 +471,17 @@ export function MotorcycleTable() {
                           {moto.gps ? (
                             <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50">
                               {moto.gps}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-500 dark:text-gray-400">
+                              No asignado
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {moto.provider ? (
+                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50">
+                              {providerLabels[moto.provider as keyof typeof providerLabels] || moto.provider}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-gray-500 dark:text-gray-400">

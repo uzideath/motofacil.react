@@ -8,7 +8,31 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
-import { Search, Printer, Calendar, CreditCard, Banknote, RefreshCw, User, BikeIcon as Motorcycle, DollarSign, Clock, AlertTriangle, CheckCircle2, ArrowDownUp, FileText, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, BikeIcon, BadgeCent } from 'lucide-react'
+import {
+  Search,
+  Printer,
+  Calendar,
+  CreditCard,
+  Banknote,
+  RefreshCw,
+  User,
+  BikeIcon as Motorcycle,
+  DollarSign,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowDownUp,
+  FileText,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  BikeIcon,
+  BadgeCent,
+  Eye,
+  PlusCircle,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -16,6 +40,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateRangePicker } from "@/components/date-range-picker"
 import type { DateRange } from "react-day-picker"
 import { formatDate as formatDateCustom } from "@/lib/utils"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { InstallmentForm } from "./installment-form"
 
 type Installment = {
   id: string
@@ -32,12 +58,13 @@ type Installment = {
     name: string
     username: string
   }
+  attachmentUrl?: string
 }
 
 type SortField = "userName" | "motorcycleModel" | "amount" | "date" | null
 type SortDirection = "asc" | "desc"
 
-export function InstallmentTable() {
+export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
   const [installments, setInstallments] = useState<Installment[]>([])
   const [loading, setLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -50,6 +77,9 @@ export function InstallmentTable() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const { toast } = useToast()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedAttachmentUrl, setSelectedAttachmentUrl] = useState("")
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const fetchInstallments = async () => {
     try {
@@ -84,6 +114,7 @@ export function InstallmentTable() {
         isLate: item.isLate,
         paymentMethod: item.paymentMethod ?? "CASH",
         createdBy: item.createdBy ?? null,
+        attachmentUrl: item.attachmentUrl ?? null,
       }))
 
       setInstallments(mapped)
@@ -157,7 +188,13 @@ export function InstallmentTable() {
 
   useEffect(() => {
     fetchInstallments()
-  }, [])
+  }, [refreshTrigger])
+
+  useEffect(() => {
+    if (onRefresh) {
+      onRefresh(refreshTable)
+    }
+  }, [onRefresh])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -251,13 +288,41 @@ export function InstallmentTable() {
   const totalPages = Math.ceil(filteredInstallments.length / itemsPerPage)
   const paginatedInstallments = filteredInstallments.slice(indexOfFirstItem, indexOfLastItem)
 
+  const handleViewAttachment = (installment: Installment) => {
+    // Extract the attachment URL from the request
+    // This is a placeholder - you'll need to adjust this based on your actual data structure
+    const attachmentUrl = installment.attachmentUrl || ""
+    if (attachmentUrl) {
+      setSelectedAttachmentUrl(attachmentUrl)
+      setIsDialogOpen(true)
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No hay comprobante adjunto para esta cuota",
+      })
+    }
+  }
+
+  const refreshTable = () => {
+    setRefreshTrigger((prev) => prev + 1)
+  }
+
   return (
     <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
       <CardHeader className="pb-3">
-        <CardTitle className="text-xl text-white flex items-center">
-          <Calendar className="mr-2 h-5 w-5 text-blue-300" />
-          Registro de Cuotas
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-xl text-white flex items-center">
+            <Calendar className="mr-2 h-5 w-5 text-blue-300" />
+            Registro de Cuotas
+          </CardTitle>
+          <InstallmentForm onSaved={refreshTable}>
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1">
+              <PlusCircle className="h-4 w-4" />
+              Nueva Cuota
+            </Button>
+          </InstallmentForm>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {isGenerating && (
@@ -284,7 +349,7 @@ export function InstallmentTable() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            <DateRangePicker onRangeChange={handleDateRangeChange} className="w-full sm:w-[280px]"/>
+            <DateRangePicker onRangeChange={handleDateRangeChange} className="w-full sm:w-[280px]" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -373,8 +438,7 @@ export function InstallmentTable() {
             <div>
               <p className="text-sm text-blue-300/70">Período seleccionado</p>
               <p className="text-blue-100">
-                {formatDateCustom(dateRange.from, 'dd MMM')} -{" "}
-                {formatDateCustom(dateRange.to, 'dd MMM yyyy')}
+                {formatDateCustom(dateRange.from, "dd MMM")} - {formatDateCustom(dateRange.to, "dd MMM yyyy")}
               </p>
             </div>
           </div>
@@ -447,7 +511,10 @@ export function InstallmentTable() {
                     </div>
                   </TableHead>
                   <TableHead className="text-blue-200 font-medium text-right">
-                    <span className="sr-only">Acciones</span>
+                    <div className="flex items-center justify-end">
+                      <FileText className="mr-2 h-4 w-4 text-blue-300/70" />
+                      Acciones
+                    </div>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -562,16 +629,30 @@ export function InstallmentTable() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePrint(i)}
-                          title="Imprimir recibo"
-                          className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
-                        >
-                          <Printer className="h-4 w-4" />
-                          <span className="sr-only">Imprimir recibo</span>
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          {i.attachmentUrl && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewAttachment(i)}
+                              title="Ver comprobante"
+                              className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">Ver comprobante</span>
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePrint(i)}
+                            title="Imprimir recibo"
+                            className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                          >
+                            <Printer className="h-4 w-4" />
+                            <span className="sr-only">Imprimir recibo</span>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -680,8 +761,7 @@ export function InstallmentTable() {
             {dateRange?.from && dateRange?.to && (
               <Badge variant="outline" className="border-blue-500/30 text-blue-300">
                 <Calendar className="mr-1 h-3 w-3 text-blue-400" />
-                {formatDateCustom(dateRange.from, 'dd/MM/yyyy')} -{" "}
-                {formatDateCustom(dateRange.to, 'dd/MM/yyyy')}
+                {formatDateCustom(dateRange.from, "dd/MM/yyyy")} - {formatDateCustom(dateRange.to, "dd/MM/yyyy")}
               </Badge>
             )}
             {paymentFilter && (
@@ -706,6 +786,23 @@ export function InstallmentTable() {
           </div>
         </div>
       </CardContent>
+      {/* Attachment Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-dark-blue-900 border-dark-blue-800 text-white max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-blue-100">Comprobante de pago</DialogTitle>
+          </DialogHeader>
+          {selectedAttachmentUrl && (
+            <div className="flex justify-center p-2">
+              <img
+                src={selectedAttachmentUrl || "/placeholder.svg"}
+                alt="Comprobante de pago"
+                className="max-h-[70vh] object-contain rounded-md border border-dark-blue-700"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

@@ -24,6 +24,9 @@ import {
     BarChart3,
     Clock,
     Info,
+    Bike,
+    Building,
+    Percent,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
@@ -56,6 +59,13 @@ type SelectedTransaction = {
     amount: number
     paymentMethod: "CASH" | "TRANSACTION" | "CARD"
     type: "income" | "expense"
+    provider?: string
+}
+
+enum Providers {
+    MOTOFACIL = "MOTOFACIL",
+    OBRASOCIAL = "OBRASOCIAL",
+    PORCENTAJETITO = "PORCENTAJETITO",
 }
 
 type Props = {
@@ -64,7 +74,6 @@ type Props = {
 }
 
 export function CashRegisterForm({ token, selectedTransactions }: Props) {
-    
     const initialFormState = {
         cashInRegister: "",
         cashFromTransfers: "",
@@ -77,7 +86,7 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
     }
 
     const [formState, setFormState] = useState(initialFormState)
-
+    const [currentProvider, setCurrentProvider] = useState<string | undefined>(undefined)
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const [activeTab, setActiveTab] = useState("register")
     const { user } = useAuth()
@@ -87,21 +96,31 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
 
     // Autocompletar campos si hay ingresos seleccionados
     useEffect(() => {
-        if (incomes.length === 0) return
+        console.log("Selected Transactions:", selectedTransactions)
+        console.log("First transaction provider:", selectedTransactions[0]?.provider)
 
-        const cash = incomes.filter((i) => i.paymentMethod === "CASH").reduce((acc, i) => acc + i.amount, 0)
-        const transfers = incomes.filter((i) => i.paymentMethod === "TRANSACTION").reduce((acc, i) => acc + i.amount, 0)
-        const cards = incomes.filter((i) => i.paymentMethod === "CARD").reduce((acc, i) => acc + i.amount, 0)
+        if (incomes.length > 0) {
+            // Obtener el proveedor de la primera transacción
+            const provider = incomes[0].provider
+            console.log("Provider from first income:", provider)
+            setCurrentProvider(provider)
 
-        setFormState((prev) => ({
-            ...prev,
-            cashInRegister: cash.toString(),
-            cashFromTransfers: transfers.toString(),
-            cashFromCards: cards.toString(),
-            success: false,
-            error: false,
-        }))
-    }, [incomes])
+            const cash = incomes.filter((i) => i.paymentMethod === "CASH").reduce((acc, i) => acc + i.amount, 0)
+            const transfers = incomes.filter((i) => i.paymentMethod === "TRANSACTION").reduce((acc, i) => acc + i.amount, 0)
+            const cards = incomes.filter((i) => i.paymentMethod === "CARD").reduce((acc, i) => acc + i.amount, 0)
+
+            setFormState((prev) => ({
+                ...prev,
+                cashInRegister: cash.toString(),
+                cashFromTransfers: transfers.toString(),
+                cashFromCards: cards.toString(),
+                success: false,
+                error: false,
+            }))
+        } else {
+            setCurrentProvider(undefined)
+        }
+    }, [incomes, selectedTransactions])
 
     const handleInputChange = (field: string, value: string) => {
         setFormState((prev) => ({
@@ -147,8 +166,20 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
     const filteredPaymentMethodData = paymentMethodData.filter((item) => item.value > 0)
     const filteredTransactionTypeData = transactionTypeData.filter((item) => item.value > 0)
 
+    const formatProviderName = (provider: string | undefined): string => {
+        if (!provider) return "Desconocido"
 
-
+        switch (provider) {
+            case Providers.MOTOFACIL:
+                return "Moto Facil"
+            case Providers.OBRASOCIAL:
+                return "Obra Social"
+            case Providers.PORCENTAJETITO:
+                return "Porcentaje Tito"
+            default:
+                return provider
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -163,6 +194,7 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                 installmentIds: incomes.map((i) => i.id),
                 expenseIds: expenses.map((e) => e.id),
                 createdById: user?.id,
+                provider: currentProvider, // Agregar el campo provider
             })
 
             setFormState((prev) => ({
@@ -205,6 +237,33 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                 Registro de Valores
                             </CardTitle>
                             <CardDescription>Ingrese los montos recibidos por cada método de pago</CardDescription>
+                            {!currentProvider && (
+                                <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-md">
+                                    <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                                        <AlertCircle className="h-3.5 w-3.5" />
+                                        No hay proveedor seleccionado. Seleccione transacciones para continuar.
+                                    </p>
+                                </div>
+                            )}
+                            {currentProvider && (
+                                <div className="mt-2">
+                                    <p className="text-xs text-muted-foreground mb-1">Proveedor seleccionado:</p>
+                                    <Badge
+                                        className={`px-3 py-1 text-sm ${currentProvider === Providers.MOTOFACIL
+                                                ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300"
+                                                : currentProvider === Providers.OBRASOCIAL
+                                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                                    : "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
+                                            }`}
+                                        variant="outline"
+                                    >
+                                        {currentProvider === Providers.MOTOFACIL && <Bike className="h-4 w-4 mr-1.5" />}
+                                        {currentProvider === Providers.OBRASOCIAL && <Building className="h-4 w-4 mr-1.5" />}
+                                        {currentProvider === Providers.PORCENTAJETITO && <Percent className="h-4 w-4 mr-1.5" />}
+                                        {formatProviderName(currentProvider)}
+                                    </Badge>
+                                </div>
+                            )}
                         </CardHeader>
                         <CardContent className="space-y-6 pt-6">
                             <div className="space-y-3">
@@ -433,6 +492,43 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                             </div>
                                         </div>
 
+                                        <div className="space-y-4 mt-6">
+                                            <h3 className="text-sm font-medium text-muted-foreground">Información del Proveedor</h3>
+                                            {currentProvider ? (
+                                                <div className="flex justify-between items-center p-3 border rounded-md bg-slate-50/20">
+                                                    <div className="flex items-center gap-2">
+                                                        {currentProvider === Providers.MOTOFACIL && <Bike className="h-4 w-4 text-cyan-500" />}
+                                                        {currentProvider === Providers.OBRASOCIAL && (
+                                                            <Building className="h-4 w-4 text-amber-500" />
+                                                        )}
+                                                        {currentProvider === Providers.PORCENTAJETITO && (
+                                                            <Percent className="h-4 w-4 text-violet-500" />
+                                                        )}
+                                                        <span className="font-medium">Proveedor</span>
+                                                    </div>
+                                                    <Badge
+                                                        className={`${currentProvider === Providers.MOTOFACIL
+                                                                ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300"
+                                                                : currentProvider === Providers.OBRASOCIAL
+                                                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                                                    : "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
+                                                            }`}
+                                                        variant="outline"
+                                                    >
+                                                        {formatProviderName(currentProvider)}
+                                                    </Badge>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-between items-center p-3 border rounded-md bg-amber-50/20">
+                                                    <div className="flex items-center gap-2">
+                                                        <AlertCircle className="h-4 w-4 text-amber-500" />
+                                                        <span className="font-medium">Proveedor</span>
+                                                    </div>
+                                                    <span className="text-amber-600 text-sm">No seleccionado</span>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <Separator className="my-6" />
 
                                         <div className="flex justify-between items-center">
@@ -517,9 +613,7 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                                                 formatter={(value: number, name: string) => [formatCurrency(value), name]}
                                                             />
                                                         </BarChart>
-
                                                     </ResponsiveContainer>
-
                                                 </div>
                                             </div>
                                         </div>
@@ -555,16 +649,17 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                                             Ingresos ({incomes.length})
                                                         </h3>
                                                         <div className="border rounded-md overflow-hidden">
-                                                            <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 text-xs font-medium text-muted-foreground">
+                                                            <div className="grid grid-cols-4 gap-4 p-3 bg-muted/50 text-xs font-medium text-muted-foreground">
                                                                 <div>ID</div>
                                                                 <div>Método de Pago</div>
+                                                                <div>Proveedor</div>
                                                                 <div className="text-right">Monto</div>
                                                             </div>
                                                             <div className="divide-y">
                                                                 {incomes.map((income) => (
                                                                     <div
                                                                         key={income.id}
-                                                                        className="grid grid-cols-3 gap-4 p-3 text-sm hover:bg-muted/20 transition-colors"
+                                                                        className="grid grid-cols-4 gap-4 p-3 text-sm hover:bg-muted/20 transition-colors"
                                                                     >
                                                                         <div className="truncate">{income.id}</div>
                                                                         <div>
@@ -587,6 +682,23 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                                                                 </span>
                                                                             )}
                                                                         </div>
+                                                                        <div>
+                                                                            {income.provider ? (
+                                                                                <Badge
+                                                                                    className={`${income.provider === Providers.MOTOFACIL
+                                                                                            ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300"
+                                                                                            : income.provider === Providers.OBRASOCIAL
+                                                                                                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                                                                                : "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
+                                                                                        }`}
+                                                                                    variant="outline"
+                                                                                >
+                                                                                    {formatProviderName(income.provider)}
+                                                                                </Badge>
+                                                                            ) : (
+                                                                                <span className="text-muted-foreground text-xs">—</span>
+                                                                            )}
+                                                                        </div>
                                                                         <div className="text-right font-medium text-emerald-600">
                                                                             {formatCurrency(income.amount)}
                                                                         </div>
@@ -604,16 +716,17 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                                             Egresos ({expenses.length})
                                                         </h3>
                                                         <div className="border rounded-md overflow-hidden">
-                                                            <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 text-xs font-medium text-muted-foreground">
+                                                            <div className="grid grid-cols-4 gap-4 p-3 bg-muted/50 text-xs font-medium text-muted-foreground">
                                                                 <div>ID</div>
                                                                 <div>Método de Pago</div>
+                                                                <div>Proveedor</div>
                                                                 <div className="text-right">Monto</div>
                                                             </div>
                                                             <div className="divide-y">
                                                                 {expenses.map((expense) => (
                                                                     <div
                                                                         key={expense.id}
-                                                                        className="grid grid-cols-3 gap-4 p-3 text-sm hover:bg-muted/20 transition-colors"
+                                                                        className="grid grid-cols-4 gap-4 p-3 text-sm hover:bg-muted/20 transition-colors"
                                                                     >
                                                                         <div className="truncate">{expense.id}</div>
                                                                         <div>
@@ -634,6 +747,23 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                                                                     <CreditCard className="h-3 w-3 text-purple-500" />
                                                                                     Tarjeta
                                                                                 </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div>
+                                                                            {expense.provider ? (
+                                                                                <Badge
+                                                                                    className={`${expense.provider === Providers.MOTOFACIL
+                                                                                            ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300"
+                                                                                            : expense.provider === Providers.OBRASOCIAL
+                                                                                                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                                                                                : "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300"
+                                                                                        }`}
+                                                                                    variant="outline"
+                                                                                >
+                                                                                    {formatProviderName(expense.provider)}
+                                                                                </Badge>
+                                                                            ) : (
+                                                                                <span className="text-muted-foreground text-xs">—</span>
                                                                             )}
                                                                         </div>
                                                                         <div className="text-right font-medium text-red-600">
@@ -670,9 +800,30 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
 
                     <div className="p-4 rounded-lg border my-2">
                         <div className="space-y-3">
+                            {currentProvider && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm">Proveedor:</span>
+                                    <Badge
+                                        className={`${currentProvider === Providers.MOTOFACIL
+                                                ? "bg-cyan-100 text-cyan-800"
+                                                : currentProvider === Providers.OBRASOCIAL
+                                                    ? "bg-amber-100 text-amber-800"
+                                                    : "bg-violet-100 text-violet-800"
+                                            }`}
+                                        variant="outline"
+                                    >
+                                        {formatProviderName(currentProvider)}
+                                    </Badge>
+                                </div>
+                            )}
                             <div className="flex justify-between items-center">
                                 <span className="text-sm">Total ingresos:</span>
                                 <span className="font-medium text-emerald-600">{formatCurrency(totalExpected)}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm">Total egresos:</span>
+                                <span className="font-medium text-red-600">{formatCurrency(totalExpenses)}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -683,7 +834,7 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                             <Separator className="my-1" />
 
                             <div className="flex justify-between items-center">
-                                <span className="font-medium">Diferencia:</span>
+                                <span className="font-medium">Diferencia (Registrado - Esperado):</span>
                                 <span
                                     className={cn(
                                         "font-bold text-lg",
@@ -695,6 +846,18 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                                     )}
                                 >
                                     {formatCurrency(totalDifference)}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-2">
+                                <span className="font-medium">Balance (Ingresos - Egresos):</span>
+                                <span
+                                    className={cn(
+                                        "font-bold text-lg",
+                                        totalExpected - totalExpenses >= 0 ? "text-emerald-600" : "text-red-600",
+                                    )}
+                                >
+                                    {formatCurrency(totalExpected - totalExpenses)}
                                 </span>
                             </div>
                         </div>
@@ -719,7 +882,6 @@ export function CashRegisterForm({ token, selectedTransactions }: Props) {
                         >
                             Nuevo Cierre
                         </Button>
-
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
