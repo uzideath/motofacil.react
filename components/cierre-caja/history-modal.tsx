@@ -5,19 +5,45 @@ import type React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
-import { formatCurrency, cn } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { es } from "date-fns/locale/es"
-import { Wallet, ArrowUpToLine, ArrowDownToLine, CreditCard, Receipt, Banknote, Calendar, Clock, User, FileText, Bike, Building, Percent, AlertCircle, Info } from 'lucide-react'
-import { Card, CardContent } from "@/components/ui/card"
+import {
+    Wallet,
+    ArrowUpToLine,
+    ArrowDownToLine,
+    CreditCard,
+    Receipt,
+    Banknote,
+    Calendar,
+    User,
+    FileText,
+    Bike,
+    Building,
+    Percent,
+    AlertCircle,
+    Info,
+    DollarSign,
+    CreditCardIcon,
+    BanknoteIcon,
+    Eye,
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 enum Providers {
     MOTOFACIL = "MOTOFACIL",
     OBRASOCIAL = "OBRASOCIAL",
     PORCENTAJETITO = "PORCENTAJETITO",
+}
+
+enum PaymentMethods {
+    CASH = "CASH",
+    TRANSACTION = "TRANSACTION",
+    CARD = "CARD",
 }
 
 const formatProviderName = (provider: string | undefined): string => {
@@ -106,28 +132,59 @@ const categoryMap: Record<string, { label: string; color: string; icon: React.Re
         color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 border-gray-200 dark:border-gray-800/30",
         icon: <FileText className="h-3 w-3" />,
     },
-    "Cuota de préstamo": {
-        label: "Cuota de préstamo",
-        color:
-            "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30",
-        icon: <CreditCard className="h-3 w-3" />,
-    },
+}
+
+type Loan = {
+    id: string
+    userId: string
+    contractNumber: string
+    motorcycleId: string
+    totalAmount: number
+    downPayment: number
+    installments: number
+    paidInstallments: number
+    remainingInstallments: number
+    totalPaid: number
+    debtRemaining: number
+    interestRate: number
+    interestType: string
+    paymentFrequency: string
+    installmentPaymentAmmount: number
+    gpsInstallmentPayment: number
+    createdAt: string
+    updatedAt: string
+    startDate: string
+    endDate: string | null
+    status: string
+    user: {
+        id: string
+        name: string
+    }
+    motorcycle: {
+        id: string
+        plate: string
+    }
 }
 
 type Payment = {
     id: string
-    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    loanId: string
+    paymentMethod: PaymentMethods
     amount: number
+    gps: number
     paymentDate: string
     isLate: boolean
-    loan?: {
-        user?: {
-            name: string
-        }
-        motorcycle?: {
-            plate: string
-            provider?: string
-        }
+    latePaymentDate: string | null
+    notes: string | null
+    attachmentUrl: string | null
+    createdById: string
+    createdAt: string
+    updatedAt: string
+    cashRegisterId: string
+    loan: Loan
+    createdBy: {
+        id: string
+        username: string
     }
 }
 
@@ -135,30 +192,52 @@ type Expense = {
     id: string
     amount: number
     date: string
+    provider: string
     category: string
-    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    paymentMethod: PaymentMethods
     beneficiary: string
-    reference?: string
+    reference: string
     description: string
-    provider?: string
+    attachmentUrl: string | null
+    cashRegisterId: string
+    createdById: string
+    createdAt: string
+    updatedAt: string
+}
+
+type CashRegister = {
+    id: string
+    date: string
+    provider: string
+    cashInRegister: number
+    cashFromTransfers: number
+    cashFromCards: number
+    notes: string
+    createdAt: string
+    updatedAt: string
+    createdById: string
+    payments: Payment[]
+    expense: Expense[]
+    createdBy: {
+        id: string
+        username: string
+    }
 }
 
 type Props = {
     open: boolean
     onClose: () => void
-    payments: Payment[]
-    expenses: Expense[]
-    provider?: string
+    cashRegister: CashRegister
 }
 
-export function CashRegisterDetailModal({ open, onClose, payments, expenses, provider }: Props) {
+export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) {
     const formatMethod = (method: string) => {
         switch (method) {
-            case "CASH":
+            case PaymentMethods.CASH:
                 return "Efectivo"
-            case "TRANSACTION":
+            case PaymentMethods.TRANSACTION:
                 return "Transferencia"
-            case "CARD":
+            case PaymentMethods.CARD:
                 return "Tarjeta"
             default:
                 return method
@@ -167,19 +246,19 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
 
     const getPaymentMethodIcon = (method: string) => {
         switch (method) {
-            case "CASH":
+            case PaymentMethods.CASH:
                 return <Banknote className="h-4 w-4 text-emerald-500" />
-            case "TRANSACTION":
+            case PaymentMethods.TRANSACTION:
                 return <Receipt className="h-4 w-4 text-blue-500" />
-            case "CARD":
+            case PaymentMethods.CARD:
                 return <CreditCard className="h-4 w-4 text-purple-500" />
             default:
                 return <Wallet className="h-4 w-4 text-gray-500" />
         }
     }
 
-    const totalIncome = payments.reduce((acc, p) => acc + p.amount, 0)
-    const totalExpense = expenses.reduce((acc, e) => acc + e.amount, 0)
+    const totalIncome = cashRegister.payments.reduce((acc, p) => acc + p.amount + p.gps, 0)
+    const totalExpense = cashRegister.expense.reduce((acc, e) => acc + e.amount, 0)
     const balance = totalIncome - totalExpense
 
     const renderProvider = (providerValue?: string) => {
@@ -210,148 +289,181 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
         )
     }
 
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map((part) => part[0])
+            .join("")
+            .toUpperCase()
+            .substring(0, 2)
+    }
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-6">
                 <DialogHeader>
                     <DialogTitle className="text-xl flex items-center gap-2">
                         <Wallet className="h-5 w-5 text-primary" />
                         Detalle del Cierre de Caja
                     </DialogTitle>
-                    <DialogDescription>
-                        Información detallada sobre las transacciones incluidas en este cierre
-                    </DialogDescription>
+                    <DialogDescription>Información detallada sobre las transacciones incluidas en este cierre</DialogDescription>
                 </DialogHeader>
 
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Card className="bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/30">
-                        <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Ingresos</p>
-                                    <p className="text-2xl font-bold text-green-700 dark:text-green-300">{formatCurrency(totalIncome)}</p>
+                {/* Cash Register Info */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <Card className="lg:col-span-2 shadow-sm">
+                        <CardHeader className="pb-2 bg-slate-50 dark:bg-slate-900/50 rounded-t-lg">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Info className="h-4 w-4 text-primary" />
+                                Información General
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground text-xs">ID:</span>
+                                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs mt-1 w-fit">
+                                        {cashRegister.id}
+                                    </span>
                                 </div>
-                                <div className="bg-green-100 dark:bg-green-800/30 p-3 rounded-full">
-                                    <ArrowUpToLine className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground text-xs">Fecha:</span>
+                                    <span className="font-medium">
+                                        {format(new Date(cashRegister.date), "dd/MM/yyyy", { locale: es })}
+                                    </span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground text-xs">Hora:</span>
+                                    <span className="font-medium">{format(new Date(cashRegister.date), "HH:mm", { locale: es })}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground text-xs">Usuario:</span>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarFallback className="text-xs bg-primary/20 text-primary">
+                                                {getInitials(cashRegister.createdBy?.username || "UN")}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <span>{cashRegister.createdBy?.username}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-2">
-                                {payments.length} transacciones registradas
-                            </p>
+
+                            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                                <div className="flex flex-col">
+                                    <span className="text-muted-foreground text-xs">Proveedor:</span>
+                                    <div className="mt-1">{renderProvider(cashRegister.provider)}</div>
+                                </div>
+
+                                {cashRegister.notes && (
+                                    <div className="flex-1">
+                                        <span className="text-muted-foreground text-xs">Notas:</span>
+                                        <p className="text-sm mt-1 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-md border border-slate-200 dark:border-slate-800">
+                                            {cashRegister.notes}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30">
-                        <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <p className="text-sm font-medium text-red-600 dark:text-red-400">Total Egresos</p>
-                                    <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(totalExpense)}</p>
+                    <Card className="shadow-sm">
+                        <CardHeader className="pb-2 bg-slate-50 dark:bg-slate-900/50 rounded-t-lg">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Wallet className="h-4 w-4 text-primary" />
+                                Resumen Financiero
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4 pt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-green-100 dark:bg-green-900/20 p-2 rounded-full">
+                                        <BanknoteIcon className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Efectivo en Caja</p>
+                                        <p className="font-medium">{formatCurrency(cashRegister.cashInRegister)}</p>
+                                    </div>
                                 </div>
-                                <div className="bg-red-100 dark:bg-red-800/30 p-3 rounded-full">
-                                    <ArrowDownToLine className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-blue-100 dark:bg-blue-900/20 p-2 rounded-full">
+                                        <Receipt className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Transferencias</p>
+                                        <p className="font-medium">{formatCurrency(cashRegister.cashFromTransfers)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-purple-100 dark:bg-purple-900/20 p-2 rounded-full">
+                                        <CreditCardIcon className="h-5 w-5 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Tarjetas</p>
+                                        <p className="font-medium">{formatCurrency(cashRegister.cashFromCards)}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-amber-100 dark:bg-amber-900/20 p-2 rounded-full">
+                                        <DollarSign className="h-5 w-5 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Total Registrado</p>
+                                        <p className="font-medium">
+                                            {formatCurrency(
+                                                cashRegister.cashInRegister + cashRegister.cashFromTransfers + cashRegister.cashFromCards,
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-2">
-                                {expenses.length} transacciones registradas
-                            </p>
-                        </CardContent>
-                    </Card>
 
-                    <Card
-                        className={`${balance >= 0
-                                ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30"
-                                : "bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30"
-                            }`}
-                    >
-                        <CardContent className="p-4">
-                            <div className="flex justify-between items-center">
+                            <Separator />
+
+                            <div className="grid grid-cols-3 gap-2">
                                 <div>
-                                    <p
-                                        className={`text-sm font-medium ${balance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
-                                            }`}
-                                    >
-                                        Balance Neto
-                                    </p>
-                                    <p
-                                        className={`text-2xl font-bold ${balance >= 0 ? "text-blue-700 dark:text-blue-300" : "text-amber-700 dark:text-amber-300"
-                                            }`}
-                                    >
+                                    <p className="text-xs text-muted-foreground">Total Ingresos</p>
+                                    <p className="font-medium text-green-600">{formatCurrency(totalIncome)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Total Egresos</p>
+                                    <p className="font-medium text-red-600">{formatCurrency(totalExpense)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Balance</p>
+                                    <p className={`font-medium ${balance >= 0 ? "text-blue-600" : "text-amber-600"}`}>
                                         {formatCurrency(balance)}
                                     </p>
                                 </div>
-                                <div
-                                    className={`p-3 rounded-full ${balance >= 0 ? "bg-blue-100 dark:bg-blue-800/30" : "bg-amber-100 dark:bg-amber-800/30"
-                                        }`}
-                                >
-                                    <Wallet
-                                        className={`h-6 w-6 ${balance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
-                                            }`}
-                                    />
-                                </div>
                             </div>
-                            <p
-                                className={`text-xs ${balance >= 0
-                                        ? "text-blue-600/70 dark:text-blue-400/70"
-                                        : "text-amber-600/70 dark:text-amber-400/70"
-                                    } mt-2`}
-                            >
-                                {balance >= 0 ? "Cierre con ganancia" : "Cierre con pérdida"}
-                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Provider Information */}
-                {provider && (
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className={`p-2.5 rounded-full ${provider === Providers.MOTOFACIL
-                                            ? "bg-cyan-100 dark:bg-cyan-900/30"
-                                            : provider === Providers.OBRASOCIAL
-                                                ? "bg-amber-100 dark:bg-amber-900/30"
-                                                : "bg-violet-100 dark:bg-violet-900/30"
-                                        }`}
-                                >
-                                    {provider === Providers.MOTOFACIL && <Bike className="h-5 w-5 text-cyan-700 dark:text-cyan-300" />}
-                                    {provider === Providers.OBRASOCIAL && (
-                                        <Building className="h-5 w-5 text-amber-700 dark:text-amber-300" />
-                                    )}
-                                    {provider === Providers.PORCENTAJETITO && (
-                                        <Percent className="h-5 w-5 text-violet-700 dark:text-violet-300" />
-                                    )}
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-medium text-muted-foreground">Proveedor</h3>
-                                    <p className="text-lg font-semibold">{formatProviderName(provider)}</p>
-                                </div>
-                            </div>
-                            {renderProvider(provider)}
-                        </div>
-                    </div>
-                )}
-
                 <Tabs defaultValue="payments" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                        <TabsTrigger value="payments" className="flex items-center gap-1.5">
-                            <ArrowUpToLine className="h-4 w-4 text-green-500" />
-                            <span>Pagos Registrados</span>
+                    <TabsList className="grid w-full grid-cols-2 mb-6 h-12">
+                        <TabsTrigger value="payments" className="flex items-center gap-2 text-base">
+                            <div className="bg-green-100 dark:bg-green-900/30 p-1.5 rounded-full">
+                                <ArrowUpToLine className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </div>
+                            <span>Pagos Registrados ({cashRegister.payments.length})</span>
                         </TabsTrigger>
-                        <TabsTrigger value="expenses" className="flex items-center gap-1.5">
-                            <ArrowDownToLine className="h-4 w-4 text-red-500" />
-                            <span>Egresos Asociados</span>
+                        <TabsTrigger value="expenses" className="flex items-center gap-2 text-base">
+                            <div className="bg-red-100 dark:bg-red-900/30 p-1.5 rounded-full">
+                                <ArrowDownToLine className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </div>
+                            <span>Egresos Asociados ({cashRegister.expense.length})</span>
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="payments" className="space-y-4">
-                        {payments.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Info className="h-10 w-10 text-muted-foreground mb-2 opacity-50" />
+                        {cashRegister.payments.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                                <div className="bg-white dark:bg-slate-800 p-4 rounded-full mb-4 shadow-sm">
+                                    <Info className="h-12 w-12 text-muted-foreground opacity-50" />
+                                </div>
                                 <h3 className="text-lg font-medium">No hay pagos registrados</h3>
-                                <p className="text-sm text-muted-foreground max-w-md mt-1">
+                                <p className="text-sm text-muted-foreground max-w-md mt-2">
                                     Este cierre de caja no tiene pagos (ingresos) asociados.
                                 </p>
                             </div>
@@ -370,8 +482,20 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                 </TableHead>
                                                 <TableHead>
                                                     <div className="flex items-center">
-                                                        <Clock className="h-4 w-4 mr-2" />
-                                                        Hora
+                                                        <User className="h-4 w-4 mr-2" />
+                                                        Cliente
+                                                    </div>
+                                                </TableHead>
+                                                <TableHead>
+                                                    <div className="flex items-center">
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        Contrato
+                                                    </div>
+                                                </TableHead>
+                                                <TableHead>
+                                                    <div className="flex items-center">
+                                                        <Bike className="h-4 w-4 mr-2" />
+                                                        Placa
                                                     </div>
                                                 </TableHead>
                                                 <TableHead>
@@ -380,29 +504,23 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                         Método
                                                     </div>
                                                 </TableHead>
-                                                <TableHead>
-                                                    <div className="flex items-center">
-                                                        <User className="h-4 w-4 mr-2" />
-                                                        Cliente
-                                                    </div>
-                                                </TableHead>
-                                                <TableHead>
-                                                    <div className="flex items-center">
-                                                        <Bike className="h-4 w-4 mr-2" />
-                                                        Proveedor
-                                                    </div>
-                                                </TableHead>
                                                 <TableHead className="text-right">
                                                     <div className="flex items-center justify-end">
                                                         <ArrowUpToLine className="h-4 w-4 mr-2 text-green-500" />
                                                         Monto
                                                     </div>
                                                 </TableHead>
+                                                <TableHead className="text-right">
+                                                    <div className="flex items-center justify-end">
+                                                        <CreditCard className="h-4 w-4 mr-2 text-blue-500" />
+                                                        GPS
+                                                    </div>
+                                                </TableHead>
                                                 <TableHead>Estado</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {payments.map((p) => {
+                                            {cashRegister.payments.map((p) => {
                                                 const paymentDate = new Date(p.paymentDate)
                                                 return (
                                                     <TableRow key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
@@ -411,31 +529,51 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                                 {p.id.substring(0, 8)}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell>{format(paymentDate, "dd/MM/yyyy", { locale: es })}</TableCell>
-                                                        <TableCell>{format(paymentDate, "HH:mm", { locale: es })}</TableCell>
                                                         <TableCell>
-                                                            <div className="flex items-center gap-2">
-                                                                {getPaymentMethodIcon(p.paymentMethod)}
-                                                                <span>{formatMethod(p.paymentMethod)}</span>
+                                                            <div className="flex flex-col">
+                                                                <span>{format(paymentDate, "dd/MM/yyyy", { locale: es })}</span>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {format(paymentDate, "HH:mm", { locale: es })}
+                                                                </span>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             {p.loan?.user?.name ? (
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full">
-                                                                        <User className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-                                                                    </div>
-                                                                    <span>{p.loan.user.name}</span>
+                                                                    <Avatar className="h-6 w-6">
+                                                                        <AvatarFallback className="text-xs">{getInitials(p.loan.user.name)}</AvatarFallback>
+                                                                    </Avatar>
+                                                                    <span className="text-sm font-medium">{p.loan.user.name}</span>
                                                                 </div>
                                                             ) : (
                                                                 <span className="text-muted-foreground">—</span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {renderProvider(p.loan?.motorcycle?.provider)}
+                                                            <div className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-mono">
+                                                                {p.loan?.contractNumber || "—"}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {p.loan?.motorcycle?.plate ? (
+                                                                <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 font-mono text-xs">
+                                                                    {p.loan.motorcycle.plate}
+                                                                </Badge>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">—</span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-2">
+                                                                {getPaymentMethodIcon(p.paymentMethod)}
+                                                                <span>{formatMethod(p.paymentMethod)}</span>
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="text-right font-medium text-green-600 dark:text-green-400">
                                                             {formatCurrency(p.amount)}
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                                            {formatCurrency(p.gps)}
                                                         </TableCell>
                                                         <TableCell>
                                                             {p.isLate ? (
@@ -451,8 +589,7 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                                     variant="outline"
                                                                     className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30 flex items-center gap-1.5"
                                                                 >
-                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
-                                                                    A tiempo
+                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>A tiempo
                                                                 </Badge>
                                                             )}
                                                         </TableCell>
@@ -467,11 +604,13 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                     </TabsContent>
 
                     <TabsContent value="expenses" className="space-y-4">
-                        {expenses.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Info className="h-10 w-10 text-muted-foreground mb-2 opacity-50" />
+                        {cashRegister.expense.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                                <div className="bg-white dark:bg-slate-800 p-4 rounded-full mb-4 shadow-sm">
+                                    <Info className="h-12 w-12 text-muted-foreground opacity-50" />
+                                </div>
                                 <h3 className="text-lg font-medium">No hay egresos registrados</h3>
-                                <p className="text-sm text-muted-foreground max-w-md mt-1">
+                                <p className="text-sm text-muted-foreground max-w-md mt-2">
                                     Este cierre de caja no tiene egresos asociados.
                                 </p>
                             </div>
@@ -490,18 +629,6 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                 </TableHead>
                                                 <TableHead>
                                                     <div className="flex items-center">
-                                                        <Clock className="h-4 w-4 mr-2" />
-                                                        Hora
-                                                    </div>
-                                                </TableHead>
-                                                <TableHead>
-                                                    <div className="flex items-center">
-                                                        <Wallet className="h-4 w-4 mr-2" />
-                                                        Método
-                                                    </div>
-                                                </TableHead>
-                                                <TableHead>
-                                                    <div className="flex items-center">
                                                         <FileText className="h-4 w-4 mr-2" />
                                                         Categoría
                                                     </div>
@@ -510,6 +637,12 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                     <div className="flex items-center">
                                                         <User className="h-4 w-4 mr-2" />
                                                         Beneficiario
+                                                    </div>
+                                                </TableHead>
+                                                <TableHead>
+                                                    <div className="flex items-center">
+                                                        <Wallet className="h-4 w-4 mr-2" />
+                                                        Método
                                                     </div>
                                                 </TableHead>
                                                 <TableHead>
@@ -524,10 +657,11 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                         Monto
                                                     </div>
                                                 </TableHead>
+                                                <TableHead>Referencia</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {expenses.map((e) => {
+                                            {cashRegister.expense.map((e) => {
                                                 const expenseDate = new Date(e.date)
                                                 return (
                                                     <TableRow key={e.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
@@ -536,12 +670,12 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                                 {e.id.substring(0, 8)}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell>{format(expenseDate, "dd/MM/yyyy", { locale: es })}</TableCell>
-                                                        <TableCell>{format(expenseDate, "HH:mm", { locale: es })}</TableCell>
                                                         <TableCell>
-                                                            <div className="flex items-center gap-2">
-                                                                {getPaymentMethodIcon(e.paymentMethod)}
-                                                                <span>{formatMethod(e.paymentMethod)}</span>
+                                                            <div className="flex flex-col">
+                                                                <span>{format(expenseDate, "dd/MM/yyyy", { locale: es })}</span>
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {format(expenseDate, "HH:mm", { locale: es })}
+                                                                </span>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>{renderCategory(e.category)}</TableCell>
@@ -553,9 +687,24 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                                 <span>{e.beneficiary}</span>
                                                             </div>
                                                         </TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-2">
+                                                                {getPaymentMethodIcon(e.paymentMethod)}
+                                                                <span>{formatMethod(e.paymentMethod)}</span>
+                                                            </div>
+                                                        </TableCell>
                                                         <TableCell>{renderProvider(e.provider)}</TableCell>
                                                         <TableCell className="text-right font-medium text-red-600 dark:text-red-400">
                                                             {formatCurrency(e.amount)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {e.reference ? (
+                                                                <div className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-mono">
+                                                                    {e.reference.substring(0, 12)}...
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">—</span>
+                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 )
@@ -566,16 +715,18 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                             </div>
                         )}
 
-                        {expenses.length > 0 && (
-                            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Info className="h-4 w-4 text-muted-foreground" />
-                                    <h3 className="text-sm font-medium">Detalles adicionales</h3>
+                        {cashRegister.expense.length > 0 && (
+                            <div className="mt-6 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="bg-white dark:bg-slate-800 p-1.5 rounded-full">
+                                        <Info className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <h3 className="text-base font-medium">Detalles adicionales de gastos</h3>
                                 </div>
-                                <div className="space-y-3 mt-3">
-                                    {expenses.map((e) => (
-                                        <div key={`desc-${e.id}`} className="p-3 bg-white dark:bg-slate-950 rounded-md border">
-                                            <div className="flex items-center justify-between mb-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    {cashRegister.expense.map((e) => (
+                                        <div key={`desc-${e.id}`} className="p-4 bg-white dark:bg-slate-950 rounded-md border shadow-sm">
+                                            <div className="flex items-center justify-between mb-3">
                                                 <div className="flex items-center gap-2">
                                                     <div className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded font-mono text-xs">
                                                         {e.id.substring(0, 8)}
@@ -584,15 +735,28 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
                                                 </div>
                                                 <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(e.amount)}</span>
                                             </div>
-                                            <p className="text-sm text-muted-foreground">{e.description}</p>
-                                            {e.reference && (
-                                                <div className="mt-2 flex items-center gap-2">
-                                                    <span className="text-xs text-muted-foreground">Referencia:</span>
-                                                    <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                                                        {e.reference}
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <p className="text-sm text-muted-foreground bg-slate-50 dark:bg-slate-900/50 p-2 rounded-md border border-slate-200 dark:border-slate-800">
+                                                {e.description}
+                                            </p>
+                                            <div className="mt-3 flex flex-wrap items-center gap-3">
+                                                {e.reference && (
+                                                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">
+                                                        <span className="text-xs text-muted-foreground">Ref:</span>
+                                                        <span className="text-xs font-mono">{e.reference.substring(0, 12)}...</span>
+                                                    </div>
+                                                )}
+                                                {e.attachmentUrl && (
+                                                    <a
+                                                        href={e.attachmentUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md"
+                                                    >
+                                                        <FileText className="h-3 w-3" />
+                                                        Ver comprobante
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -603,8 +767,9 @@ export function CashRegisterDetailModal({ open, onClose, payments, expenses, pro
 
                 <Separator className="my-4" />
 
-                <div className="flex justify-end">
-                    <Button variant="outline" onClick={onClose}>
+                <div className="flex justify-end mt-6">
+                    <Button variant="default" onClick={onClose} className="gap-2">
+                        <Eye className="h-4 w-4" />
                         Cerrar
                     </Button>
                 </div>

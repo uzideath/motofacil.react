@@ -38,10 +38,8 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-import { HttpService } from "@/lib/http"
 import { format } from "date-fns"
 import { es } from "date-fns/locale/es"
-import { CashRegisterDetailModal } from "./history-modal"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -53,11 +51,20 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { HttpService } from "@/lib/http"
+import { CashRegisterDetailModal } from "./history-modal"
+
 
 enum Providers {
     MOTOFACIL = "MOTOFACIL",
     OBRASOCIAL = "OBRASOCIAL",
     PORCENTAJETITO = "PORCENTAJETITO",
+}
+
+enum PaymentMethods {
+    CASH = "CASH",
+    TRANSACTION = "TRANSACTION",
+    CARD = "CARD",
 }
 
 const formatProviderName = (provider: string | undefined): string => {
@@ -95,46 +102,116 @@ const providerMap: Record<string, { label: string; color: string; icon: React.Re
     },
 }
 
+type Loan = {
+    id: string
+    userId: string
+    contractNumber: string
+    motorcycleId: string
+    totalAmount: number
+    downPayment: number
+    installments: number
+    paidInstallments: number
+    remainingInstallments: number
+    totalPaid: number
+    debtRemaining: number
+    interestRate: number
+    interestType: string
+    paymentFrequency: string
+    installmentPaymentAmmount: number
+    gpsInstallmentPayment: number
+    createdAt: string
+    updatedAt: string
+    startDate: string
+    endDate: string | null
+    status: string
+    user: {
+        id: string
+        name: string
+    }
+    motorcycle: {
+        id: string
+        plate: string
+    }
+}
+
 type Payment = {
     id: string
-    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    loanId: string
+    paymentMethod: PaymentMethods
     amount: number
+    gps: number
     paymentDate: string
     isLate: boolean
+    latePaymentDate: string | null
+    notes: string | null
+    attachmentUrl: string | null
+    createdById: string
+    createdAt: string
+    updatedAt: string
+    cashRegisterId: string
+    loan: Loan
+    createdBy: {
+        id: string
+        username: string
+    }
 }
 
 type Expense = {
     id: string
     amount: number
     date: string
+    provider: string
     category: string
-    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
+    paymentMethod: PaymentMethods
     beneficiary: string
-    reference?: string
+    reference: string
     description: string
+    attachmentUrl: string | null
+    cashRegisterId: string
+    createdById: string
+    createdAt: string
+    updatedAt: string
 }
 
 type CashRegister = {
     id: string
     date: string
+    provider: string
+    cashInRegister: number
+    cashFromTransfers: number
+    cashFromCards: number
+    notes: string
+    createdAt: string
+    updatedAt: string
+    createdById: string
+    payments: Payment[]
+    expense: Expense[]
+    createdBy: {
+        id: string
+        username: string
+    }
+}
+
+type CashRegisterDisplay = {
+    id: string
+    date: string
+    time: string
     user: string
+    provider?: string
     totalIncome: number
     totalExpense: number
     balance: number
     status: "balanced" | "minor-diff" | "major-diff"
-    time: string
-    provider?: string
-    raw: {
-        payments: Payment[]
-        expense: Expense[]
-        provider?: string
-        [key: string]: any
-    }
+    cashInRegister: number
+    cashFromTransfers: number
+    cashFromCards: number
+    notes: string
+    raw: CashRegister
 }
 
 export function CashRegisterHistory() {
-    const [selectedRegister, setSelectedRegister] = useState<CashRegister | null>(null)
-    const [registers, setRegisters] = useState<CashRegister[]>([])
+    const [selectedRegister, setSelectedRegister] = useState<CashRegisterDisplay | null>(null)
+    const [registers, setRegisters] = useState<CashRegisterDisplay[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
@@ -150,16 +227,18 @@ export function CashRegisterHistory() {
             setRefreshing(true)
 
             const res = await HttpService.get("/api/v1/closing")
-            const mapped: CashRegister[] = res.data.map((item: any) => {
-                const totalIncome = item.payments.reduce((acc: number, p: Payment) => acc + p.amount, 0)
+
+            const mapped: CashRegisterDisplay[] = res.data.map((item: CashRegister) => {
+                const totalIncome = item.payments.reduce((acc: number, p: Payment) => acc + p.amount + p.gps, 0)
                 const totalExpense = item.expense.reduce((acc: number, e: Expense) => acc + e.amount, 0)
                 const balance = totalIncome - totalExpense
                 const createdAt = new Date(item.createdAt)
+                const totalCashInSystem = item.cashInRegister + item.cashFromTransfers + item.cashFromCards
 
-                const status: CashRegister["status"] =
-                    Math.abs(balance - (item.cashInRegister + item.cashFromTransfers + item.cashFromCards)) <= 1000
+                const status: CashRegisterDisplay["status"] =
+                    Math.abs(balance - totalCashInSystem) <= 1000
                         ? "balanced"
-                        : Math.abs(balance - (item.cashInRegister + item.cashFromTransfers + item.cashFromCards)) <= 5000
+                        : Math.abs(balance - totalCashInSystem) <= 5000
                             ? "minor-diff"
                             : "major-diff"
 
@@ -167,18 +246,17 @@ export function CashRegisterHistory() {
                     id: item.id,
                     date: format(createdAt, "dd/MM/yyyy", { locale: es }),
                     time: format(createdAt, "HH:mm", { locale: es }),
-                    user: item.createdBy?.name || "N/A",
+                    user: item.createdBy?.username || "N/A",
                     totalIncome,
                     totalExpense,
                     balance,
                     status,
                     provider: item.provider,
-                    raw: {
-                        payments: item.payments,
-                        expense: item.expense,
-                        provider: item.provider,
-                        ...item,
-                    },
+                    cashInRegister: item.cashInRegister,
+                    cashFromTransfers: item.cashFromTransfers,
+                    cashFromCards: item.cashFromCards,
+                    notes: item.notes,
+                    raw: item,
                 }
             })
 
@@ -255,7 +333,7 @@ export function CashRegisterHistory() {
         return pageNumbers
     }
 
-    const renderStatus = (status: CashRegister["status"]) => {
+    const renderStatus = (status: CashRegisterDisplay["status"]) => {
         switch (status) {
             case "balanced":
                 return (
@@ -424,6 +502,86 @@ export function CashRegisterHistory() {
                             </Button>
                         )}
                     </div>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                    <Card className="bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/30">
+                        <CardContent className="p-4">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Ingresos</p>
+                                    <p className="text-2xl font-bold text-green-700 dark:text-green-300">{formatCurrency(totalIncome)}</p>
+                                </div>
+                                <div className="bg-green-100 dark:bg-green-800/30 p-3 rounded-full">
+                                    <ArrowUpToLine className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                </div>
+                            </div>
+                            <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-2">
+                                {filteredRegisters.reduce((sum, r) => sum + r.raw.payments.length, 0)} transacciones registradas
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30">
+                        <CardContent className="p-4">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm font-medium text-red-600 dark:text-red-400">Total Egresos</p>
+                                    <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(totalExpense)}</p>
+                                </div>
+                                <div className="bg-red-100 dark:bg-red-800/30 p-3 rounded-full">
+                                    <ArrowDownToLine className="h-6 w-6 text-red-600 dark:text-red-400" />
+                                </div>
+                            </div>
+                            <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-2">
+                                {filteredRegisters.reduce((sum, r) => sum + r.raw.expense.length, 0)} transacciones registradas
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card
+                        className={`${totalBalance >= 0
+                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30"
+                            : "bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30"
+                            }`}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p
+                                        className={`text-sm font-medium ${totalBalance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
+                                            }`}
+                                    >
+                                        Balance Neto
+                                    </p>
+                                    <p
+                                        className={`text-2xl font-bold ${totalBalance >= 0 ? "text-blue-700 dark:text-blue-300" : "text-amber-700 dark:text-amber-300"
+                                            }`}
+                                    >
+                                        {formatCurrency(totalBalance)}
+                                    </p>
+                                </div>
+                                <div
+                                    className={`p-3 rounded-full ${totalBalance >= 0 ? "bg-blue-100 dark:bg-blue-800/30" : "bg-amber-100 dark:bg-amber-800/30"
+                                        }`}
+                                >
+                                    <Wallet
+                                        className={`h-6 w-6 ${totalBalance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
+                                            }`}
+                                    />
+                                </div>
+                            </div>
+                            <p
+                                className={`text-xs ${totalBalance >= 0
+                                    ? "text-blue-600/70 dark:text-blue-400/70"
+                                    : "text-amber-600/70 dark:text-amber-400/70"
+                                    } mt-2`}
+                            >
+                                {totalBalance >= 0 ? "Balance positivo" : "Balance negativo"}
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Table */}
@@ -653,9 +811,7 @@ export function CashRegisterHistory() {
                 <CashRegisterDetailModal
                     open={!!selectedRegister}
                     onClose={() => setSelectedRegister(null)}
-                    payments={selectedRegister.raw.payments}
-                    expenses={selectedRegister.raw.expense}
-                    provider={selectedRegister.provider}
+                    cashRegister={selectedRegister.raw}
                 />
             )}
         </Card>
