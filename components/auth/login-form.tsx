@@ -8,21 +8,14 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { loginRequest } from "@/lib/services/auth"
 import { AuthService } from "@/lib/services/auth.service"
+import { useNavigationStore } from "@/lib/nav"
+
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -39,6 +32,7 @@ export function LoginForm() {
   const router = useRouter()
   const { toast } = useToast()
   const { login } = useAuth()
+  const { setNavigatingFromLogin } = useNavigationStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,12 +55,16 @@ export function LoginForm() {
 
       login(user)
 
+      // Set navigation state to indicate we're coming from login
+      setNavigatingFromLogin(true)
+
       toast({
         title: "Inicio de sesión exitoso",
         description: "Has iniciado sesión correctamente.",
       })
 
-      window.location.href = "/" // o usa router.push("/") si prefieres navegación controlada
+      // Use router.push instead of window.location for better transition control
+      router.push("/dashboard")
     } catch (error) {
       console.error("Error al iniciar sesión:", error)
       toast({

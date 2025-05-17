@@ -1,25 +1,37 @@
+"use client"
+
 import type React from "react"
-import type { Metadata } from "next/dist/lib/metadata/types/metadata-interface"
-import { Inter } from "next/font/google"
+import { Inter } from 'next/font/google'
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/toaster"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AuthProvider } from "@/hooks/use-auth"
+import { useEffect } from "react"
+import { usePathname } from "next/navigation"
+import { useNavigationStore } from "@/lib/nav"
 
 const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "MotoFácil Atlántico - Sistema de Préstamos",
-  description: "Sistema de gestión de préstamos para motocicletas",
-}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { setPageLoaded, isNavigatingFromLogin } = useNavigationStore()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (isNavigatingFromLogin && !pathname.includes('/login')) {
+      const timer = setTimeout(() => {
+        setPageLoaded(true)
+      }, 600)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isNavigatingFromLogin, pathname, setPageLoaded])
+
   return (
     <html lang="es" suppressHydrationWarning className="dark">
       <body className={`${inter.className} bg-dark-blue-950 dot-pattern text-gray-100`}>

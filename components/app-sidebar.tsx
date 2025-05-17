@@ -17,28 +17,15 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
-import {
-  Bike,
-  LogOut,
-  Settings,
-  HelpCircle,
-  Calculator,
-  ChevronRight,
-  BadgeDollarSign,
-  Banknote,
-  FileBarChart,
-  FileDown,
-  HandCoins,
-  LayoutDashboard,
-  User2,
-  Users2Icon,
-} from "lucide-react"
+import { Bike, LogOut, Settings, HelpCircle, Calculator, ChevronRight, BadgeDollarSign, Banknote, FileBarChart, FileDown, HandCoins, LayoutDashboard, User2, Users2Icon } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { hasAccess } from "@/lib/services/route-access"
 import { usePathname, useRouter } from "next/navigation"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useNavigationStore } from "@/lib/nav"
+
 
 type CategoryState = {
   finance: boolean
@@ -50,12 +37,32 @@ export function AppSidebar() {
   const { open } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
+  const { isPageLoaded, isNavigatingFromLogin, resetNavigation } = useNavigationStore()
+  const [shouldRender, setShouldRender] = useState(false)
 
   // Track open states for collapsible categories
   const [openCategories, setOpenCategories] = useState<CategoryState>({
     finance: true,
     operations: true,
   })
+
+  // Control sidebar rendering based on navigation state
+  useEffect(() => {
+    // If we're not navigating from login, render sidebar immediately
+    if (!isNavigatingFromLogin && user) {
+      setShouldRender(true)
+      return;
+    }
+
+    // If we're navigating from login, wait for the page to be fully loaded
+    if (isNavigatingFromLogin && isPageLoaded && user) {
+      setShouldRender(true);
+      // Reset navigation state after rendering
+      setTimeout(() => {
+        resetNavigation();
+      }, 100);
+    }
+  }, [isNavigatingFromLogin, isPageLoaded, user, resetNavigation]);
 
   const toggleCategory = (category: keyof CategoryState) => {
     setOpenCategories((prev) => ({
@@ -64,8 +71,9 @@ export function AppSidebar() {
     }))
   }
 
-  if (!user && !pathname.startsWith("/(auth)")) {
-    return null
+  // Don't render if conditions aren't met
+  if (!shouldRender || !user || pathname.startsWith("/login")) {
+    return null;
   }
 
   const dashboardItem = { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard }
@@ -200,9 +208,6 @@ export function AppSidebar() {
             </div>
           </div>
         </div>
-
-
-
 
         {/* Content */}
         <SidebarContent className="px-3 py-4">
