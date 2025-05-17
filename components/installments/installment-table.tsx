@@ -158,8 +158,8 @@ const mapped: Installment[] = rawData.map((item: any) => ({
         "/api/v1/receipt",
         {
           name: installment.userName,
-          identification: installment.loan.contractNumber,
-          concept: `Pago de cuota de ${installment.motorcycle.plate}`,
+          identification: installment.motorcycle.plate,
+          concept: `Monto`,
           amount: installment.amount,
           latePaymentDate: installment.latePaymentDate,
           gps: installment.gps,
