@@ -55,6 +55,9 @@ type Installment = {
   isLate: boolean
   latePaymentDate?: string
   paymentMethod: "CASH" | "CARD" | "TRANSACTION"
+  loan: {
+    contractNumber: string
+  }
   createdBy?: {
     id: string
     name: string
@@ -149,7 +152,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         "/api/v1/receipt",
         {
           name: installment.userName,
-          identification: installment.loanId,
+          identification: installment.loan.contractNumber,
           concept: `Pago de cuota de ${installment.motorcycleModel}`,
           amount: installment.amount,
           latePaymentDate: installment.latePaymentDate,
