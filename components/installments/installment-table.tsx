@@ -58,6 +58,9 @@ type Installment = {
   loan: {
     contractNumber: string
   }
+  motorcycle: {
+    plate: string
+  }
   createdBy?: {
     id: string
     name: string
@@ -153,7 +156,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         {
           name: installment.userName,
           identification: installment.loan.contractNumber,
-          concept: `Pago de cuota de ${installment.motorcycleModel}`,
+          concept: `Pago de cuota de ${installment.motorcycle.plate}`,
           amount: installment.amount,
           latePaymentDate: installment.latePaymentDate,
           gps: installment.gps,
