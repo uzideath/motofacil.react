@@ -79,6 +79,7 @@ import {
 export type Loan = {
   id: string
   userId: string
+  contractNumber: string
   motorcycleId: string
   totalAmount: number
   downPayment: number
@@ -243,7 +244,7 @@ export function LoanTable() {
       const res = await HttpService.post(
         "/api/v1/contract",
         {
-          contractNumber: loan.id.slice(0, 6).toUpperCase(),
+          contractNumber: loan.contractNumber,
           legalRepresentative: "Andrés Felipe Correa Perdomo",
           representativeId: "10497576",
           customerName: loan.user.name,
@@ -253,9 +254,9 @@ export function LoanTable() {
           customerPhone: loan.user.phone || "Teléfono no disponible",
           plate: loan.motorcycle.plate || "Placa no disponible",
           brand: loan.motorcycle.brand || "Marca no disponible",
-          engine: loan.motorcycle.engine, // Idealmente obtener del modelo de motocicleta
+          engine: loan.motorcycle.engine, 
           model: loan.motorcycle.model || "Modelo no disponible",
-          chassis: loan.motorcycle.chassis, // Idealmente obtener del modelo de motocicleta
+          chassis: loan.motorcycle.chassis,
           date: new Date().toISOString(),
         },
         {
