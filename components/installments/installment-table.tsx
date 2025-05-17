@@ -111,20 +111,20 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
       const res = await HttpService.get(url)
       const rawData = res.data
 
-      const mapped: Installment[] = rawData.map((item: any) => ({
-        id: item.id,
-        loanId: item.loanId,
-        userName: item.loan?.user?.name ?? "Desconocido",
-        motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
-        amount: item.amount,
-        gps: item.gps,
-        date: item.paymentDate,
-        isLate: item.isLate,
-        latePaymentDate: item.latePaymentDate,
-        paymentMethod: item.paymentMethod ?? "CASH",
-        createdBy: item.createdBy ?? null,
-        attachmentUrl: item.attachmentUrl ?? null,
-      }))
+const mapped: Installment[] = rawData.map((item: any) => ({
+  id: item.id,
+  loanId: item.loanId,
+  userName: item.loan?.user?.name ?? "Desconocido",
+  motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
+  amount: item.amount,
+  gps: item.gps,
+  date: item.paymentDate,
+  isLate: item.isLate,
+  latePaymentDate: item.latePaymentDate,
+  paymentMethod: item.paymentMethod ?? "CASH",
+  createdBy: item.createdBy ?? null,
+  attachmentUrl: item.attachmentUrl ?? null,
+}))
 
       setInstallments(mapped)
     } catch (error) {
