@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { ModeToggle } from "@/components/mode-toggle"
 import { LoginForm } from "@/components/auth/login-form"
 import { Particles } from "@/components/ui/particles"
+import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: "Login | MotoFácil Atlántico",
@@ -80,7 +81,9 @@ export default function LoginPage() {
                   <p className="text-sm text-gray-400">Ingresa tus credenciales para acceder al sistema</p>
                 </div>
 
-                <LoginForm />
+                <Suspense fallback={<div>Cargando formulario...</div>}>
+                  <LoginForm />
+                </Suspense>
               </div>
             </div>
           </div>
