@@ -27,13 +27,7 @@ export function QRCodeScanner() {
     const [isRequestingQr, setIsRequestingQr] = useState(false)
     const { toast } = useToast()
 
-    useEffect(() => {
-        console.log("🧪 COMPONENT MOUNTED")
-        console.log("🧪 status?.isReady:", status?.isReady)
-        console.log("🧪 qrCode:", qrCode)
-        console.log("🧪 isLoading:", isLoading)
-    }, [status?.isReady, qrCode, isLoading])
-
+    // Sincronizar QR si no estamos conectados
     useEffect(() => {
         if (!status?.isReady && !qrCode && !isLoading && !isRequestingQr) {
             console.log("📲 No conectado, solicitando QR inicial...")
@@ -63,6 +57,52 @@ export function QRCodeScanner() {
         }
     }
 
+    // Mostrar pantalla de sincronización inicial
+    if (status === null && isLoading) {
+        return (
+            <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
+                <CardContent className="p-6 text-center">
+                    <RefreshCw className="animate-spin h-12 w-12 text-blue-400 mx-auto mb-4" />
+                    <p className="text-blue-300">Sincronizando estado de WhatsApp...</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Mostrar conexión activa
+    if (status?.isReady) {
+        return (
+            <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-green-400 flex items-center gap-2">
+                        <Smartphone className="h-5 w-5" />
+                        WhatsApp Conectado
+                    </CardTitle>
+                    <CardDescription className="text-blue-100">
+                        La conexión con WhatsApp está activa y funcionando correctamente.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center p-6 space-y-4">
+                        <div className="bg-green-600/20 p-6 rounded-full">
+                            <Smartphone className="h-16 w-16 text-green-500" />
+                        </div>
+                        <p className="text-green-400 text-lg font-medium">Listo para enviar mensajes</p>
+                        <Button
+                            variant="outline"
+                            onClick={reconnect}
+                            className="bg-dark-blue-800/50 border-dark-blue-700/50 text-blue-300 hover:bg-dark-blue-700/70"
+                        >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Reconectar
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Mostrar QR o solicitud manual
     return (
         <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
             <CardHeader>
@@ -74,10 +114,9 @@ export function QRCodeScanner() {
                     Escanea el código QR con tu teléfono para conectar WhatsApp.
                 </CardDescription>
             </CardHeader>
-
             <CardContent>
                 <div className="flex flex-col items-center justify-center p-6 space-y-4">
-                    {/* Estado cargando */}
+                    {/* Cargando o esperando */}
                     {(isLoading || isRequestingQr) && (
                         <div className="flex flex-col items-center justify-center">
                             <RefreshCw className="animate-spin h-12 w-12 text-blue-400 mb-4" />
@@ -98,19 +137,18 @@ export function QRCodeScanner() {
                         </div>
                     )}
 
-                    {/* QR válido */}
+                    {/* QR recibido */}
                     {qrCode && qrCode.length > 10 && (
                         <>
-                            <p className="text-green-400 font-bold">✅ QR válido recibido</p>
+                            <p className="text-green-400 font-bold">✅ QR recibido</p>
                             <div className="bg-white p-4 rounded-lg">
                                 <QRCodeSVG value={qrCode} size={256} />
                             </div>
                             <p className="text-xs text-blue-300 mt-2">Longitud del QR: {qrCode.length}</p>
-                            <pre className="text-xs text-yellow-300 break-all text-center max-w-xs">{qrCode}</pre>
                         </>
                     )}
 
-                    {/* QR inválido */}
+                    {/* QR no disponible */}
                     {(!qrCode || qrCode.length <= 10) && !isLoading && !error && (
                         <div className="text-center">
                             <p className="text-yellow-400 font-medium">⚠️ No se ha recibido un QR válido</p>
@@ -122,14 +160,6 @@ export function QRCodeScanner() {
                                 <RefreshCw className={`mr-2 h-4 w-4 ${isRequestingQr ? "animate-spin" : ""}`} />
                                 Solicitar código QR
                             </Button>
-
-                            {/* QR de prueba (control visual) */}
-                            <div className="mt-6 text-sm text-blue-200">
-                                <p className="mb-2">🧪 QR de prueba fijo:</p>
-                                <div className="bg-white p-2 rounded-md">
-                                    <QRCodeSVG value="https://wa.me/573001234567" size={150} />
-                                </div>
-                            </div>
                         </div>
                     )}
 
