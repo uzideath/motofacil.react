@@ -101,6 +101,12 @@ export const WhatsAppProvider: React.FC<WhatsAppProviderProps> = ({
             setConnectionInfo(null)
         })
 
+        socket.on("qr_expired", () => {
+            console.warn("⚠️ QR expirado. Solicitando uno nuevo automáticamente.")
+            addLog("warning", "QR expiró. Solicitando uno nuevo automáticamente.")
+            requestQrCode()
+        })
+
         // Listen for logs
         socket.on("whatsapp_log", (payload: WhatsAppLogPayload) => {
             setLogs((prevLogs) => [...prevLogs, payload])
