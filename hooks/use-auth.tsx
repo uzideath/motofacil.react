@@ -1,6 +1,7 @@
 "use client"
 
 import { AuthService, decodeJWT } from "@/lib/services/auth.service"
+import { usePathname } from "next/navigation"
 import {
   createContext,
   useContext,
@@ -31,7 +32,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
 
+  // Inicializa sesión desde cookie o hace refresh
   useEffect(() => {
     const token = document.cookie
       .split(";")
@@ -44,6 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({ ...decoded, exp: decoded.exp })
       setIsLoading(false)
     } else {
+      // 🚫 Evita refresh en páginas públicas (como /login)
+      const publicPaths = ["/login", "/forgot-password"]
+      if (publicPaths.includes(pathname)) {
+        setIsLoading(false)
+        return
+      }
+
       AuthService.refresh().then((refreshedUser) => {
         if (refreshedUser) {
           setUser({ ...refreshedUser, exp: refreshedUser.exp })
@@ -51,15 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false)
       })
     }
-  }, [])
+  }, [pathname])
 
-  // ⏱️ Manejo de expiración y refresh automático
+  // ⏱️ Maneja expiración y refresh programado
   useEffect(() => {
     if (!user?.exp) return
 
     const now = Math.floor(Date.now() / 1000)
     const timeUntilExpiration = user.exp - now
-    const timeUntilRefresh = Math.max(timeUntilExpiration - 60, 0) // 1 minuto antes
+    const timeUntilRefresh = Math.max(timeUntilExpiration - 60, 0)
 
     const refreshTimeout = setTimeout(async () => {
       const refreshedUser = await AuthService.refresh()
