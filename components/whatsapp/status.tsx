@@ -2,14 +2,22 @@
 
 import { Badge } from "@/components/ui/badge"
 import { useWhatsApp } from "@/context/whatsapp"
-import { Smartphone } from 'lucide-react'
-
+import { Smartphone } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 export function WhatsappStatus() {
     const { status, isLoading } = useWhatsApp()
 
-    if (isLoading) {
-        return null
+    if (isLoading && !status) {
+        return (
+            <Badge
+                variant="outline"
+                className="bg-transparent border-blue-500/50 text-blue-400 flex items-center gap-1"
+            >
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                Sincronizando WhatsApp...
+            </Badge>
+        )
     }
 
     return (
