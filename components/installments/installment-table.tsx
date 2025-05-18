@@ -32,7 +32,7 @@ import {
   BadgeCent,
   Eye,
   PlusCircle,
-  MessageSquare,
+  CheckCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -41,8 +41,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateRangePicker } from "@/components/date-range-picker"
 import type { DateRange } from "react-day-picker"
 import { formatDate as formatDateCustom } from "@/lib/utils"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { InstallmentForm } from "./installment-form"
+
+// WhatsApp SVG Icon Component
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    width="24"
+    height="24"
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.25.625 4.354 1.709 6.15L.086 24l5.993-1.58A11.965 11.965 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.59 9.59 0 0 1-4.889-1.334l-.351-.21-3.636.953.972-3.553-.23-.367A9.594 9.594 0 0 1 2.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z" />
+  </svg>
+)
 
 type Installment = {
   id: string
@@ -92,6 +107,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedAttachmentUrl, setSelectedAttachmentUrl] = useState("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
 
   const fetchInstallments = async () => {
     try {
@@ -206,7 +223,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const handleSendWhatsapp = async (installment: Installment) => {
     try {
       // Get the phone number from the installment data
-      const phoneNumber = `+57${installment.loan?.user?.phone}`
+      const phoneNumber = installment.loan?.user?.phone
 
       if (!phoneNumber) {
         toast({
@@ -237,11 +254,9 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
       // Send the request to the whatsapp endpoint
       const res = await HttpService.post("/api/v1/receipt/whatsapp", receiptData)
 
-      toast({
-        title: "Recibo enviado",
-        description: "El recibo se ha enviado por WhatsApp correctamente",
-        variant: "default",
-      })
+      // Show success dialog instead of toast
+      setSuccessMessage(`El recibo ha sido enviado exitosamente a ${installment.userName} por WhatsApp.`)
+      setIsSuccessDialogOpen(true)
     } catch (error) {
       console.error("Error al enviar el recibo por WhatsApp:", error)
       toast({
@@ -700,32 +715,32 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                         <div className="flex justify-end gap-1">
                           {i.attachmentUrl && (
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => handleViewAttachment(i)}
                               title="Ver comprobante"
-                              className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                              className="bg-purple-600/80 hover:bg-purple-700 text-white border-purple-500"
                             >
                               <Eye className="h-4 w-4" />
                               <span className="sr-only">Ver comprobante</span>
                             </Button>
                           )}
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleSendWhatsapp(i)}
                             title="Enviar por WhatsApp"
-                            className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                            className="bg-green-600/80 hover:bg-green-700 text-white border-green-500"
                           >
-                            <MessageSquare className="h-4 w-4" />
+                            <WhatsAppIcon className="h-4 w-4" />
                             <span className="sr-only">Enviar por WhatsApp</span>
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handlePrint(i)}
                             title="Imprimir recibo"
-                            className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                            className="bg-blue-600/80 hover:bg-blue-700 text-white border-blue-500"
                           >
                             <Printer className="h-4 w-4" />
                             <span className="sr-only">Imprimir recibo</span>
@@ -864,6 +879,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           </div>
         </div>
       </CardContent>
+
       {/* Attachment Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-dark-blue-900 border-dark-blue-800 text-white max-w-3xl">
@@ -879,6 +895,32 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
               />
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent className="bg-dark-blue-900 border-green-600 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-green-400 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Recibo enviado con éxito
+            </DialogTitle>
+            <DialogDescription className="text-blue-100">{successMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center p-4">
+            <div className="bg-green-600/20 p-4 rounded-full">
+              <WhatsAppIcon className="h-12 w-12 text-green-500" />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsSuccessDialogOpen(false)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Aceptar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </Card>
