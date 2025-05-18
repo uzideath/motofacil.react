@@ -12,7 +12,7 @@ function getCookie(name: string): string | null {
 
 const HttpService: AxiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000",
-    timeout: 10000,
+    timeout: 30000,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",

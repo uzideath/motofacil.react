@@ -29,11 +29,25 @@ export interface WhatsAppLogPayload {
 let socket: Socket | null = null
 
 export const getSocket = (url = "http://localhost:3000"): Socket => {
+    const parsedUrl = new URL(url)
+    parsedUrl.protocol = parsedUrl.protocol === "https:" ? "wss:" : "ws:"
+
     if (!socket) {
-        socket = io(url, {
-            transports: ["websocket", "polling"],
+        socket = io(parsedUrl.toString(), {
+            transports: ["websocket"],
         })
     }
+    socket = io(url, {
+        transports: ["websocket", "polling"],
+    })
+
+    socket.on("connect", () => {
+        console.log("✅ Socket connected!", socket?.id)
+    })
+
+    socket.on("connect_error", (err) => {
+        console.error("❌ Socket connection error:", err)
+    })
     return socket
 }
 

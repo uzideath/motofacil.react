@@ -14,6 +14,7 @@ import { CountryFlag } from "@/components/ui/country-flag"
 import { useWhatsApp } from "@/hooks/useWhatsapp"
 import { formatPhoneNumber, CountryData } from "@/lib/countries"
 import { getPlatformInfo } from "@/lib/phones"
+import { LogoutButton } from "./logout"
 
 export interface WhatsAppQrCodeProps {
     title?: string
@@ -163,6 +164,11 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
                         </CardTitle>
                         <CardDescription className="mt-1 text-base">{description}</CardDescription>
                     </div>
+                    {isConnected && (
+                        <div className="ml-auto">
+                            <LogoutButton />
+                        </div>
+                    )}
                 </div>
             </CardHeader>
 
