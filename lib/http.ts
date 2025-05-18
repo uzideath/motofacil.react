@@ -4,8 +4,8 @@ import axios, {
     InternalAxiosRequestConfig,
     AxiosResponse,
 } from "axios"
+import { getClientAuthToken } from "@/lib/token"
 import { User } from "@/hooks/use-auth"
-import { getCookie } from "./token"
 import { AuthService } from "./services/auth.service"
 
 const HttpService: AxiosInstance = axios.create({
@@ -17,7 +17,6 @@ const HttpService: AxiosInstance = axios.create({
     },
 })
 
-/** Cola de peticiones durante refresh */
 let isRefreshing = false
 let failedQueue: {
     resolve: (value: AxiosResponse) => void
@@ -37,10 +36,10 @@ function processQueue(error: any, token: string | null = null): void {
     failedQueue = []
 }
 
-/** Interceptor para agregar el Authorization header */
+/** Interceptor de requests para incluir Authorization desde cookie del cliente */
 HttpService.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-        const token = getCookie("authToken")
+        const token = getClientAuthToken()
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
@@ -52,7 +51,7 @@ HttpService.interceptors.request.use(
     }
 )
 
-/** Interceptor para manejar 401 y refresh automático */
+/** Interceptor de respuesta con refresh automático ante 401 */
 HttpService.interceptors.response.use(
     (response: AxiosResponse): AxiosResponse => response,
     async (error: AxiosError): Promise<any> => {
@@ -75,7 +74,7 @@ HttpService.interceptors.response.use(
                 const user: User | null = await AuthService.refresh()
 
                 if (user) {
-                    const newToken = getCookie("authToken")
+                    const newToken = getClientAuthToken()
                     processQueue(null, newToken)
 
                     originalRequest.headers.Authorization = `Bearer ${newToken}`
