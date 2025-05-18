@@ -69,6 +69,7 @@ export const WhatsAppProvider: React.FC<WhatsAppProviderProps> = ({
     useEffect(() => {
         const socket = getSocket(socketUrl)
 
+
         // Listen for QR code updates
         socket.on("qr", (payload: QrCodePayload) => {
             console.log("QR code received", payload)
@@ -85,6 +86,15 @@ export const WhatsAppProvider: React.FC<WhatsAppProviderProps> = ({
             setQrCode(null) // Clear QR code when connected
         })
 
+        socket.on("whatsapp_ready", () => {
+            console.log("✅ WhatsApp session is ready")
+            setIsConnected(true)
+            setIsConnecting(false)
+            setQrCode(null)
+            addLog("info", "WhatsApp session established")
+        })
+
+        
         socket.on("whatsapp_disconnected", (payload: WhatsAppStatusPayload) => {
             console.log("WhatsApp disconnected", payload)
             setIsConnected(false)

@@ -216,7 +216,17 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
                                             <Progress value={qrExpirationProgress} className="h-2" />
                                         </div>
                                     )}
+                                    {isConnecting && (
+                                        <div className="mt-4 text-center text-muted-foreground text-sm">
+                                            <span className="inline-flex items-center gap-2 animate-pulse">
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Esperando escaneo del QR...
+                                            </span>
+                                        </div>
+                                    )}
+
                                 </motion.div>
+
                             ) : (
                                 <motion.div
                                     key="waiting"
