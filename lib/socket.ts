@@ -12,7 +12,7 @@ export const getSocket = (): Socket => {
         console.log("Initializing socket connection...")
 
         // Create socket connection
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000"
         console.log(`Connecting to WebSocket at ${apiUrl}`)
 
         socket = io(apiUrl, {
