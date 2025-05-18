@@ -7,14 +7,9 @@ import React, {
     useState,
     type ReactNode,
 } from "react"
-import {
-    getSocket,
-    requestQrCode,
-    onQrReceived,
-    onStatusConnected,
-    onStatusDisconnected,
-} from "@/lib/socket"
+import { getSocket, requestQrCode } from "@/lib/socket"
 import { HttpService } from "@/lib/http"
+import type { Socket } from "socket.io-client"
 
 interface WhatsAppStatus {
     isReady: boolean
@@ -36,21 +31,22 @@ interface WhatsAppContextType {
 const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined)
 
 export function WhatsAppProvider({ children }: { children: ReactNode }) {
+    const [socket, setSocket] = useState<Socket | null>(null)
     const [status, setStatus] = useState<WhatsAppStatus | null>(null)
     const [qrCode, setQrCode] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Obtener estado inicial desde API
+    // Obtener estado inicial del backend (REST)
     useEffect(() => {
         const fetchStatus = async () => {
             try {
                 setIsLoading(true)
                 const res = await HttpService.get("/api/v1/whatsapp/status")
                 setStatus(res.data)
-                setQrCode(null) // Limpiar QR si ya está conectado
+                setQrCode(null)
             } catch (err) {
-                console.error("Error al obtener estado de WhatsApp:", err)
+                console.error("❌ Error al obtener estado inicial:", err)
                 setError("No se pudo obtener el estado de WhatsApp")
             } finally {
                 setIsLoading(false)
@@ -60,32 +56,48 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
         fetchStatus()
     }, [])
 
-    // Establecer listeners del socket
+    // Conectar socket y registrar eventos
     useEffect(() => {
-        const socket = getSocket()
+        const socketInstance = getSocket()
+        setSocket(socketInstance)
 
-        onQrReceived((qr) => {
-            console.log("✅ QR actualizado desde socket")
+        const handleQr = (qr: string) => {
+            console.log("✅ QR recibido en useWhatsApp y guardado")
             setQrCode(qr)
             setStatus((prev) =>
-                prev ? { ...prev, isReady: false } : { isReady: false, info: null }
+                prev ? { ...prev, isReady: false } : { isReady: false, info: null },
             )
             setIsLoading(false)
-        })
+        }
 
-        onStatusConnected((newStatus) => {
-            console.log("✅ Estado conectado recibido")
-            setStatus(newStatus)
+        const handleConnected = (data: WhatsAppStatus) => {
+            console.log("✅ WhatsApp conectado:", data)
+            setStatus(data)
             setQrCode(null)
-        })
+            setIsLoading(false)
+        }
 
-        onStatusDisconnected((newStatus) => {
-            console.log("🔌 Estado desconectado recibido")
-            setStatus(newStatus)
+        const handleDisconnected = (data: WhatsAppStatus) => {
+            console.log("🔌 WhatsApp desconectado:", data)
+            setStatus(data)
+            setIsLoading(false)
+        }
+
+        // Suscribirse a eventos
+        socketInstance.on("qr", (data) => {
+            if (data?.qr) handleQr(data.qr)
         })
+        socketInstance.on("whatsapp_connected", handleConnected)
+        socketInstance.on("whatsapp_disconnected", handleDisconnected)
+
+        return () => {
+            socketInstance.off("qr")
+            socketInstance.off("whatsapp_connected", handleConnected)
+            socketInstance.off("whatsapp_disconnected", handleDisconnected)
+        }
     }, [])
 
-    // Función para reconectar WhatsApp (vía HTTP)
+    // Reconectar vía HTTP
     const reconnect = async () => {
         try {
             setIsLoading(true)
@@ -93,18 +105,18 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
             console.log("🔁 Solicitando reconexión de WhatsApp")
             await HttpService.post("/api/v1/whatsapp/reconnect")
         } catch (err) {
-            console.error("❌ Error al reconectar WhatsApp:", err)
+            console.error("❌ Error al reconectar:", err)
             setError("No se pudo reconectar a WhatsApp")
         } finally {
             setIsLoading(false)
         }
     }
 
-    // Función para solicitar nuevo QR (vía socket)
+    // Solicitar nuevo QR
     const handleRequestQrCode = () => {
         setQrCode(null)
         setError(null)
-        console.log("📨 Solicitando nuevo código QR")
+        console.log("📨 Solicitando nuevo QR desde el contexto")
         requestQrCode()
     }
 
