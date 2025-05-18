@@ -51,7 +51,6 @@ HttpService.interceptors.request.use(
     }
 )
 
-/** Interceptor de respuesta con refresh automático ante 401 */
 HttpService.interceptors.response.use(
     (response: AxiosResponse): AxiosResponse => response,
     async (error: AxiosError): Promise<any> => {
@@ -59,8 +58,11 @@ HttpService.interceptors.response.use(
 
         const status = error.response?.status || 0
         const isUnauthorized = status === 401
+        const isAuthEndpoint =
+            originalRequest?.url?.includes("/auth/login") ||
+            originalRequest?.url?.includes("/auth/refresh")
 
-        if (isUnauthorized && !originalRequest._retry) {
+        if (isUnauthorized && !originalRequest._retry && !isAuthEndpoint) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject, config: originalRequest })
@@ -93,9 +95,9 @@ HttpService.interceptors.response.use(
             }
         }
 
-        console.error("API Error:", status, error.response?.data || error.message)
         return Promise.reject(error)
     }
 )
+
 
 export { HttpService }
