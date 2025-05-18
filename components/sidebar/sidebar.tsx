@@ -20,9 +20,17 @@ import {
     Settings,
     HelpCircle,
     Users2Icon,
+    Smartphone,
 } from "lucide-react"
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from "@/components/ui/sidebar"
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarSeparator,
+    useSidebar,
+} from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { NavFinance } from "./finance"
 import { NavMain } from "./nav"
@@ -30,6 +38,7 @@ import { NavOperations } from "./operations"
 import { NavSecondary } from "./secondary"
 import { NavUser } from "./user"
 import { hasAccess } from "@/lib/services/route-access"
+import { WhatsappStatus } from "../whatsapp/status"
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
     const { user, logout } = useAuth()
@@ -69,7 +78,6 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Main navigation items
     const mainItems = [
-
         { path: "/usuarios", label: "Usuarios", icon: User2 },
         { path: "/motocicletas", label: "Motocicletas", icon: Bike },
     ]
@@ -92,6 +100,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Secondary navigation items
     const secondaryItems = [
+        { path: "/config/whatsapp", label: "WhatsApp", icon: Smartphone },
         { path: "/settings", label: "Configuración", icon: Settings },
         { path: "/help", label: "Ayuda", icon: HelpCircle },
     ]
@@ -128,13 +137,13 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     pathname={pathname}
                     hasAccess={(path) => hasAccess(path, user?.roles || [])}
                 />
-                {/* <NavSecondary
+                <NavSecondary
                     items={secondaryItems}
                     pathname={pathname}
                     hasAccess={(path) => hasAccess(path, user?.roles || [])}
                     className="mt-auto"
                     title="Utilidades"
-                /> */}
+                />
                 {user && hasAccess(adminItem.path, user.roles) && (
                     <NavSecondary
                         items={[adminItem]}
@@ -145,6 +154,10 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                 )}
             </SidebarContent>
             <SidebarFooter className="border-t p-2">
+                <div className="mb-2 px-2">
+                    <WhatsappStatus />
+                </div>
+                <SidebarSeparator />
                 <NavUser user={user} onLogout={handleLogout} />
             </SidebarFooter>
         </Sidebar>

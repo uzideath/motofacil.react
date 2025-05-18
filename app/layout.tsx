@@ -11,6 +11,7 @@ import { useEffect, Suspense, lazy } from 'react'
 import { usePathname } from 'next/navigation'
 import { useNavigationStore } from '@/lib/nav'
 import { AppSidebar } from '@/components/sidebar/sidebar'
+import { WhatsAppProvider } from '@/context/whatsapp'
 
 const ExpiredSessionHandler = lazy(() => import('@/components/SessionHandler'))
 
@@ -46,18 +47,20 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <AuthProvider>
             <SidebarProvider>
-              <div className="flex h-screen w-full overflow-hidden">
-                <AppSidebar />
-                <div className="flex-1 overflow-auto w-full p-4 md:p-6">
-                  <div className="glass-effect rounded-xl p-4 md:p-6 min-h-[calc(100vh-3rem)]">
-                    {children}
+              <WhatsAppProvider>
+                <div className="flex h-screen w-full overflow-hidden">
+                  <AppSidebar />
+                  <div className="flex-1 overflow-auto w-full p-4 md:p-6">
+                    <div className="glass-effect rounded-xl p-4 md:p-6 min-h-[calc(100vh-3rem)]">
+                      {children}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Suspense fallback={null}>
-                <ExpiredSessionHandler />
-              </Suspense>
-              <Toaster />
+                <Suspense fallback={null}>
+                  <ExpiredSessionHandler />
+                </Suspense>
+                <Toaster />
+              </WhatsAppProvider>
             </SidebarProvider>
           </AuthProvider>
         </ThemeProvider>
