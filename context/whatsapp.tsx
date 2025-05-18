@@ -1,145 +1,207 @@
 "use client"
 
-import React, {
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-    type ReactNode,
-} from "react"
-import { getSocket, requestQrCode } from "@/lib/socket"
+import type React from "react"
+import { createContext, useEffect, useState, useCallback, type ReactNode } from "react"
+import {
+    getSocket,
+    closeSocket,
+    type QrCodePayload,
+    type WhatsAppStatusPayload,
+    type WhatsAppLogPayload,
+    type WhatsAppInfo,
+} from "@/lib/socket"
 import { HttpService } from "@/lib/http"
-import type { Socket } from "socket.io-client"
 
-interface WhatsAppStatus {
-    isReady: boolean
-    info: {
-        wid: any
-        platform: string | null
-    } | null
+interface ApiResponse {
+    success: boolean
+    message: string
+    [key: string]: unknown
 }
 
 interface WhatsAppContextType {
-    status: WhatsAppStatus | null
     qrCode: string | null
-    isLoading: boolean
-    error: string | null
-    reconnect: () => Promise<void>
+    isConnected: boolean
+    isConnecting: boolean
+    connectionInfo: WhatsAppInfo | null
+    logs: WhatsAppLogPayload[]
     requestQrCode: () => void
+    reconnect: () => Promise<ApiResponse>
+    logout: () => Promise<ApiResponse>
 }
 
-const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined)
+export const WhatsAppContext = createContext<WhatsAppContextType>({
+    qrCode: null,
+    isConnected: false,
+    isConnecting: false,
+    connectionInfo: null,
+    logs: [],
+    requestQrCode: () => { },
+    reconnect: async () => ({ success: false, message: "Context not initialized" }),
+    logout: async () => ({ success: false, message: "Context not initialized" }),
+})
 
-export function WhatsAppProvider({ children }: { children: ReactNode }) {
-    const [socket, setSocket] = useState<Socket | null>(null)
-    const [status, setStatus] = useState<WhatsAppStatus | null>(null)
+interface WhatsAppProviderProps {
+    children: ReactNode
+    socketUrl?: string
+}
+
+export const WhatsAppProvider: React.FC<WhatsAppProviderProps> = ({
+    children,
+    socketUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+}) => {
     const [qrCode, setQrCode] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [isConnected, setIsConnected] = useState<boolean>(false)
+    const [isConnecting, setIsConnecting] = useState<boolean>(false)
+    const [connectionInfo, setConnectionInfo] = useState<WhatsAppInfo | null>(null)
+    const [logs, setLogs] = useState<WhatsAppLogPayload[]>([])
 
-    // Obtener estado inicial del backend (REST)
+    // Helper function to add logs
+    const addLog = (type: "info" | "error" | "warning", message: string): void => {
+        const newLog: WhatsAppLogPayload = {
+            type,
+            message,
+            timestamp: new Date().toISOString(),
+        }
+        setLogs((prevLogs) => [...prevLogs, newLog])
+    }
+
+    // Initialize socket connection
     useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                setIsLoading(true)
-                const res = await HttpService.get("/api/v1/whatsapp/status")
-                setStatus(res.data)
-                setQrCode(null)
-            } catch (err) {
-                console.error("❌ Error al obtener estado inicial:", err)
-                setError("No se pudo obtener el estado de WhatsApp")
-            } finally {
-                setIsLoading(false)
-            }
-        }
+        const socket = getSocket(socketUrl)
 
-        fetchStatus()
-    }, [])
-
-    // Conectar socket y registrar eventos
-    useEffect(() => {
-        const socketInstance = getSocket()
-        setSocket(socketInstance)
-
-        const handleQr = (qr: string) => {
-            console.log("✅ QR recibido en useWhatsApp y guardado")
-            setQrCode(qr)
-            setStatus((prev) =>
-                prev ? { ...prev, isReady: false } : { isReady: false, info: null },
-            )
-            setIsLoading(false)
-        }
-
-        const handleConnected = (data: WhatsAppStatus) => {
-            console.log("✅ WhatsApp conectado:", data)
-            setStatus(data)
-            setQrCode(null)
-            setIsLoading(false)
-        }
-
-        const handleDisconnected = (data: WhatsAppStatus) => {
-            console.log("🔌 WhatsApp desconectado:", data)
-            setStatus(data)
-            setIsLoading(false)
-        }
-
-        // Suscribirse a eventos
-        socketInstance.on("qr", (data) => {
-            if (data?.qr) handleQr(data.qr)
+        // Listen for QR code updates
+        socket.on("qr", (payload: QrCodePayload) => {
+            console.log("QR code received", payload)
+            setQrCode(payload.qr)
+            setIsConnecting(true)
         })
-        socketInstance.on("whatsapp_connected", handleConnected)
-        socketInstance.on("whatsapp_disconnected", handleDisconnected)
 
+        // Listen for WhatsApp connection status
+        socket.on("whatsapp_connected", (payload: WhatsAppStatusPayload) => {
+            console.log("WhatsApp connected", payload)
+            setIsConnected(true)
+            setIsConnecting(false)
+            setConnectionInfo(payload.info || null)
+            setQrCode(null) // Clear QR code when connected
+        })
+
+        socket.on("whatsapp_disconnected", (payload: WhatsAppStatusPayload) => {
+            console.log("WhatsApp disconnected", payload)
+            setIsConnected(false)
+            setConnectionInfo(null)
+        })
+
+        // Listen for logs
+        socket.on("whatsapp_log", (payload: WhatsAppLogPayload) => {
+            setLogs((prevLogs) => [...prevLogs, payload])
+        })
+
+        // Request initial status
+        HttpService.get("/api/v1/whatsapp/status")
+            .then((response) => {
+                const data: WhatsAppStatusPayload = response.data
+                if (data.isReady) {
+                    setIsConnected(true)
+                    setConnectionInfo(data.info || null)
+                }
+            })
+            .catch((err: Error) => {
+                console.error("Failed to fetch initial status:", err)
+                addLog("error", `Failed to fetch initial status: ${err.message}`)
+            })
+
+        // Check if there's an existing QR code
+        HttpService.get("/api/v1/whatsapp/qr")
+            .then((response) => {
+                const data: { qr: string | null } = response.data
+                if (data.qr) {
+                    setQrCode(data.qr)
+                    setIsConnecting(true)
+                }
+            })
+            .catch((err: Error) => {
+                console.error("Failed to fetch QR code:", err)
+                addLog("error", `Failed to fetch QR code: ${err.message}`)
+            })
+
+        // Cleanup on unmount
         return () => {
-            socketInstance.off("qr")
-            socketInstance.off("whatsapp_connected", handleConnected)
-            socketInstance.off("whatsapp_disconnected", handleDisconnected)
+            closeSocket()
+        }
+    }, [socketUrl])
+
+    // Request a new QR code
+    const requestQrCode = useCallback((): void => {
+        const socket = getSocket(socketUrl)
+        socket.emit("request_qr")
+        addLog("info", "Requesting new QR code")
+        setIsConnecting(true)
+
+        // Also make an HTTP request as a fallback
+        HttpService.post("/api/v1/whatsapp/request-qr")
+            .then((response) => response.data)
+            .catch((err: Error) => {
+                console.error("Failed to request QR code via HTTP:", err)
+                addLog("error", `Failed to request QR code via HTTP: ${err.message}`)
+            })
+    }, [socketUrl])
+
+    // Reconnect to WhatsApp
+    const reconnect = useCallback(async (): Promise<ApiResponse> => {
+        try {
+            addLog("info", "Attempting to reconnect to WhatsApp")
+            const response = await HttpService.post("/api/v1/whatsapp/reconnect")
+            const data: ApiResponse = response.data
+
+            if (data.success) {
+                addLog("info", "Reconnection initiated successfully")
+            } else {
+                addLog("error", `Reconnection failed: ${data.message || "Unknown error"}`)
+            }
+
+            return data
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error"
+            console.error("Error reconnecting:", error)
+            addLog("error", `Error reconnecting: ${errorMessage}`)
+            return { success: false, message: errorMessage }
         }
     }, [])
 
-    // Reconectar vía HTTP
-    const reconnect = async () => {
+    // Logout from WhatsApp
+    const logout = useCallback(async (): Promise<ApiResponse> => {
         try {
-            setIsLoading(true)
-            setError(null)
-            console.log("🔁 Solicitando reconexión de WhatsApp")
-            await HttpService.post("/api/v1/whatsapp/reconnect")
-        } catch (err) {
-            console.error("❌ Error al reconectar:", err)
-            setError("No se pudo reconectar a WhatsApp")
-        } finally {
-            setIsLoading(false)
+            addLog("info", "Logging out from WhatsApp")
+            const response = await HttpService.post("/api/v1/whatsapp/logout")
+            const data: ApiResponse = response.data
+
+            if (data.success) {
+                setIsConnected(false)
+                setConnectionInfo(null)
+                addLog("info", "Logged out successfully")
+            } else {
+                addLog("error", `Logout failed: ${data.message || "Unknown error"}`)
+            }
+
+            return data
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Unknown error"
+            console.error("Error logging out:", error)
+            addLog("error", `Error logging out: ${errorMessage}`)
+            return { success: false, message: errorMessage }
         }
+    }, [])
+
+    const value: WhatsAppContextType = {
+        qrCode,
+        isConnected,
+        isConnecting,
+        connectionInfo,
+        logs,
+        requestQrCode,
+        reconnect,
+        logout,
     }
 
-    // Solicitar nuevo QR
-    const handleRequestQrCode = () => {
-        setQrCode(null)
-        setError(null)
-        console.log("📨 Solicitando nuevo QR desde el contexto")
-        requestQrCode()
-    }
-
-    return (
-        <WhatsAppContext.Provider
-            value={{
-                status,
-                qrCode,
-                isLoading,
-                error,
-                reconnect,
-                requestQrCode: handleRequestQrCode,
-            }}
-        >
-            {children}
-        </WhatsAppContext.Provider>
-    )
-}
-
-export function useWhatsApp() {
-    const context = useContext(WhatsAppContext)
-    if (context === undefined) {
-        throw new Error("useWhatsApp must be used within a WhatsAppProvider")
-    }
-    return context
+    return <WhatsAppContext.Provider value={value}>{children}</WhatsAppContext.Provider>
 }

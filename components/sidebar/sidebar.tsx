@@ -38,7 +38,6 @@ import { NavOperations } from "./operations"
 import { NavSecondary } from "./secondary"
 import { NavUser } from "./user"
 import { hasAccess } from "@/lib/services/route-access"
-import { WhatsappStatus } from "../whatsapp/status"
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
     const { user, logout } = useAuth()
@@ -154,9 +153,6 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                 )}
             </SidebarContent>
             <SidebarFooter className="border-t p-2">
-                <div className="mb-2 px-2">
-                    <WhatsappStatus />
-                </div>
                 <SidebarSeparator />
                 <NavUser user={user} onLogout={handleLogout} />
             </SidebarFooter>
