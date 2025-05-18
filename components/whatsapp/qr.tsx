@@ -110,8 +110,11 @@ export function QRCodeScanner() {
                             </Button>
                         </div>
                     ) : qrCode ? (
-                        <div className="bg-white p-4 rounded-lg">
-                            <QRCodeSVG value={qrCode} size={256} />
+                        <div className="flex flex-col items-center">
+                            <div className="bg-white p-4 rounded-lg">
+                                <QRCodeSVG value={qrCode} size={256} />
+                            </div>
+                            <p className="text-xs text-blue-300 mt-2">QR Code recibido (longitud: {qrCode.length})</p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center p-6 text-center">

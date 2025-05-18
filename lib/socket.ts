@@ -6,6 +6,7 @@ let isConnecting = false
 let reconnectAttempts = 0
 const maxReconnectAttempts = 5
 
+// Mejorar el manejo de eventos para asegurar que se recibe el QR
 export const getSocket = (): Socket => {
     if (!socket && !isConnecting) {
         isConnecting = true
@@ -55,8 +56,16 @@ export const getSocket = (): Socket => {
             console.log(`WhatsApp Log [${data.type}]: ${data.message}`)
         })
 
+        // Registrar específicamente el evento QR para depuración
+        socket.on("qr", (data) => {
+            console.log(
+                "QR event received in socket.ts:",
+                data.qr ? `${data.qr.substring(0, 20)}... (length: ${data.qr.length})` : "No QR data",
+            )
+        })
+
         socket.onAny((event, ...args) => {
-            console.log(`Socket event received: ${event}`, args)
+            console.log(`Socket event received: ${event}`, args.length > 0 ? "with data" : "without data")
         })
     }
 
@@ -74,6 +83,25 @@ export const disconnectSocket = (): void => {
 
 export const requestQrCode = (): void => {
     const socketInstance = getSocket()
-    console.log("Requesting QR code from server")
+
+    if (!socketInstance) {
+        console.error("No socket instance available")
+        return
+    }
+
+    if (!socketInstance.connected) {
+        console.log("Socket not connected, attempting to connect")
+        socketInstance.connect()
+
+        // Esperar a que se conecte antes de enviar la solicitud
+        socketInstance.once("connect", () => {
+            console.log("Socket connected, now requesting QR code")
+            socketInstance.emit("request_qr")
+        })
+
+        return
+    }
+
+    console.log("Requesting QR code from server via socket")
     socketInstance.emit("request_qr")
 }

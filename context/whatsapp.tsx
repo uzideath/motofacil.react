@@ -93,9 +93,29 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
         // QR code event
         const onQrCode = (data: { qr: string }) => {
             console.log("QR code received from server:", data.qr.substring(0, 20) + "...")
+            console.log("QR code length:", data.qr.length)
+
+            // Verificar que el QR es válido
+            if (!data.qr || data.qr.length < 10) {
+                console.error("QR code received is invalid or too short:", data.qr)
+                setError("Código QR recibido no es válido")
+                return
+            }
+
+            // Actualizar el estado con el QR recibido
             setQrCode(data.qr)
-            setStatus((prev) => (prev ? { ...prev, isReady: false } : null))
+            setStatus((prev) => (prev ? { ...prev, isReady: false } : { isReady: false, info: null }))
+            setIsLoading(false)
+
+            // Notificar en consola para depuración
+            console.log("QR code state updated successfully")
         }
+
+        // Debug event para verificar si el QR se está enviando
+        socket.on("debug_qr_sent", (data) => {
+            console.log("Debug: QR was sent by server at", data.timestamp)
+            console.log("Debug: QR length", data.qrLength)
+        })
 
         // Connected status event
         const onConnected = (data: WhatsAppStatus) => {
@@ -124,6 +144,7 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
             socket.off("qr", onQrCode)
             socket.off("whatsapp_connected", onConnected)
             socket.off("whatsapp_disconnected", onDisconnected)
+            socket.off("debug_qr_sent")
         }
     }, [socket, socketConnected, status?.isReady])
 
