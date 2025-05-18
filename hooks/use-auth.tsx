@@ -2,13 +2,7 @@
 
 import { AuthService, decodeJWT } from "@/lib/services/auth.service"
 import { usePathname } from "next/navigation"
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 export type Role = "ADMIN" | "USER"
 
@@ -36,6 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Inicializa sesión desde cookie o hace refresh
   useEffect(() => {
+    const publicPaths = ["/login", "/forgot-password"]
+    const isPublicPath = publicPaths.some((path) => pathname === path)
+
     const token = document.cookie
       .split(";")
       .find((c) => c.trim().startsWith("authToken="))
@@ -46,20 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (decoded) {
       setUser({ ...decoded, exp: decoded.exp })
       setIsLoading(false)
-    } else {
-      // 🚫 Evita refresh en páginas públicas (como /login)
-      const publicPaths = ["/login", "/forgot-password"]
-      if (publicPaths.includes(pathname)) {
-        setIsLoading(false)
-        return
-      }
-
+    } else if (!isPublicPath) {
+      // Solo intenta refresh si NO estamos en una ruta pública
       AuthService.refresh().then((refreshedUser) => {
         if (refreshedUser) {
           setUser({ ...refreshedUser, exp: refreshedUser.exp })
         }
         setIsLoading(false)
       })
+    } else {
+      // En rutas públicas, simplemente marca como no cargando
+      setIsLoading(false)
     }
   }, [pathname])
 
@@ -100,11 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = "/login"
   }
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthContextType {
