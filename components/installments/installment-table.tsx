@@ -223,7 +223,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const handleSendWhatsapp = async (installment: Installment) => {
     try {
       // Get the phone number from the installment data
-      const phoneNumber = installment.loan?.user?.phone
+      const phoneNumber = `+57${installment.loan?.user?.phone}`
 
       if (!phoneNumber) {
         toast({
