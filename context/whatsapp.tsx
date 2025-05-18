@@ -1,6 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
+"use client"
+
+import type React from "react"
+import { createContext, useContext, useEffect, useState } from "react"
+import { getSocket, requestQrCode } from "@/lib/socket"
 import { HttpService } from "@/lib/http"
-import { useSocket } from "@/hooks/useSocket"
+import type { Socket } from "socket.io-client"
 
 interface WhatsAppStatus {
     isReady: boolean
@@ -16,16 +20,50 @@ interface WhatsAppContextType {
     isLoading: boolean
     error: string | null
     reconnect: () => Promise<void>
+    requestQrCode: () => void
 }
 
 const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined)
 
 export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
-    const { socket, isConnected } = useSocket()
+    const [socket, setSocket] = useState<Socket | null>(null)
     const [status, setStatus] = useState<WhatsAppStatus | null>(null)
     const [qrCode, setQrCode] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [socketConnected, setSocketConnected] = useState(false)
+
+    // Inicializar socket
+    useEffect(() => {
+        try {
+            const socketInstance = getSocket()
+            setSocket(socketInstance)
+
+            const onConnect = () => {
+                console.log("Socket connected in context")
+                setSocketConnected(true)
+            }
+
+            const onDisconnect = () => {
+                console.log("Socket disconnected in context")
+                setSocketConnected(false)
+            }
+
+            socketInstance.on("connect", onConnect)
+            socketInstance.on("disconnect", onDisconnect)
+
+            // Establecer estado de conexión inicial
+            setSocketConnected(socketInstance.connected)
+
+            return () => {
+                socketInstance.off("connect", onConnect)
+                socketInstance.off("disconnect", onDisconnect)
+            }
+        } catch (err) {
+            console.error("Error initializing socket:", err)
+            setError("Error al conectar con el servidor")
+        }
+    }, [])
 
     // Fetch initial status
     useEffect(() => {
@@ -50,20 +88,25 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!socket) return
 
+        console.log("Setting up WebSocket event listeners")
+
         // QR code event
         const onQrCode = (data: { qr: string }) => {
+            console.log("QR code received from server:", data.qr.substring(0, 20) + "...")
             setQrCode(data.qr)
-            setStatus(prev => prev ? { ...prev, isReady: false } : null)
+            setStatus((prev) => (prev ? { ...prev, isReady: false } : null))
         }
 
         // Connected status event
         const onConnected = (data: WhatsAppStatus) => {
+            console.log("WhatsApp connected event received:", data)
             setStatus(data)
             setQrCode(null)
         }
 
         // Disconnected status event
         const onDisconnected = (data: WhatsAppStatus) => {
+            console.log("WhatsApp disconnected event received:", data)
             setStatus(data)
         }
 
@@ -71,18 +114,25 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
         socket.on("whatsapp_connected", onConnected)
         socket.on("whatsapp_disconnected", onDisconnected)
 
+        // Solicitar QR code si no estamos conectados
+        if (socketConnected && !status?.isReady) {
+            console.log("Requesting QR code on initial setup")
+            requestQrCode()
+        }
+
         return () => {
             socket.off("qr", onQrCode)
             socket.off("whatsapp_connected", onConnected)
             socket.off("whatsapp_disconnected", onDisconnected)
         }
-    }, [socket])
+    }, [socket, socketConnected, status?.isReady])
 
     // Reconnect function
     const reconnect = async () => {
         try {
             setIsLoading(true)
             setError(null)
+            console.log("Initiating WhatsApp reconnection")
             await HttpService.post("/api/v1/whatsapp/reconnect")
             // The server will emit events via WebSocket
         } catch (err) {
@@ -93,8 +143,24 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    // Función para solicitar código QR
+    const handleRequestQrCode = () => {
+        console.log("Requesting QR code from context")
+        setQrCode(null) // Limpiar QR actual
+        requestQrCode() // Solicitar nuevo QR
+    }
+
     return (
-        <WhatsAppContext.Provider value={{ status, qrCode, isLoading, error, reconnect }}>
+        <WhatsAppContext.Provider
+            value={{
+                status,
+                qrCode,
+                isLoading,
+                error,
+                reconnect,
+                requestQrCode: handleRequestQrCode,
+            }}
+        >
             {children}
         </WhatsAppContext.Provider>
     )

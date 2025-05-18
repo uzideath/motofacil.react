@@ -3,12 +3,20 @@
 import { useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Smartphone } from 'lucide-react'
+import { RefreshCw, Smartphone } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import { useWhatsApp } from "@/context/whatsapp"
 
 export function QRCodeScanner() {
-    const { status, qrCode, isLoading, error, reconnect } = useWhatsApp()
+    const { status, qrCode, isLoading, error, reconnect, requestQrCode } = useWhatsApp()
+
+    // Solicitar QR code al montar el componente si no estamos conectados
+    useEffect(() => {
+        if (!status?.isReady && !qrCode && !isLoading) {
+            console.log("Requesting QR code on component mount")
+            requestQrCode()
+        }
+    }, [status?.isReady, qrCode, isLoading, requestQrCode])
 
     if (status?.isReady) {
         return (
@@ -75,7 +83,7 @@ export function QRCodeScanner() {
                     ) : (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
                             <p className="text-blue-300 mb-4">Esperando código QR...</p>
-                            <Button onClick={reconnect} className="bg-blue-600 hover:bg-blue-700 text-white">
+                            <Button onClick={requestQrCode} className="bg-blue-600 hover:bg-blue-700 text-white">
                                 <RefreshCw className="mr-2 h-4 w-4" />
                                 Solicitar código QR
                             </Button>
