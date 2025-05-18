@@ -147,7 +147,32 @@ export function WhatsAppProvider({ children }: { children: React.ReactNode }) {
     const handleRequestQrCode = () => {
         console.log("Requesting QR code from context")
         setQrCode(null) // Limpiar QR actual
-        requestQrCode() // Solicitar nuevo QR
+
+        if (socket && socket.connected) {
+            console.log("Socket is connected, emitting request_qr event")
+            socket.emit("request_qr")
+        } else {
+            console.log("Socket is not connected, trying to reconnect")
+            // Si el socket no está conectado, intentar reconectar
+            if (socket) {
+                socket.connect()
+            } else {
+                const socketInstance = getSocket()
+                setSocket(socketInstance)
+            }
+
+            // Esperar un momento y luego emitir el evento
+            setTimeout(() => {
+                const currentSocket = getSocket()
+                if (currentSocket && currentSocket.connected) {
+                    console.log("Socket reconnected, emitting request_qr event")
+                    currentSocket.emit("request_qr")
+                } else {
+                    console.log("Socket still not connected after reconnect attempt")
+                    setError("No se pudo conectar al servidor para solicitar el código QR")
+                }
+            }, 1000)
+        }
     }
 
     return (

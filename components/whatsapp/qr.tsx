@@ -1,22 +1,55 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Smartphone } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
+import { HttpService } from "@/lib/http"
+import { useToast } from "@/components/ui/use-toast"
 import { useWhatsApp } from "@/context/whatsapp"
 
 export function QRCodeScanner() {
     const { status, qrCode, isLoading, error, reconnect, requestQrCode } = useWhatsApp()
+    const [isRequestingQr, setIsRequestingQr] = useState(false)
+    const { toast } = useToast()
 
     // Solicitar QR code al montar el componente si no estamos conectados
     useEffect(() => {
         if (!status?.isReady && !qrCode && !isLoading) {
             console.log("Requesting QR code on component mount")
-            requestQrCode()
+            handleRequestQrCode()
         }
-    }, [status?.isReady, qrCode, isLoading, requestQrCode])
+    }, [status?.isReady, qrCode, isLoading])
+
+    // Función para manejar la solicitud de QR
+    const handleRequestQrCode = async () => {
+        try {
+            setIsRequestingQr(true)
+            console.log("Requesting new QR code...")
+
+            // Llamar al endpoint del API
+            await HttpService.post("/api/v1/whatsapp/request-qr")
+
+            // También llamar a la función del contexto
+            requestQrCode()
+
+            toast({
+                title: "Solicitud enviada",
+                description: "Generando nuevo código QR...",
+                variant: "default",
+            })
+        } catch (error) {
+            console.error("Error requesting QR:", error)
+            toast({
+                title: "Error",
+                description: "No se pudo solicitar un nuevo código QR",
+                variant: "destructive",
+            })
+        } finally {
+            setIsRequestingQr(false)
+        }
+    }
 
     if (status?.isReady) {
         return (
@@ -63,10 +96,10 @@ export function QRCodeScanner() {
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col items-center justify-center p-6 space-y-4">
-                    {isLoading ? (
+                    {isLoading || isRequestingQr ? (
                         <div className="flex flex-col items-center justify-center p-6">
                             <RefreshCw className="animate-spin h-12 w-12 text-blue-400 mb-4" />
-                            <p className="text-blue-300">Cargando...</p>
+                            <p className="text-blue-300">{isRequestingQr ? "Generando código QR..." : "Cargando..."}</p>
                         </div>
                     ) : error ? (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
@@ -83,8 +116,12 @@ export function QRCodeScanner() {
                     ) : (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
                             <p className="text-blue-300 mb-4">Esperando código QR...</p>
-                            <Button onClick={requestQrCode} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                <RefreshCw className="mr-2 h-4 w-4" />
+                            <Button
+                                onClick={handleRequestQrCode}
+                                disabled={isRequestingQr}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                <RefreshCw className={`mr-2 h-4 w-4 ${isRequestingQr ? "animate-spin" : ""}`} />
                                 Solicitar código QR
                             </Button>
                         </div>
