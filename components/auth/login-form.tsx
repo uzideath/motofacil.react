@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -29,10 +29,24 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [formSubmitted, setFormSubmitted] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const { login } = useAuth()
   const { setNavigatingFromLogin } = useNavigationStore()
+
+  // Check for expired session parameter
+  useEffect(() => {
+    const expired = searchParams.get("expired")
+    if (expired === "true" && !formSubmitted) {
+      toast({
+        variant: "destructive",
+        title: "Sesión expirada",
+        description: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+      })
+    }
+  }, [searchParams, toast, formSubmitted])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,6 +59,7 @@ export function LoginForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
+    setFormSubmitted(true)
 
     try {
       const user = await AuthService.login({
@@ -62,6 +77,7 @@ export function LoginForm() {
         className: "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none",
       })
 
+      // Use router.push instead of window.location to prevent full page reload
       router.push("/dashboard")
     } catch (error) {
       console.error("Error al iniciar sesión:", error)

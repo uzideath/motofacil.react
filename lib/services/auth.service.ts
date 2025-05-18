@@ -1,6 +1,6 @@
-import { User } from "@/hooks/use-auth"
+import type { User } from "@/hooks/use-auth"
 import { HttpService } from "../http"
-import { LoginResponse } from "../types"
+import type { LoginResponse } from "../types"
 
 const ACCESS_TOKEN_COOKIE = "authToken"
 const REFRESH_TOKEN_KEY = "refreshToken"
@@ -27,7 +27,7 @@ function removeRefreshToken() {
     localStorage.removeItem(REFRESH_TOKEN_KEY)
 }
 
-function decodeJWT(token: string): User | null {
+export function decodeJWT(token: string): User | null {
     try {
         const base64Url = token.split(".")[1]
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
@@ -35,7 +35,7 @@ function decodeJWT(token: string): User | null {
             atob(base64)
                 .split("")
                 .map((c) => `%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`)
-                .join("")
+                .join(""),
         )
         const payload = JSON.parse(jsonPayload)
         if (!payload.sub || !payload.username || !payload.roles) return null
@@ -51,7 +51,7 @@ function decodeJWT(token: string): User | null {
     }
 }
 
-const AuthService = {
+export const AuthService = {
     async login({
         username,
         password,
@@ -110,9 +110,4 @@ const AuthService = {
         removeAccessToken()
         removeRefreshToken()
     },
-}
-
-export {
-    AuthService,
-    decodeJWT,
 }

@@ -1,11 +1,6 @@
-import axios, {
-    AxiosInstance,
-    AxiosError,
-    InternalAxiosRequestConfig,
-    AxiosResponse,
-} from "axios"
+import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from "axios"
 import { getClientAuthToken } from "@/lib/token"
-import { User } from "@/hooks/use-auth"
+import type { User } from "@/hooks/use-auth"
 import { AuthService } from "./services/auth.service"
 
 const HttpService: AxiosInstance = axios.create({
@@ -36,9 +31,19 @@ function processQueue(error: any, token: string | null = null): void {
     failedQueue = []
 }
 
+// Check if we're on the login page to prevent refresh loops
+function isOnLoginPage(): boolean {
+    return window.location.pathname === "/login"
+}
+
 /** Interceptor de requests para incluir Authorization desde cookie del cliente */
 HttpService.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+        // Skip adding token for auth endpoints to prevent loops
+        if (config.url?.includes("/auth/refresh") || config.url?.includes("/auth/login")) {
+            return config
+        }
+
         const token = getClientAuthToken()
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
@@ -48,7 +53,7 @@ HttpService.interceptors.request.use(
     (error: AxiosError): Promise<never> => {
         console.error("Request Error:", error.message)
         return Promise.reject(error)
-    }
+    },
 )
 
 HttpService.interceptors.response.use(
@@ -59,10 +64,27 @@ HttpService.interceptors.response.use(
         const status = error.response?.status || 0
         const isUnauthorized = status === 401
         const isAuthEndpoint =
-            originalRequest?.url?.includes("/auth/login") ||
-            originalRequest?.url?.includes("/auth/refresh")
+            originalRequest?.url?.includes("/auth/login") || originalRequest?.url?.includes("/auth/refresh")
 
-        if (isUnauthorized && !originalRequest._retry && !isAuthEndpoint) {
+        // Skip refresh logic if:
+        // 1. We're on login page
+        // 2. This is an auth endpoint
+        // 3. We don't have a refresh token
+        const hasRefreshToken = localStorage.getItem("refreshToken") !== null
+        const shouldSkipRefresh = isOnLoginPage() || isAuthEndpoint || !hasRefreshToken
+
+        console.log(
+            "HTTP Interceptor - Status:",
+            status,
+            "URL:",
+            originalRequest?.url,
+            "IsLoginPage:",
+            isOnLoginPage(),
+            "HasRefreshToken:",
+            hasRefreshToken,
+        )
+
+        if (isUnauthorized && !originalRequest._retry && !shouldSkipRefresh) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject, config: originalRequest })
@@ -73,6 +95,7 @@ HttpService.interceptors.response.use(
             isRefreshing = true
 
             try {
+                console.log("HTTP Interceptor attempting refresh...")
                 const user: User | null = await AuthService.refresh()
 
                 if (user) {
@@ -87,8 +110,13 @@ HttpService.interceptors.response.use(
                 }
             } catch (refreshError) {
                 processQueue(refreshError, null)
-                AuthService.logout()
-                window.location.href = "/login"
+
+                // Only redirect if not already on login page
+                if (!isOnLoginPage()) {
+                    AuthService.logout()
+                    window.location.replace("/login")
+                }
+
                 return Promise.reject(refreshError)
             } finally {
                 isRefreshing = false
@@ -96,8 +124,7 @@ HttpService.interceptors.response.use(
         }
 
         return Promise.reject(error)
-    }
+    },
 )
-
 
 export { HttpService }

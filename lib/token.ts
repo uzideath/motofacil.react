@@ -5,8 +5,13 @@ import type { NextApiRequest } from "next"
  */
 export function getClientAuthToken(): string | null {
     if (typeof document === "undefined") return null
-    const match = document.cookie.match(/(^|;) ?authToken=([^;]*)/)
-    return match ? decodeURIComponent(match[2]) : null
+
+    const token = document.cookie
+        .split(";")
+        .find((c) => c.trim().startsWith("authToken="))
+        ?.split("=")[1]
+
+    return token || null
 }
 
 /**
