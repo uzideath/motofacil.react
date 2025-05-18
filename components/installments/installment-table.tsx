@@ -32,6 +32,7 @@ import {
   BadgeCent,
   Eye,
   PlusCircle,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,6 +58,9 @@ type Installment = {
   paymentMethod: "CASH" | "CARD" | "TRANSACTION"
   loan: {
     contractNumber: string
+    user: {
+      phone: string
+    }
   }
   motorcycle: {
     plate: string
@@ -111,23 +115,22 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
       const res = await HttpService.get(url)
       const rawData = res.data
 
-const mapped: Installment[] = rawData.map((item: any) => ({
-  id: item.id,
-  loanId: item.loanId,
-  userName: item.loan?.user?.name ?? "Desconocido",
-  motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
-  amount: item.amount,
-  gps: item.gps,
-  date: item.paymentDate,
-  isLate: item.isLate,
-  latePaymentDate: item.latePaymentDate,
-  paymentMethod: item.paymentMethod ?? "CASH",
-  createdBy: item.createdBy ?? null,
-  attachmentUrl: item.attachmentUrl ?? null,
-  loan: item.loan,
-  motorcycle: item.loan?.motorcycle,
-}))
-
+      const mapped: Installment[] = rawData.map((item: any) => ({
+        id: item.id,
+        loanId: item.loanId,
+        userName: item.loan?.user?.name ?? "Desconocido",
+        motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
+        amount: item.amount,
+        gps: item.gps,
+        date: item.paymentDate,
+        isLate: item.isLate,
+        latePaymentDate: item.latePaymentDate,
+        paymentMethod: item.paymentMethod ?? "CASH",
+        createdBy: item.createdBy ?? null,
+        attachmentUrl: item.attachmentUrl ?? null,
+        loan: item.loan,
+        motorcycle: item.loan?.motorcycle,
+      }))
 
       setInstallments(mapped)
     } catch (error) {
@@ -194,6 +197,57 @@ const mapped: Installment[] = rawData.map((item: any) => ({
         variant: "destructive",
         title: "Error al imprimir",
         description: "No se pudo generar o imprimir el recibo",
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleSendWhatsapp = async (installment: Installment) => {
+    try {
+      // Get the phone number from the installment data
+      const phoneNumber = `+57${installment.loan?.user?.phone}`
+
+      if (!phoneNumber) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No se encontró un número de teléfono para este cliente",
+        })
+        return
+      }
+
+      setIsGenerating(true)
+
+      // Prepare the receipt data
+      const receiptData = {
+        phoneNumber,
+        name: installment.userName,
+        identification: installment.motorcycle.plate,
+        concept: `Monto`,
+        amount: installment.amount,
+        latePaymentDate: installment.latePaymentDate,
+        gps: installment.gps,
+        total: installment.amount,
+        date: installment.date,
+        receiptNumber: installment.id,
+        caption: `Recibo de pago - ${installment.userName}`,
+      }
+
+      // Send the request to the whatsapp endpoint
+      const res = await HttpService.post("/api/v1/receipt/whatsapp", receiptData)
+
+      toast({
+        title: "Recibo enviado",
+        description: "El recibo se ha enviado por WhatsApp correctamente",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("Error al enviar el recibo por WhatsApp:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al enviar",
+        description: "No se pudo enviar el recibo por WhatsApp",
       })
     } finally {
       setIsGenerating(false)
@@ -656,6 +710,16 @@ const mapped: Installment[] = rawData.map((item: any) => ({
                               <span className="sr-only">Ver comprobante</span>
                             </Button>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSendWhatsapp(i)}
+                            title="Enviar por WhatsApp"
+                            className="text-blue-300 hover:text-white hover:bg-dark-blue-700/50"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="sr-only">Enviar por WhatsApp</span>
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
