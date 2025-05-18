@@ -9,7 +9,11 @@ import type { WhatsAppLogPayload } from "@/lib/socket"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { motion, AnimatePresence } from "framer-motion"
+import { PlatformIcon } from "@/components/ui/platform-icon"
+import { CountryFlag } from "@/components/ui/country-flag"
 import { useWhatsApp } from "@/hooks/useWhatsapp"
+import { formatPhoneNumber, CountryData } from "@/lib/countries"
+import { getPlatformInfo } from "@/lib/phones"
 
 export interface WhatsAppQrCodeProps {
     title?: string
@@ -26,10 +30,22 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
 }) => {
     const { qrCode, isConnected, isConnecting, connectionInfo, logs, requestQrCode, reconnect } = useWhatsApp()
 
+    // Estado de verificación inicial
+    const [isVerifying, setIsVerifying] = useState<boolean>(true)
+
     // QR code expiration timer (60 seconds is typical for WhatsApp)
     const [qrExpiration, setQrExpiration] = useState<number>(60)
     const [qrExpirationActive, setQrExpirationActive] = useState<boolean>(false)
     const [isQrExpired, setIsQrExpired] = useState<boolean>(false)
+
+    // Efecto para simular la verificación inicial
+    useEffect(() => {
+        const verificationTimer = setTimeout(() => {
+            setIsVerifying(false)
+        }, 2500) // Mostrar el spinner de verificación durante 2.5 segundos
+
+        return () => clearTimeout(verificationTimer)
+    }, [])
 
     // Auto request new QR code when expired
     const handleQrExpired = useCallback(async (): Promise<void> => {
@@ -49,13 +65,13 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
 
     // Auto request QR code on initial load
     useEffect(() => {
-        if (!qrCode && !isConnected && !isConnecting) {
+        if (!qrCode && !isConnected && !isConnecting && !isVerifying) {
             const timer = setTimeout(() => {
                 requestQrCode()
             }, 1000)
             return () => clearTimeout(timer)
         }
-    }, [qrCode, isConnected, isConnecting, requestQrCode])
+    }, [qrCode, isConnected, isConnecting, isVerifying, requestQrCode])
 
     // Effect to handle QR code received
     useEffect(() => {
@@ -92,6 +108,49 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
 
     // Calculate QR expiration progress
     const qrExpirationProgress = qrExpirationActive ? (qrExpiration / 60) * 100 : 0
+
+    // Format phone number if available
+    const phoneInfo = connectionInfo?.wid?.user
+        ? formatPhoneNumber(connectionInfo.wid.user)
+        : {
+            formatted: "Desconocido",
+            country: {
+                code: "INTL",
+                name: "Internacional",
+                dialCode: "",
+                flag: "globe",
+                format: (number: string) => number,
+            } as CountryData,
+        }
+
+    // Get platform info
+    const platformInfo = getPlatformInfo(connectionInfo?.platform || "Desconocido")
+
+    // Si estamos verificando, mostrar el spinner de carga
+    if (isVerifying) {
+        return (
+            <div className="flex flex-col h-full">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-b">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-2xl flex items-center gap-2">{title}</CardTitle>
+                            <CardDescription className="mt-1 text-base">{description}</CardDescription>
+                        </div>
+                    </div>
+                </CardHeader>
+
+                <CardContent className="p-8 flex-1 flex flex-col items-center justify-center">
+                    <div className="text-center">
+                        <Loader2 className="h-16 w-16 text-primary/70 animate-spin mx-auto mb-6" />
+                        <h3 className="text-2xl font-medium mb-3">Verificando conexión</h3>
+                        <p className="text-muted-foreground max-w-md text-lg">
+                            Comprobando el estado de la conexión de WhatsApp...
+                        </p>
+                    </div>
+                </CardContent>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -242,15 +301,35 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
                                         {connectionInfo && (
                                             <div className="space-y-4">
                                                 <h4 className="font-medium text-lg">Información del Dispositivo</h4>
-                                                <div className="grid grid-cols-[150px_1fr] gap-y-4 gap-x-4 text-base bg-white dark:bg-slate-800/60 p-4 rounded-lg border">
-                                                    <div className="font-medium text-muted-foreground">Número de Teléfono:</div>
-                                                    <div>{connectionInfo.wid?.user || "Desconocido"}</div>
-                                                    <div className="font-medium text-muted-foreground">Plataforma:</div>
-                                                    <div>{connectionInfo.platform || "Desconocida"}</div>
-                                                    <div className="font-medium text-muted-foreground">Estado:</div>
-                                                    <div className="text-green-600 dark:text-green-400">Activo</div>
-                                                    <div className="font-medium text-muted-foreground">Conectado en:</div>
-                                                    <div>{new Date().toLocaleString()}</div>
+                                                <div className="bg-white dark:bg-slate-800/60 p-4 rounded-lg border">
+                                                    <div className="grid grid-cols-[150px_1fr] gap-y-4 gap-x-4 text-base">
+                                                        <div className="font-medium text-muted-foreground">Número de Teléfono:</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <CountryFlag country={phoneInfo.country} size="md" />
+                                                            <div className="flex flex-col">
+                                                                <span>{phoneInfo.formatted}</span>
+                                                                <span className="text-xs text-muted-foreground">{phoneInfo.country.name}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="font-medium text-muted-foreground">Plataforma:</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <PlatformIcon platform={platformInfo.icon} size={16} />
+                                                            <span>{platformInfo.name}</span>
+                                                        </div>
+
+                                                        <div className="font-medium text-muted-foreground">Estado:</div>
+                                                        <div className="text-green-600 dark:text-green-400 flex items-center gap-1.5">
+                                                            <span className="relative flex h-2.5 w-2.5">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                                                            </span>
+                                                            Activo
+                                                        </div>
+
+                                                        <div className="font-medium text-muted-foreground">Conectado en:</div>
+                                                        <div>{new Date().toLocaleString()}</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -282,7 +361,12 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
 
                                         <div className="grid grid-cols-[150px_1fr] gap-y-4 gap-x-4 text-base bg-white dark:bg-slate-800/60 p-4 rounded-lg border">
                                             <div className="font-medium text-muted-foreground">Estado:</div>
-                                            <div className="text-red-600 dark:text-red-400">Desconectado</div>
+                                            <div className="text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                                                <span className="relative flex h-2.5 w-2.5">
+                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                                </span>
+                                                Desconectado
+                                            </div>
                                             <div className="font-medium text-muted-foreground">Última Actividad:</div>
                                             <div>{new Date().toLocaleString()}</div>
                                             <div className="font-medium text-muted-foreground">Conexión:</div>
@@ -326,10 +410,10 @@ export const WhatsAppQrCode: React.FC<WhatsAppQrCodeProps> = ({
                                                 <div
                                                     key={index}
                                                     className={`px-4 py-2.5 text-sm border-b last:border-b-0 ${log.type === "error"
-                                                            ? "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400"
-                                                            : log.type === "warning"
-                                                                ? "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400"
-                                                                : "text-muted-foreground"
+                                                        ? "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400"
+                                                        : log.type === "warning"
+                                                            ? "text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400"
+                                                            : "text-muted-foreground"
                                                         }`}
                                                 >
                                                     <span className="text-xs opacity-70 font-mono">
