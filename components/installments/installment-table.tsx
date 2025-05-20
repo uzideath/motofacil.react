@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { HttpService } from "@/lib/http"
 import {
   Search,
@@ -96,8 +96,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const [loading, setLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortField, setSortField] = useState<SortField>(null)
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+  const [sortField, setSortField] = useState<SortField>("date")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
   const [paymentFilter, setPaymentFilter] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<boolean | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -109,6 +109,32 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
+
+  const formatSpanishDate = (dateString: string) => {
+    if (!dateString) return "—"
+
+    const date = new Date(dateString)
+    const months = [
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre",
+    ]
+
+    const day = date.getDate()
+    const month = months[date.getMonth()]
+    const year = date.getFullYear()
+
+    return `${day} de ${month} de ${year}`
+  }
 
   const fetchInstallments = async () => {
     try {
@@ -149,7 +175,10 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         motorcycle: item.loan?.motorcycle,
       }))
 
-      setInstallments(mapped)
+      // Sort by date descending by default
+      const sortedData = [...mapped].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+      setInstallments(sortedData)
     } catch (error) {
       console.error("Error al obtener cuotas:", error)
       toast({
@@ -312,7 +341,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     .filter(
       (i) =>
         (i.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          i.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase())) &&
+          i.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (i.motorcycle?.plate && i.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()))) &&
         (paymentFilter === null || i.paymentMethod === paymentFilter) &&
         (statusFilter === null || i.isLate === statusFilter),
     )
@@ -424,7 +454,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-300" />
             <Input
               type="search"
-              placeholder="Buscar por cliente o modelo..."
+              placeholder="Buscar por cliente, modelo o placa..."
               className="pl-10 pr-4 py-2 bg-dark-blue-800/50 border-dark-blue-700/50 text-white placeholder:text-blue-300/70 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -552,6 +582,12 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                       {getSortIcon("motorcycleModel")}
                     </div>
                   </TableHead>
+                  <TableHead className="hidden md:table-cell text-blue-200 font-medium">
+                    <div className="flex items-center">
+                      <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
+                      Placa
+                    </div>
+                  </TableHead>
                   <TableHead className="text-blue-200 font-medium cursor-pointer" onClick={() => handleSort("amount")}>
                     <div className="flex items-center">
                       <DollarSign className="mr-2 h-4 w-4 text-blue-300/70" />
@@ -611,6 +647,9 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                       <TableCell className="hidden md:table-cell">
                         <Skeleton className="h-6 w-[120px] bg-dark-blue-800/50" />
                       </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Skeleton className="h-6 w-[120px] bg-dark-blue-800/50" />
+                      </TableCell>
                       <TableCell>
                         <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
                       </TableCell>
@@ -662,6 +701,12 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                           {i.motorcycleModel}
                         </div>
                       </TableCell>
+                      <TableCell className="hidden md:table-cell text-blue-200">
+                        <div className="flex items-center">
+                          <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
+                          {i.motorcycle?.plate || "—"}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-blue-200 font-medium">
                         <div className="flex items-center">
                           <DollarSign className="mr-1 h-4 w-4 text-green-400" />
@@ -677,7 +722,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                       <TableCell className="hidden md:table-cell text-blue-200">
                         <div className="flex items-center">
                           <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
-                          {formatDate(i.date)}
+                          {formatSpanishDate(i.date)}
                         </div>
                       </TableCell>
                       <TableCell className="text-blue-200">
