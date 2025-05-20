@@ -92,10 +92,12 @@ type EnrichedLoan = BaseLoan & {
 export function InstallmentForm({
   children,
   loanId,
+  installment,
   onSaved,
 }: {
   children?: React.ReactNode
   loanId?: string
+  installment?: any // Cuota existente para edición
   onSaved?: () => void
 }) {
   const [open, setOpen] = useState(false)
@@ -112,6 +114,7 @@ export function InstallmentForm({
   const [filePreview, setFilePreview] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false) // Nuevo estado para controlar si estamos editando
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { toast } = useToast()
@@ -127,6 +130,29 @@ export function InstallmentForm({
       notes: "",
     },
   })
+
+  // Efecto para cargar los datos de la cuota existente cuando se está editando
+  useEffect(() => {
+    if (installment) {
+      setIsEditing(true)
+      form.setValue("loanId", installment.loanId)
+      form.setValue("amount", installment.amount)
+      form.setValue("gps", installment.gps || 0)
+      form.setValue("isLate", installment.isLate || false)
+      form.setValue("paymentMethod", installment.paymentMethod || "CASH")
+      form.setValue("notes", installment.notes || "")
+
+      if (installment.latePaymentDate) {
+        form.setValue("paymentDate", new Date(installment.latePaymentDate))
+      }
+
+      if (installment.attachmentUrl) {
+        setFilePreview(installment.attachmentUrl)
+      }
+    } else {
+      setIsEditing(false)
+    }
+  }, [installment, form])
 
   const amount = form.watch("amount")
   const gps = form.watch("gps")
@@ -222,8 +248,10 @@ export function InstallmentForm({
     const loan = loans.find((l) => l.id === loanId)
     if (loan) {
       setSelectedLoan(loan)
-      form.setValue("amount", loan.monthlyPayment)
-      calculatePaymentBreakdown(loan, loan.monthlyPayment, form.getValues("gps"))
+      // Set default values for amount and GPS
+      form.setValue("amount", 32000)
+      form.setValue("gps", 2000)
+      calculatePaymentBreakdown(loan, 32000, 2000)
     } else {
       setSelectedLoan(null)
       setPaymentBreakdown(null)
@@ -319,6 +347,9 @@ export function InstallmentForm({
         }
 
         attachmentUrl = url
+      } else if (isEditing && filePreview && !selectedFile) {
+        // Si estamos editando y hay una vista previa pero no un archivo nuevo, mantener la URL existente
+        attachmentUrl = filePreview
       }
 
       const payload: Record<string, any> = {
@@ -337,21 +368,30 @@ export function InstallmentForm({
 
       delete payload.paymentDate
 
-      await HttpService.post("/api/v1/installments", payload)
-
-      toast({
-        title: "Pago registrado",
-        description: "El pago ha sido registrado correctamente",
-      })
+      if (isEditing && installment) {
+        // Si estamos editando, hacer una petición PATCH
+        await HttpService.patch(`/api/v1/installments/${installment.id}`, payload)
+        toast({
+          title: "Cuota actualizada",
+          description: "La cuota ha sido actualizada correctamente",
+        })
+      } else {
+        // Si estamos creando, hacer una petición POST
+        await HttpService.post("/api/v1/installments", payload)
+        toast({
+          title: "Pago registrado",
+          description: "El pago ha sido registrado correctamente",
+        })
+      }
 
       onSaved?.()
       setOpen(false)
     } catch (error) {
-      console.error("Error al registrar pago:", error)
+      console.error(`Error al ${isEditing ? "actualizar" : "registrar"} pago:`, error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo registrar el pago",
+        description: `No se pudo ${isEditing ? "actualizar" : "registrar"} el pago`,
       })
     } finally {
       setLoading(false)
@@ -371,6 +411,9 @@ export function InstallmentForm({
           setFilePreview(null)
           setUploadProgress(0)
           setIsUploading(false)
+          if (!isEditing) {
+            form.reset()
+          }
         }
       }}
     >
@@ -379,9 +422,13 @@ export function InstallmentForm({
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-xl flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            Registrar Pago de Cuota
+            {isEditing ? "Editar Cuota" : "Registrar Pago de Cuota"}
           </DialogTitle>
-          <DialogDescription>Complete el formulario para registrar un nuevo pago de cuota.</DialogDescription>
+          <DialogDescription>
+            {isEditing
+              ? "Modifique los datos de la cuota existente."
+              : "Complete el formulario para registrar un nuevo pago de cuota."}
+          </DialogDescription>
         </DialogHeader>
 
         {loadingData ? (
@@ -528,7 +575,16 @@ export function InstallmentForm({
                               <FormControl>
                                 <div className="relative">
                                   <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                  <Input type="number" className="pl-7" {...field} />
+                                  <Input
+                                    type="text"
+                                    className="pl-7"
+                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    onChange={(e) => {
+                                      // Remove non-numeric characters and convert to number
+                                      const value = e.target.value.replace(/[^\d]/g, "")
+                                      field.onChange(value ? Number.parseInt(value) : 0)
+                                    }}
+                                  />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -545,7 +601,16 @@ export function InstallmentForm({
                               <FormControl>
                                 <div className="relative">
                                   <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
-                                  <Input type="number" className="pl-7" {...field} />
+                                  <Input
+                                    type="text"
+                                    className="pl-7"
+                                    value={field.value ? field.value.toLocaleString() : ""}
+                                    onChange={(e) => {
+                                      // Remove non-numeric characters and convert to number
+                                      const value = e.target.value.replace(/[^\d]/g, "")
+                                      field.onChange(value ? Number.parseInt(value) : 0)
+                                    }}
+                                  />
                                 </div>
                               </FormControl>
                               <FormMessage />
@@ -915,12 +980,12 @@ export function InstallmentForm({
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             ></path>
                           </svg>
-                          Registrando...
+                          {isEditing ? "Actualizando..." : "Registrando..."}
                         </>
                       ) : (
                         <>
                           <CreditCard className="h-4 w-4" />
-                          Registrar Pago
+                          {isEditing ? "Actualizar Cuota" : "Registrar Pago"}
                         </>
                       )}
                     </Button>

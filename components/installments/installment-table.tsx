@@ -33,6 +33,9 @@ import {
   Eye,
   PlusCircle,
   CheckCircle,
+  Edit,
+  MoreVertical,
+  Trash2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -109,6 +112,10 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
+  const [deleteConfirmation, setDeleteConfirmation] = useState<Installment | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [editingInstallment, setEditingInstallment] = useState<Installment | null>(null)
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false)
 
   const formatSpanishDate = (dateString: string) => {
     if (!dateString) return "—"
@@ -419,6 +426,46 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
 
   const refreshTable = () => {
     setRefreshTrigger((prev) => prev + 1)
+  }
+
+  const handleEdit = (installment: Installment) => {
+    // Implementar la lógica para editar la cuota
+    setEditingInstallment(installment)
+    setIsEditFormOpen(true)
+    // Simular un clic en el trigger oculto para abrir el diálogo
+    document.getElementById('edit-form-trigger')?.click();
+  }
+
+  const handleDelete = async () => {
+    if (!deleteConfirmation) return
+
+    try {
+      setIsDeleting(true)
+
+      // Llamada a la API para eliminar la cuota
+      await HttpService.delete(`/api/v1/installments/${deleteConfirmation.id}`)
+
+      // Actualizar la lista de cuotas
+      setInstallments(installments.filter((i) => i.id !== deleteConfirmation.id))
+
+      toast({
+        title: "Cuota eliminada",
+        description: "La cuota ha sido eliminada correctamente",
+        variant: "default",
+      })
+
+      // Cerrar el diálogo de confirmación
+      setDeleteConfirmation(null)
+    } catch (error) {
+      console.error("Error al eliminar la cuota:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar la cuota",
+      })
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
@@ -757,40 +804,57 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          {i.attachmentUrl && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleViewAttachment(i)}
-                              title="Ver comprobante"
-                              className="bg-purple-600/80 hover:bg-purple-700 text-white border-purple-500"
+                              className="bg-blue-600/80 hover:bg-blue-700 text-white border-blue-500"
                             >
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">Ver comprobante</span>
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">Opciones</span>
                             </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSendWhatsapp(i)}
-                            title="Enviar por WhatsApp"
-                            className="bg-green-600/80 hover:bg-green-700 text-white border-green-500"
-                          >
-                            <WhatsAppIcon className="h-4 w-4" />
-                            <span className="sr-only">Enviar por WhatsApp</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePrint(i)}
-                            title="Imprimir recibo"
-                            className="bg-blue-600/80 hover:bg-blue-700 text-white border-blue-500"
-                          >
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Imprimir recibo</span>
-                          </Button>
-                        </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-dark-blue-800 border-dark-blue-700 text-white">
+                            {i.attachmentUrl && (
+                              <DropdownMenuItem
+                                onClick={() => handleViewAttachment(i)}
+                                className="flex items-center gap-2 focus:bg-dark-blue-700 cursor-pointer"
+                              >
+                                <Eye className="h-4 w-4 text-purple-400" />
+                                Ver comprobante
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleSendWhatsapp(i)}
+                              className="flex items-center gap-2 focus:bg-dark-blue-700 cursor-pointer"
+                            >
+                              <WhatsAppIcon className="h-4 w-4 text-green-400" />
+                              Enviar por WhatsApp
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handlePrint(i)}
+                              className="flex items-center gap-2 focus:bg-dark-blue-700 cursor-pointer"
+                            >
+                              <Printer className="h-4 w-4 text-blue-400" />
+                              Imprimir recibo
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(i)}
+                              className="flex items-center gap-2 focus:bg-dark-blue-700 cursor-pointer"
+                            >
+                              <Edit className="h-4 w-4 text-amber-400" />
+                              Editar cuota
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setDeleteConfirmation(i)}
+                              className="flex items-center gap-2 focus:bg-dark-blue-700 cursor-pointer text-red-400"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Eliminar cuota
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))
@@ -968,6 +1032,56 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmation} onOpenChange={(open) => !open && setDeleteConfirmation(null)}>
+        <DialogContent className="bg-dark-blue-900 border-red-600/30 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-400 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Confirmar eliminación
+            </DialogTitle>
+            <DialogDescription className="text-blue-100">
+              ¿Estás seguro de que deseas eliminar la cuota de {deleteConfirmation?.userName}?
+              <p className="mt-2 font-semibold">Esta acción no se puede deshacer.</p>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmation(null)}
+              className="border-blue-500/30 text-blue-300 hover:bg-dark-blue-800"
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white" disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Formulario de edición */}
+      <InstallmentForm
+        installment={editingInstallment}
+        onSaved={() => {
+          refreshTable();
+          setEditingInstallment(null);
+        }}
+      >
+        <button id="edit-form-trigger" className="hidden">Editar</button>
+      </InstallmentForm>
     </Card>
   )
 }
