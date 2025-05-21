@@ -40,7 +40,7 @@ import { formatCurrency, cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { LoanForm } from "./loan-form"
 import { LoanDetails } from "./loan-details"
-import { InstallmentForm } from "../installments/installment-form"
+import { InstallmentForm } from "../installments/components/forms/installment-form"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HttpService } from "@/lib/http"
 import {

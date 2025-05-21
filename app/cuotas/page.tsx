@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
 import { InstallmentTable } from "@/components/installments/installment-table"
-import { InstallmentForm } from "@/components/installments/installment-form"
+import { InstallmentForm } from "@/components/installments/components/forms/installment-form"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 
 export default function InstallmentsPage() {

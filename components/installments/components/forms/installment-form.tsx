@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import type { Loan as BaseLoan } from "../loans/loan-table"
+import type { Loan as BaseLoan } from "../../../loans/loan-table"
 import {
   Dialog,
   DialogTrigger,
@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { PaymentSummaryCard } from "./payment-summary-card"
+import { PaymentSummaryCard } from "../payment-summary-card"
 import { Progress } from "@/components/ui/progress"
 import { uploadImageToCloudinary } from "@/lib/services/cloudinary"
 

@@ -88,7 +88,7 @@ export function PaymentReceiptPreview({
                         <div className="grid grid-cols-2 gap-2 text-sm mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
                             <div className="text-slate-500 dark:text-slate-400 font-medium">Total:</div>
                             <div className="font-bold text-right text-purple-600 dark:text-purple-400">
-                                {formatCurrency(totalAmount)}
+                                {formatCurrency(amount + (gps || 0))}
                             </div>
                         </div>
                     </div>
