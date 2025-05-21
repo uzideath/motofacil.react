@@ -18,49 +18,36 @@ export function useInstallmentActions(refreshInstallments: () => void) {
     const { toast } = useToast()
 
     const handlePrint = async (installment: Installment) => {
+        setIsGenerating(true)
+
         const payload = {
-            name: installment.loan.user.name,
+            name: installment.loan.user.name.trim(),
             identification: installment.loan.motorcycle.plate,
-            concept: `Monto`,
+            concept: "Monto",
             amount: installment.amount,
             latePaymentDate: installment.latePaymentDate,
             gps: installment.gps,
-            total: installment.amount,
+            total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate,
             receiptNumber: installment.id,
         }
-        console.table(payload)
-        setIsGenerating(true)
+
+        console.table(payload) // útil para depuración
+
         try {
-            const res = await HttpService.post(
-                "/api/v1/receipt",
-                {
-                    name: installment.loan.user.name,
-                    identification: installment.loan.motorcycle.plate,
-                    concept: `Monto`,
-                    amount: installment.amount,
-                    latePaymentDate: installment.latePaymentDate,
-                    gps: installment.gps,
-                    total: installment.amount,
-                    date: installment.paymentDate,
-                    receiptNumber: installment.id,
+            const res = await HttpService.post("/api/v1/receipt", payload, {
+                responseType: "blob",
+                headers: {
+                    Accept: "application/pdf",
                 },
-                {
-                    responseType: "blob",
-                },
-            )
+            })
 
-            // Create a blob from the PDF Stream
             const blob = new Blob([res.data], { type: "application/pdf" })
-
-            // Create a URL for the blob
             const fileURL = URL.createObjectURL(blob)
 
-            // Open the PDF in a new window
             const printWindow = window.open(fileURL, "_blank")
 
             if (!printWindow) {
-                // If popup is blocked, inform the user
                 toast({
                     variant: "destructive",
                     title: "Ventana bloqueada",
@@ -69,11 +56,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
                 throw new Error("No se pudo abrir la ventana de impresión")
             }
 
-            // Wait for the PDF to load, then print
             printWindow.addEventListener("load", () => {
                 setTimeout(() => {
                     printWindow.print()
-                }, 1000) // Small delay to ensure PDF is fully loaded
+                }, 1000) // pequeña pausa para asegurar carga completa
             })
 
             toast({
@@ -92,6 +78,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             setIsGenerating(false)
         }
     }
+
 
     const handleSendWhatsapp = async (installment: Installment) => {
         try {
