@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
 import { Installment } from "../utils/types"
+import { utcToZonedTime, format } from "date-fns-tz"
 
 export function useInstallmentActions(refreshInstallments: () => void) {
     const [isGenerating, setIsGenerating] = useState(false)
@@ -20,6 +21,12 @@ export function useInstallmentActions(refreshInstallments: () => void) {
     const handlePrint = async (installment: Installment) => {
         setIsGenerating(true)
 
+        console.table({
+            paymentDate: installment.paymentDate,
+            asString: String(installment.paymentDate),
+            iso: new Date(installment.paymentDate).toISOString(),
+        })
+
         const payload = {
             name: installment.loan.user.name.trim(),
             identification: installment.loan.motorcycle.plate,
@@ -29,8 +36,11 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate,
+            paymentDate: installment.paymentDate,
             receiptNumber: installment.id,
         }
+
+
 
         console.table(payload) // útil para depuración
 
@@ -106,7 +116,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
                 latePaymentDate: installment.latePaymentDate,
                 gps: installment.gps,
                 total: installment.amount,
-                date: installment.paymentDate,
+                date: installment.createdAt,
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
             }
@@ -207,4 +217,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
         handleDelete,
         confirmDelete,
     }
+}
+
+export function formatToColombiaTime(date: string | Date) {
+    const timeZone = "America/Bogota"
+    const zonedDate = utcToZonedTime(date, timeZone)
+    return format(zonedDate, "yyyy-MM-dd HH:mm:ss", { timeZone })
 }
