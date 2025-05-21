@@ -10,29 +10,22 @@ import { LoadingRow } from "./components/loading-row"
 import { EmptyState } from "./components/empty-state"
 import { SearchFilters } from "./components/search-filters"
 import { Pagination } from "./components/pagination"
-import { LoadingOverlay } from "./components/loading-overlay"
 import { useState } from "react"
-import { useInstallments } from "./hooks/useInstallments"
-import { useInstallmentActions } from "./hooks/useInstallmentActions"
-import { InstallmentForm } from "./components/forms/installment-form"
-import { useTableState } from "./hooks/useTableState"
 import { DateRangeSummary } from "./components/date-range"
-import { FilterSummary } from "./components/filter"
 import { AttachmentDialog } from "./components/dialogs/attachment"
-import { SuccessDialog } from "./components/dialogs/success"
 import { DeleteDialog } from "./components/dialogs/delete"
-import type { Installment } from "./utils/types"
-import { PdfViewerDialog } from "./components/dialogs/pdf"
-import { HttpService } from "@/lib/http"
-import { useToast } from "../ui/use-toast"
-import { usePdfViewer } from "./hooks/usePDFViewer"
+import { SuccessDialog } from "./components/dialogs/success"
+import { FilterSummary } from "./components/filter"
+import { InstallmentForm } from "./components/forms/installment-form"
+import { LoadingOverlay } from "./components/loading-overlay"
+import { useInstallmentActions } from "./hooks/useInstallmentActions"
+import { useInstallments } from "./hooks/useInstallments"
+import { useTableState } from "./hooks/useTableState"
+import { Installment } from "./utils/types"
+
 
 export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
   const { installments, loading, fetchInstallments, refreshInstallments } = useInstallments(onRefresh)
-  const { toast } = useToast()
-  const { pdfUrl, isPdfViewerOpen, openPdfViewer, setPdfViewerOpen } = usePdfViewer()
-
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
   const {
     isGenerating,
@@ -46,6 +39,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     setDeleteConfirmation,
     isDeleting,
     editingInstallment: formEditingInstallment,
+    handlePrint,
     handleSendWhatsapp,
     handleViewAttachment,
     handleEdit,
@@ -80,58 +74,6 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
 
   const [editingInstallment, setEditingInstallment] = useState<Installment | null>(null)
 
-  // Enhanced print handler that uses the PDF viewer
-  const handlePrint = async (installment: Installment) => {
-    setIsGeneratingPdf(true)
-    try {
-      const res = await HttpService.post(
-        "/api/v1/receipt",
-        {
-          name: installment.userName,
-          identification: installment.motorcycle.plate,
-          concept: `Monto`,
-          amount: installment.amount,
-          latePaymentDate: installment.latePaymentDate,
-          gps: installment.gps,
-          total: installment.amount + (installment.gps || 0),
-          date: installment.date,
-          receiptNumber: installment.id,
-        },
-        {
-          responseType: "blob",
-          headers: {
-            Accept: "application/pdf",
-          },
-        },
-      )
-
-      // Create a blob from the PDF Stream with explicit PDF MIME type
-      // Even if the server doesn't set the correct content type, we'll force it here
-      const blob = new Blob([res.data], { type: "application/pdf" })
-
-      // Create a URL for the blob
-      const fileURL = URL.createObjectURL(blob)
-
-      // Open the PDF in our viewer
-      openPdfViewer(fileURL)
-
-      toast({
-        title: "Recibo generado",
-        description: "El recibo se ha generado correctamente",
-        variant: "default",
-      })
-    } catch (error) {
-      console.error("Error al imprimir el recibo:", error)
-      toast({
-        variant: "destructive",
-        title: "Error al imprimir",
-        description: "No se pudo generar o imprimir el recibo. Verifique la conexión con el servidor.",
-      })
-    } finally {
-      setIsGeneratingPdf(false)
-    }
-  }
-
   return (
     <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
       <CardHeader className="pb-3">
@@ -149,10 +91,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <LoadingOverlay
-          isVisible={isGenerating || isGeneratingPdf}
-          message={isGeneratingPdf ? "Generando recibo..." : "Procesando..."}
-        />
+        <LoadingOverlay isVisible={isGenerating} message="Procesando..." />
 
         <SearchFilters
           searchTerm={searchTerm}
@@ -244,9 +183,6 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
       />
-
-      {/* PDF Viewer Dialog */}
-      <PdfViewerDialog isOpen={isPdfViewerOpen} onOpenChange={setPdfViewerOpen} pdfUrl={pdfUrl} />
 
       {/* Edit Form */}
       <InstallmentForm

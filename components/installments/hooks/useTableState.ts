@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import type { DateRange } from "react-day-picker"
-import { Installment, SortDirection, SortField } from "../utils/types"
+import { Installment, SortField, SortDirection } from "../utils/types"
 
 export function useTableState(installments: Installment[]) {
     const [searchTerm, setSearchTerm] = useState("")
@@ -39,9 +39,9 @@ export function useTableState(installments: Installment[]) {
         return installments
             .filter(
                 (i) =>
-                    (i.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        i.motorcycleModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (i.motorcycle?.plate && i.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+                    (i.loan?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        i.loan?.motorcycle?.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (i.loan?.motorcycle?.plate && i.loan.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()))) &&
                     (paymentFilter === null || i.paymentMethod === paymentFilter) &&
                     (statusFilter === null || i.isLate === statusFilter),
             )
@@ -54,18 +54,23 @@ export function useTableState(installments: Installment[]) {
 
                 if (sortField === "date") {
                     return sortDirection === "asc"
-                        ? new Date(a.date).getTime() - new Date(b.date).getTime()
-                        : new Date(b.date).getTime() - new Date(a.date).getTime()
+                        ? new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
+                        : new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
                 }
 
-                const aValue = a[sortField].toLowerCase()
-                const bValue = b[sortField].toLowerCase()
-
-                if (sortDirection === "asc") {
-                    return aValue.localeCompare(bValue)
-                } else {
-                    return bValue.localeCompare(aValue)
+                if (sortField === "userName") {
+                    const aName = a.loan?.user?.name?.toLowerCase() || ""
+                    const bName = b.loan?.user?.name?.toLowerCase() || ""
+                    return sortDirection === "asc" ? aName.localeCompare(bName) : bName.localeCompare(aName)
                 }
+
+                if (sortField === "motorcycleModel") {
+                    const aModel = a.loan?.motorcycle?.model?.toLowerCase() || ""
+                    const bModel = b.loan?.motorcycle?.model?.toLowerCase() || ""
+                    return sortDirection === "asc" ? aModel.localeCompare(bModel) : bModel.localeCompare(aModel)
+                }
+
+                return 0
             })
     }, [installments, searchTerm, paymentFilter, statusFilter, sortField, sortDirection])
 

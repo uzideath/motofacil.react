@@ -2,10 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Eye, Printer, Edit, Trash2 } from "lucide-react"
-import { Installment } from "../utils/types"
+import { MoreVertical, Eye, Edit, Trash2, Printer } from "lucide-react"
 import { WhatsAppIcon } from "../icons/whatsapp"
-
+import { Installment } from "../utils/types"
 
 interface ActionsMenuProps {
     installment: Installment

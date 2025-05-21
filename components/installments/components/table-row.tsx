@@ -15,8 +15,8 @@ import {
     CheckCircle2,
 } from "lucide-react"
 import { CreditCard, FileText } from "lucide-react"
-import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { Installment } from "../utils/types"
+import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
 
 interface InstallmentRowProps {
@@ -55,19 +55,19 @@ export function InstallmentRow({
             <TableCell className="font-medium text-white">
                 <div className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.userName}
+                    {installment.loan.user.name}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell text-blue-200">
                 <div className="flex items-center">
                     <Motorcycle className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.motorcycleModel}
+                    {installment.loan.motorcycle.model}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell text-blue-200">
                 <div className="flex items-center">
                     <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.motorcycle?.plate || "—"}
+                    {installment.loan.motorcycle.plate || "—"}
                 </div>
             </TableCell>
             <TableCell className="text-blue-200 font-medium">
@@ -85,7 +85,7 @@ export function InstallmentRow({
             <TableCell className="hidden md:table-cell text-blue-200">
                 <div className="flex items-center">
                     <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {formatSpanishDate(installment.date)}
+                    {formatSpanishDate(installment.paymentDate)}
                 </div>
             </TableCell>
             <TableCell className="text-blue-200">

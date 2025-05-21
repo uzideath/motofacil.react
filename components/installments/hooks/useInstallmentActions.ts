@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import type { Installment } from "../utils/types"
+import { Installment } from "../utils/types"
 
-export function useInstallmentActions(refreshInstallments: () => void, openPdfViewer?: (url: string) => void) {
+export function useInstallmentActions(refreshInstallments: () => void) {
     const [isGenerating, setIsGenerating] = useState(false)
     const [successMessage, setSuccessMessage] = useState("")
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
@@ -18,53 +18,67 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
     const { toast } = useToast()
 
     const handlePrint = async (installment: Installment) => {
+        const payload = {
+            name: installment.loan.user.name,
+            identification: installment.loan.motorcycle.plate,
+            concept: `Monto`,
+            amount: installment.amount,
+            latePaymentDate: installment.latePaymentDate,
+            gps: installment.gps,
+            total: installment.amount,
+            date: installment.paymentDate,
+            receiptNumber: installment.id,
+        }
+        console.table(payload)
         setIsGenerating(true)
         try {
             const res = await HttpService.post(
                 "/api/v1/receipt",
                 {
-                    name: installment.userName,
-                    identification: installment.motorcycle.plate,
+                    name: installment.loan.user.name,
+                    identification: installment.loan.motorcycle.plate,
                     concept: `Monto`,
                     amount: installment.amount,
                     latePaymentDate: installment.latePaymentDate,
                     gps: installment.gps,
-                    total: installment.amount + (installment.gps || 0),
-                    date: installment.date,
+                    total: installment.amount,
+                    date: installment.paymentDate,
                     receiptNumber: installment.id,
                 },
                 {
                     responseType: "blob",
-                    headers: {
-                        Accept: "application/pdf",
-                    },
                 },
             )
 
-            // Create a blob from the PDF Stream with explicit PDF MIME type
-            // Even if the server doesn't set the correct content type, we'll force it here
+            // Create a blob from the PDF Stream
             const blob = new Blob([res.data], { type: "application/pdf" })
 
             // Create a URL for the blob
             const fileURL = URL.createObjectURL(blob)
 
-            if (openPdfViewer) {
-                openPdfViewer(fileURL)
-            } else {
-                // Fallback to opening in a new tab
-                const newWindow = window.open()
-                if (newWindow) {
-                    newWindow.document.write(
-                        `<iframe src="${fileURL}" width="100%" height="100%" style="border: none;"></iframe>`,
-                    )
-                } else {
-                    window.open(fileURL, "_blank")
-                }
+            // Open the PDF in a new window
+            const printWindow = window.open(fileURL, "_blank")
+
+            if (!printWindow) {
+                // If popup is blocked, inform the user
+                toast({
+                    variant: "destructive",
+                    title: "Ventana bloqueada",
+                    description: "Por favor, permita ventanas emergentes para imprimir el recibo",
+                })
+                throw new Error("No se pudo abrir la ventana de impresión")
             }
+
+            // Wait for the PDF to load, then print
+            printWindow.addEventListener("load", () => {
+                setTimeout(() => {
+                    printWindow.print()
+                }, 1000) // Small delay to ensure PDF is fully loaded
+            })
 
             toast({
                 title: "Recibo generado",
-                description: "El recibo se ha generado correctamente",
+                description: "El recibo se ha enviado a la impresora",
                 variant: "default",
             })
         } catch (error) {
@@ -72,7 +86,7 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
             toast({
                 variant: "destructive",
                 title: "Error al imprimir",
-                description: "No se pudo generar o imprimir el recibo. Verifique la conexión con el servidor.",
+                description: "No se pudo generar o imprimir el recibo",
             })
         } finally {
             setIsGenerating(false)
@@ -81,7 +95,8 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
 
     const handleSendWhatsapp = async (installment: Installment) => {
         try {
-            const phoneNumber = `+57${installment.loan?.user?.phone}`
+            // Get the phone number from the installment data
+            const phoneNumber = `+57${installment.loan.user.phone}`
 
             if (!phoneNumber) {
                 toast({
@@ -94,23 +109,26 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
 
             setIsGenerating(true)
 
+            // Prepare the receipt data
             const receiptData = {
                 phoneNumber,
-                name: installment.userName,
-                identification: installment.motorcycle.plate,
+                name: installment.loan.user.name,
+                identification: installment.loan.motorcycle.plate,
                 concept: `Monto`,
                 amount: installment.amount,
                 latePaymentDate: installment.latePaymentDate,
                 gps: installment.gps,
                 total: installment.amount,
-                date: installment.date,
+                date: installment.paymentDate,
                 receiptNumber: installment.id,
-                caption: `Recibo de pago - ${installment.userName}`,
+                caption: `Recibo de pago - ${installment.loan.user.name}`,
             }
 
+            // Send the request to the whatsapp endpoint
             await HttpService.post("/api/v1/receipt/whatsapp", receiptData)
 
-            setSuccessMessage(`El recibo ha sido enviado exitosamente a ${installment.userName} por WhatsApp.`)
+            // Show success dialog
+            setSuccessMessage(`El recibo ha sido enviado exitosamente a ${installment.loan.user.name} por WhatsApp.`)
             setIsSuccessDialogOpen(true)
         } catch (error) {
             console.error("Error al enviar el recibo por WhatsApp:", error)
@@ -154,6 +172,7 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
         try {
             setIsDeleting(true)
 
+            // Llamada a la API para eliminar la cuota
             await HttpService.delete(`/api/v1/installments/${deleteConfirmation.id}`)
 
             toast({
@@ -162,7 +181,10 @@ export function useInstallmentActions(refreshInstallments: () => void, openPdfVi
                 variant: "default",
             })
 
+            // Refresh the installments list
             refreshInstallments()
+
+            // Cerrar el diálogo de confirmación
             setDeleteConfirmation(null)
         } catch (error) {
             console.error("Error al eliminar la cuota:", error)

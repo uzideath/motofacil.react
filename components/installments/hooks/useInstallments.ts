@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import type { DateRange } from "react-day-picker"
+import { DateRange } from "react-day-picker"
 import { Installment } from "../utils/types"
 
 export function useInstallments(onRefreshCallback?: (refreshFn: () => void) => void) {
@@ -34,25 +34,10 @@ export function useInstallments(onRefreshCallback?: (refreshFn: () => void) => v
             const res = await HttpService.get(url)
             const rawData = res.data
 
-            const mapped: Installment[] = rawData.map((item: any) => ({
-                id: item.id,
-                loanId: item.loanId,
-                userName: item.loan?.user?.name ?? "Desconocido",
-                motorcycleModel: item.loan?.motorcycle?.model ?? "Desconocido",
-                amount: item.amount,
-                gps: item.gps,
-                date: item.paymentDate,
-                isLate: item.isLate,
-                latePaymentDate: item.latePaymentDate,
-                paymentMethod: item.paymentMethod ?? "CASH",
-                createdBy: item.createdBy ?? null,
-                attachmentUrl: item.attachmentUrl ?? null,
-                loan: item.loan,
-                motorcycle: item.loan?.motorcycle,
-            }))
-
             // Sort by date descending by default
-            const sortedData = [...mapped].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            const sortedData = [...rawData].sort(
+                (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
+            )
 
             setInstallments(sortedData)
         } catch (error) {
