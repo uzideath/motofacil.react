@@ -55,7 +55,7 @@ export function TransactionListHeader({
                     onClick={() => onSort("description")}
                 >
                     <div className="flex items-center">
-                        Descripción
+                        Placa
                         {getSortIcon("description")}
                     </div>
                 </TableHead>

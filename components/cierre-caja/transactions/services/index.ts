@@ -30,7 +30,7 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
     return installments.map((installment) => ({
         id: installment.id,
         time: formatTimeFromDate(installment.paymentDate),
-        description: `Pago cuota - ${installment.loan.user.name}`,
+        description: `${installment.loan.motorcycle.plate}`,
         category: "Cuota de préstamo",
         amount: installment.amount + installment.gps, // Add GPS to the amount
         baseAmount: installment.amount, // Keep the original amount as baseAmount

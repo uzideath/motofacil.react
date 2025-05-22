@@ -38,9 +38,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate,
-            paymentDate: installment.paymentDate,
+            paymentDate: installment.latePaymentDate || installment.paymentDate,
             receiptNumber: installment.id,
         }
+
 
         console.table(payload) // útil para depuración
 

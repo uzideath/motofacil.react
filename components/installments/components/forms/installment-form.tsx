@@ -62,7 +62,7 @@ const installmentSchema = z
     }),
     isLate: z.boolean().default(false),
     latePaymentDate: z.date().optional(),
-    paymentDate: z.date().optional(), // Match the DTO with capital P
+    paymentDate: z.date().optional(), // Changed from PaymentDate to paymentDate
     notes: z.string().optional(),
     attachmentUrl: z.string().optional(),
     createdById: z.string().optional(),
@@ -131,7 +131,7 @@ export function InstallmentForm({
       gps: 0,
       isLate: false,
       latePaymentDate: undefined,
-      paymentDate: new Date(), // Initialize with current date
+      paymentDate: new Date(), // Changed from PaymentDate to paymentDate
       notes: "",
       attachmentUrl: "",
       createdById: user?.id,
@@ -190,8 +190,8 @@ export function InstallmentForm({
         form.setValue("latePaymentDate", new Date(installment.latePaymentDate))
       }
 
-      if (installment.PaymentDate) {
-        form.setValue("paymentDate", new Date(installment.PaymentDate))
+      if (installment.paymentDate) {
+        form.setValue("paymentDate", new Date(installment.paymentDate))
       }
 
       if (installment.attachmentUrl) {
@@ -376,10 +376,6 @@ export function InstallmentForm({
   const onSubmit = async (values: InstallmentFormValues) => {
     try {
       setLoading(true)
-      const token = document.cookie
-        .split("; ")
-        .find((c) => c.startsWith("authToken="))
-        ?.split("=")[1]
 
       let attachmentUrl: string | undefined = undefined
 
@@ -422,6 +418,7 @@ export function InstallmentForm({
         payload.latePaymentDate = values.latePaymentDate.toISOString()
       }
 
+      // Solo incluir paymentDate si estamos creando
       if (!isEditing) {
         payload.paymentDate = values.paymentDate
           ? values.paymentDate.toISOString()
@@ -459,6 +456,14 @@ export function InstallmentForm({
       setUploadProgress(0)
     }
   }
+
+  // Add this useEffect after the other useEffects
+  useEffect(() => {
+    // Initialize late payment date when isLate is checked and no date is set
+    if (isLate && !form.getValues("latePaymentDate")) {
+      form.setValue("latePaymentDate", new Date())
+    }
+  }, [isLate, form])
 
   return (
     <Dialog
@@ -702,7 +707,7 @@ export function InstallmentForm({
                         )}
                       />
 
-                      {/* Payment Date field (matches DTO with capital P) */}
+                      {/* Payment Date field (matches DTO with lowercase p) */}
                       <FormField
                         control={form.control}
                         name="paymentDate"
@@ -730,7 +735,13 @@ export function InstallmentForm({
                                 <CalendarComponent
                                   mode="single"
                                   selected={field.value || undefined}
-                                  onSelect={field.onChange}
+                                  onSelect={(date) => {
+                                    field.onChange(date)
+                                    // Ensure the date is properly set in the form
+                                    if (date) {
+                                      form.setValue("paymentDate", date)
+                                    }
+                                  }}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -754,12 +765,8 @@ export function InstallmentForm({
                                   // If unchecked, clear the late payment date
                                   if (!checked) {
                                     form.setValue("latePaymentDate", undefined)
-                                  } else {
-                                    // If checked and no date is set, set to today
-                                    if (!form.getValues("latePaymentDate")) {
-                                      form.setValue("latePaymentDate", new Date())
-                                    }
                                   }
+                                  // Remove the automatic date setting when checked
                                 }}
                               />
                             </FormControl>
@@ -801,7 +808,13 @@ export function InstallmentForm({
                                   <CalendarComponent
                                     mode="single"
                                     selected={field.value || undefined}
-                                    onSelect={field.onChange}
+                                    onSelect={(date) => {
+                                      field.onChange(date)
+                                      // Ensure the date is properly set in the form
+                                      if (date) {
+                                        form.setValue("latePaymentDate", date)
+                                      }
+                                    }}
                                     initialFocus
                                   />
                                 </PopoverContent>

@@ -91,17 +91,17 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Operations items
     const operationsItems = [
-        { path: "/flujo-caja", label: "Flujo de Caja", icon: Banknote },
+        // { path: "/flujo-caja", label: "Flujo de Caja", icon: Banknote },
         { path: "/calculadora", label: "Calculadora", icon: Calculator },
-        { path: "/reportes", label: "Reportes", icon: FileBarChart },
-        { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        // { path: "/reportes", label: "Reportes", icon: FileBarChart },
+        // { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     ]
 
     // Secondary navigation items
     const secondaryItems = [
         { path: "/config/whatsapp", label: "WhatsApp", icon: Smartphone },
-        { path: "/settings", label: "Configuración", icon: Settings },
-        { path: "/help", label: "Ayuda", icon: HelpCircle },
+        // { path: "/settings", label: "Configuración", icon: Settings },
+        // { path: "/help", label: "Ayuda", icon: HelpCircle },
     ]
 
     // Admin item (only shown if user has access)
