@@ -1,17 +1,7 @@
 "use client"
 
 import { TableHeader, TableRow, TableHead } from "@/components/ui/table"
-import {
-    ArrowDownUp,
-    User,
-    BikeIcon as Motorcycle,
-    DollarSign,
-    Calendar,
-    CreditCard,
-    Clock,
-    FileText,
-    BikeIcon,
-} from "lucide-react"
+import { ArrowDownUp, User, BikeIcon as Motorcycle, DollarSign, Calendar, CreditCard, Clock, FileText, BikeIcon, StickyNote } from 'lucide-react'
 import { SortField } from "../utils/types"
 
 interface TableHeaderProps {
@@ -89,6 +79,12 @@ export function InstallmentTableHeader({ sortField, sortDirection, onSort }: Tab
                     <div className="flex items-center justify-center">
                         <Clock className="mr-2 h-4 w-4 text-blue-300/70" />
                         Estado
+                    </div>
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-blue-200 font-medium">
+                    <div className="flex items-center">
+                        <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
+                        Notas
                     </div>
                 </TableHead>
                 <TableHead className="text-blue-200 font-medium">

@@ -51,29 +51,33 @@ import { uploadImageToCloudinary } from "@/lib/services/cloudinary"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
+// Update schema to match DTO
 const installmentSchema = z
   .object({
     loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
     amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
     gps: z.coerce.number(),
-    isLate: z.boolean().default(false),
     paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {
       required_error: "Debe seleccionar un método de pago",
     }),
-    paymentDate: z.date().optional(),
+    isLate: z.boolean().default(false),
+    latePaymentDate: z.date().optional(),
+    PaymentDate: z.date().optional(), // Match the DTO with capital P
     notes: z.string().optional(),
+    attachmentUrl: z.string().optional(),
+    createdById: z.string().optional(),
   })
   .refine(
     (data) => {
-      // If isLate is true, paymentDate is required
-      if (data.isLate && !data.paymentDate) {
+      // If isLate is true, latePaymentDate is required
+      if (data.isLate && !data.latePaymentDate) {
         return false
       }
       return true
     },
     {
       message: "Debe seleccionar una fecha de pago cuando el pago es atrasado",
-      path: ["paymentDate"],
+      path: ["latePaymentDate"],
     },
   )
 
@@ -126,8 +130,11 @@ export function InstallmentForm({
       amount: 0,
       gps: 0,
       isLate: false,
-      paymentDate: undefined,
+      latePaymentDate: undefined,
+      PaymentDate: new Date(), // Initialize with current date
       notes: "",
+      attachmentUrl: "",
+      createdById: user?.id,
     },
   })
 
@@ -141,9 +148,15 @@ export function InstallmentForm({
       form.setValue("isLate", installment.isLate || false)
       form.setValue("paymentMethod", installment.paymentMethod || "CASH")
       form.setValue("notes", installment.notes || "")
+      form.setValue("attachmentUrl", installment.attachmentUrl || "")
+      form.setValue("createdById", installment.createdById || user?.id)
 
       if (installment.latePaymentDate) {
-        form.setValue("paymentDate", new Date(installment.latePaymentDate))
+        form.setValue("latePaymentDate", new Date(installment.latePaymentDate))
+      }
+
+      if (installment.PaymentDate) {
+        form.setValue("PaymentDate", new Date(installment.PaymentDate))
       }
 
       if (installment.attachmentUrl) {
@@ -151,8 +164,11 @@ export function InstallmentForm({
       }
     } else {
       setIsEditing(false)
+      // Set default values for new installment
+      form.setValue("PaymentDate", new Date())
+      form.setValue("createdById", user?.id)
     }
-  }, [installment, form])
+  }, [installment, form, user])
 
   const amount = form.watch("amount")
   const gps = form.watch("gps")
@@ -288,6 +304,7 @@ export function InstallmentForm({
   const removeFile = () => {
     setSelectedFile(null)
     setFilePreview(null)
+    form.setValue("attachmentUrl", "")
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -347,26 +364,38 @@ export function InstallmentForm({
         }
 
         attachmentUrl = url
+        form.setValue("attachmentUrl", url)
       } else if (isEditing && filePreview && !selectedFile) {
         // Si estamos editando y hay una vista previa pero no un archivo nuevo, mantener la URL existente
         attachmentUrl = filePreview
+        form.setValue("attachmentUrl", filePreview)
       }
 
+      // Prepare payload to match DTO structure
       const payload: Record<string, any> = {
-        ...values,
-        principalAmount: paymentBreakdown?.principalAmount,
-        interestAmount: paymentBreakdown?.interestAmount,
-        createdById: user?.id,
-        attachmentUrl,
+        loanId: values.loanId,
+        amount: values.amount,
+        gps: values.gps,
+        paymentMethod: values.paymentMethod,
+        isLate: values.isLate,
+        notes: values.notes || "",
+        attachmentUrl: values.attachmentUrl || "",
+        createdById: values.createdById || user?.id,
       }
 
-      if (values.isLate && values.paymentDate) {
-        payload.latePaymentDate = values.paymentDate.toISOString()
-      } else {
-        payload.latePaymentDate = null
+      // Handle dates according to DTO structure
+      if (values.isLate && values.latePaymentDate) {
+        payload.latePaymentDate = values.latePaymentDate.toISOString()
       }
 
-      delete payload.paymentDate
+      // Always include PaymentDate with capital P as per DTO
+      payload.PaymentDate = values.PaymentDate ? values.PaymentDate.toISOString() : new Date().toISOString()
+
+      // Add payment breakdown if available
+      if (paymentBreakdown) {
+        payload.principalAmount = paymentBreakdown.principalAmount
+        payload.interestAmount = paymentBreakdown.interestAmount
+      }
 
       if (isEditing && installment) {
         // Si estamos editando, hacer una petición PATCH
@@ -642,6 +671,45 @@ export function InstallmentForm({
                         )}
                       />
 
+                      {/* Payment Date field (matches DTO with capital P) */}
+                      <FormField
+                        control={form.control}
+                        name="PaymentDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fecha de pago</FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"
+                                      }`}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP", { locale: es })
+                                    ) : (
+                                      <span>Seleccionar fecha</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={field.value || undefined}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormDescription>Fecha en que se realizó el pago</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <FormField
                         control={form.control}
                         name="isLate"
@@ -652,13 +720,13 @@ export function InstallmentForm({
                                 checked={field.value}
                                 onCheckedChange={(checked) => {
                                   field.onChange(checked)
-                                  // If unchecked, clear the payment date
+                                  // If unchecked, clear the late payment date
                                   if (!checked) {
-                                    form.setValue("paymentDate", undefined)
+                                    form.setValue("latePaymentDate", undefined)
                                   } else {
                                     // If checked and no date is set, set to today
-                                    if (!form.getValues("paymentDate")) {
-                                      form.setValue("paymentDate", new Date())
+                                    if (!form.getValues("latePaymentDate")) {
+                                      form.setValue("latePaymentDate", new Date())
                                     }
                                   }
                                 }}
@@ -677,7 +745,7 @@ export function InstallmentForm({
                       {isLate && (
                         <FormField
                           control={form.control}
-                          name="paymentDate"
+                          name="latePaymentDate"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Fecha de pago atrasado</FormLabel>
@@ -757,7 +825,7 @@ export function InstallmentForm({
                             />
                           </div>
 
-                          {selectedFile && (
+                          {(selectedFile || filePreview) && (
                             <div className="bg-muted/30 rounded-md p-2 relative">
                               <div className="flex items-center gap-2">
                                 {filePreview ? (
@@ -770,14 +838,16 @@ export function InstallmentForm({
                                   </div>
                                 ) : (
                                   <div className="h-10 w-10 rounded-md bg-background flex items-center justify-center border">
-                                    {getFileIcon(selectedFile)}
+                                    {selectedFile && getFileIcon(selectedFile)}
                                   </div>
                                 )}
 
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium truncate">{selectedFile.name}</p>
+                                  <p className="text-xs font-medium truncate">
+                                    {selectedFile ? selectedFile.name : "Archivo adjunto"}
+                                  </p>
                                   <p className="text-[10px] text-muted-foreground">
-                                    {(selectedFile.size / 1024).toFixed(1)} KB
+                                    {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Archivo existente"}
                                   </p>
                                 </div>
 
@@ -924,19 +994,6 @@ export function InstallmentForm({
                             remainingAmount={selectedLoan.debtRemaining}
                             progress={(selectedLoan.totalCapitalPaid / selectedLoan.financedAmount) * 100}
                           />
-
-                          {/* <PaymentReceiptPreview
-                            clientName={selectedLoan.user.name}
-                            vehicleModel={selectedLoan.motorcycle.model}
-                            installmentNumber={selectedLoan.nextInstallmentNumber}
-                            paymentMethod={form.watch("paymentMethod")}
-                            paymentDate={
-                              form.watch("isLate") && form.watch("paymentDate") ? form.watch("paymentDate") : new Date()
-                            }
-                            amount={amount}
-                            gps={gps}
-                            totalAmount={paymentBreakdown.totalAmount}
-                          /> */}
                         </>
                       )}
                     </>

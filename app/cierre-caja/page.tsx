@@ -5,21 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
-import { Calendar, Download, Printer, Save } from "lucide-react"
+import { Download, Printer, Save } from "lucide-react"
 import { CashRegisterForm } from "@/components/cierre-caja/cash-register-form"
 import { DailySummary } from "@/components/cierre-caja/daily-summary"
-import { TransactionTable } from "@/components/cierre-caja/transaction-table"
-import { DatePickerWithRange } from "@/components/ui/date-range-picker"
+import { TransactionTable } from "@/components/cierre-caja/transactions/transaction-table"
 import { CashRegisterHistory } from "@/components/cierre-caja/history"
-
-
-// 👇 Tipo combinado de ingresos y egresos
-type SelectedTransaction = {
-    id: string
-    amount: number
-    paymentMethod: "CASH" | "TRANSACTION" | "CARD"
-    type: "income" | "expense"
-}
+import { SelectedTransaction } from "@/components/cierre-caja/transactions/constants/types"
 
 export default function CierreCajaPage() {
     const [selectedTransactions, setSelectedTransactions] = useState<SelectedTransaction[]>([])

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Calendar, PlusCircle } from "lucide-react"
+import { Calendar, PlusCircle } from 'lucide-react'
 import { InstallmentTableHeader } from "./components/table-header"
 import { InstallmentRow } from "./components/table-row"
 import { LoadingRow } from "./components/loading-row"
@@ -21,8 +21,7 @@ import { LoadingOverlay } from "./components/loading-overlay"
 import { useInstallmentActions } from "./hooks/useInstallmentActions"
 import { useInstallments } from "./hooks/useInstallments"
 import { useTableState } from "./hooks/useTableState"
-import { Installment } from "./utils/types"
-
+import { NotesDialog } from "./components/dialogs/note"
 
 export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
   const { installments, loading, fetchInstallments, refreshInstallments } = useInstallments(onRefresh)
@@ -38,10 +37,17 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     deleteConfirmation,
     setDeleteConfirmation,
     isDeleting,
-    editingInstallment: formEditingInstallment,
+    editingInstallment,
+    setEditingInstallment,
+    isEditFormOpen,
+    setIsEditFormOpen,
+    selectedNotes,
+    isNotesDialogOpen,
+    setIsNotesDialogOpen,
     handlePrint,
     handleSendWhatsapp,
     handleViewAttachment,
+    handleViewNotes,
     handleEdit,
     handleDelete,
     confirmDelete,
@@ -71,8 +77,6 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     handleItemsPerPageChange,
     handleDateRangeChange,
   } = useTableState(installments)
-
-  const [editingInstallment, setEditingInstallment] = useState<Installment | null>(null)
 
   return (
     <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
@@ -131,11 +135,9 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
                       onViewAttachment={handleViewAttachment}
                       onSendWhatsapp={handleSendWhatsapp}
                       onPrint={handlePrint}
-                      onEdit={() => {
-                        handleEdit(installment)
-                        setEditingInstallment(installment)
-                      }}
+                      onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onViewNotes={handleViewNotes}
                     />
                   ))
                 )}
@@ -182,6 +184,13 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
         onOpenChange={(open) => !open && setDeleteConfirmation(null)}
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
+      />
+
+      <NotesDialog
+        isOpen={isNotesDialogOpen}
+        onOpenChange={setIsNotesDialogOpen}
+        notes={selectedNotes}
+        title="Notas de la cuota"
       />
 
       {/* Edit Form */}

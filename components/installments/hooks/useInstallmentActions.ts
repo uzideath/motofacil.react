@@ -16,6 +16,8 @@ export function useInstallmentActions(refreshInstallments: () => void) {
     const [isDeleting, setIsDeleting] = useState(false)
     const [editingInstallment, setEditingInstallment] = useState<Installment | null>(null)
     const [isEditFormOpen, setIsEditFormOpen] = useState(false)
+    const [selectedNotes, setSelectedNotes] = useState<string>("")
+    const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false)
     const { toast } = useToast()
 
     const handlePrint = async (installment: Installment) => {
@@ -39,8 +41,6 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             paymentDate: installment.paymentDate,
             receiptNumber: installment.id,
         }
-
-
 
         console.table(payload) // útil para depuración
 
@@ -153,6 +153,11 @@ export function useInstallmentActions(refreshInstallments: () => void) {
         }
     }
 
+    const handleViewNotes = (notes: string) => {
+        setSelectedNotes(notes)
+        setIsNotesDialogOpen(true)
+    }
+
     const handleEdit = (installment: Installment) => {
         setEditingInstallment(installment)
         setIsEditFormOpen(true)
@@ -210,9 +215,13 @@ export function useInstallmentActions(refreshInstallments: () => void) {
         setEditingInstallment,
         isEditFormOpen,
         setIsEditFormOpen,
+        selectedNotes,
+        isNotesDialogOpen,
+        setIsNotesDialogOpen,
         handlePrint,
         handleSendWhatsapp,
         handleViewAttachment,
+        handleViewNotes,
         handleEdit,
         handleDelete,
         confirmDelete,

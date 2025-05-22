@@ -4,20 +4,12 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import {
-    User,
-    BikeIcon as Motorcycle,
-    BikeIcon,
-    DollarSign,
-    BadgeCent,
-    Calendar,
-    AlertTriangle,
-    CheckCircle2,
-} from "lucide-react"
-import { CreditCard, FileText } from "lucide-react"
+import { User, BikeIcon as Motorcycle, BikeIcon, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
+import { CreditCard, FileText } from 'lucide-react'
 import { Installment } from "../utils/types"
 import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
+import { NoteDisplay } from "./dialogs/note-display"
 
 interface InstallmentRowProps {
     installment: Installment
@@ -26,6 +18,7 @@ interface InstallmentRowProps {
     onPrint: (installment: Installment) => void
     onEdit: (installment: Installment) => void
     onDelete: (installment: Installment) => void
+    onViewNotes?: (notes: string) => void
 }
 
 export function InstallmentRow({
@@ -35,6 +28,7 @@ export function InstallmentRow({
     onPrint,
     onEdit,
     onDelete,
+    onViewNotes,
 }: InstallmentRowProps) {
     const getIcon = (method: string) => {
         const iconName = getPaymentMethodIcon(method)
@@ -112,6 +106,16 @@ export function InstallmentRow({
                         <span>A tiempo</span>
                     </Badge>
                 )}
+            </TableCell>
+            <TableCell className="hidden md:table-cell text-blue-200">
+                <div className="flex items-center">
+                    <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <NoteDisplay
+                        notes={installment.notes}
+                        maxLength={30}
+                        onViewMore={() => onViewNotes && onViewNotes(installment.notes)}
+                    />
+                </div>
             </TableCell>
             <TableCell className="text-blue-200">
                 <div className="flex items-center">
