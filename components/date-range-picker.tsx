@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { format, startOfMonth, endOfMonth, isSameDay, subDays } from "date-fns"
-import { es } from "date-fns/locale"
+import es from "date-fns/locale/es"
 import { CalendarIcon, X, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 

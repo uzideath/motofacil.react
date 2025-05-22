@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from "date-fns"
 import { formatCurrency } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { es } from "date-fns/locale/es"
+import es from "date-fns/locale/es"
 import {
     Wallet,
     ArrowUpToLine,

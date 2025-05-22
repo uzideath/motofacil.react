@@ -25,7 +25,7 @@ export function DeleteDialog({ installment, isOpen, onOpenChange, onConfirm, isD
                         Confirmar eliminación
                     </DialogTitle>
                     <DialogDescription className="text-blue-100">
-                        ¿Estás seguro de que deseas eliminar la cuota de {installment.userName}?
+                        ¿Estás seguro de que deseas eliminar la cuota de {installment.loan.user.name}?
                         <p className="mt-2 font-semibold">Esta acción no se puede deshacer.</p>
                     </DialogDescription>
                 </DialogHeader>
