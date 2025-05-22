@@ -62,7 +62,7 @@ const installmentSchema = z
     }),
     isLate: z.boolean().default(false),
     latePaymentDate: z.date().optional(),
-    PaymentDate: z.date().optional(), // Match the DTO with capital P
+    paymentDate: z.date().optional(), // Match the DTO with capital P
     notes: z.string().optional(),
     attachmentUrl: z.string().optional(),
     createdById: z.string().optional(),
@@ -131,7 +131,7 @@ export function InstallmentForm({
       gps: 0,
       isLate: false,
       latePaymentDate: undefined,
-      PaymentDate: new Date(), // Initialize with current date
+      paymentDate: new Date(), // Initialize with current date
       notes: "",
       attachmentUrl: "",
       createdById: user?.id,
@@ -151,12 +151,47 @@ export function InstallmentForm({
       form.setValue("attachmentUrl", installment.attachmentUrl || "")
       form.setValue("createdById", installment.createdById || user?.id)
 
+      // Create a temporary loan object to enable the button in edit mode
+      if (!selectedLoan) {
+        // Use a type assertion to avoid TypeScript errors
+        const tempLoan = {
+          id: installment.loanId,
+          user: { name: "Cliente cargando..." },
+          motorcycle: { model: "Cargando...", plate: "" },
+          debtRemaining: 0,
+          interestRate: 0,
+          interestType: "FIXED",
+          installments: 0,
+          financedAmount: 0,
+          totalCapitalPaid: 0,
+          nextInstallmentNumber: 0,
+          payments: [],
+          monthlyPayment: 0,
+          // Add these properties to satisfy BaseLoan requirements
+          userId: "",
+          contractNumber: "",
+          motorcycleId: "",
+          totalAmount: 0,
+          downPayment: 0,
+          startDate: new Date(),
+          endDate: new Date(),
+          status: "ACTIVE",
+          paymentFrequency: "MONTHLY",
+          paidInstallments: 0,
+          totalPaid: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as unknown as EnrichedLoan
+
+        setSelectedLoan(tempLoan)
+      }
+
       if (installment.latePaymentDate) {
         form.setValue("latePaymentDate", new Date(installment.latePaymentDate))
       }
 
       if (installment.PaymentDate) {
-        form.setValue("PaymentDate", new Date(installment.PaymentDate))
+        form.setValue("paymentDate", new Date(installment.PaymentDate))
       }
 
       if (installment.attachmentUrl) {
@@ -165,10 +200,10 @@ export function InstallmentForm({
     } else {
       setIsEditing(false)
       // Set default values for new installment
-      form.setValue("PaymentDate", new Date())
+      form.setValue("paymentDate", new Date())
       form.setValue("createdById", user?.id)
     }
-  }, [installment, form, user])
+  }, [installment, form, user, selectedLoan])
 
   const amount = form.watch("amount")
   const gps = form.watch("gps")
@@ -371,7 +406,6 @@ export function InstallmentForm({
         form.setValue("attachmentUrl", filePreview)
       }
 
-      // Prepare payload to match DTO structure
       const payload: Record<string, any> = {
         loanId: values.loanId,
         amount: values.amount,
@@ -383,18 +417,15 @@ export function InstallmentForm({
         createdById: values.createdById || user?.id,
       }
 
-      // Handle dates according to DTO structure
+      // Fechas válidas según DTO
       if (values.isLate && values.latePaymentDate) {
         payload.latePaymentDate = values.latePaymentDate.toISOString()
       }
 
-      // Always include PaymentDate with capital P as per DTO
-      payload.PaymentDate = values.PaymentDate ? values.PaymentDate.toISOString() : new Date().toISOString()
-
-      // Add payment breakdown if available
-      if (paymentBreakdown) {
-        payload.principalAmount = paymentBreakdown.principalAmount
-        payload.interestAmount = paymentBreakdown.interestAmount
+      if (!isEditing) {
+        payload.paymentDate = values.paymentDate
+          ? values.paymentDate.toISOString()
+          : new Date().toISOString()
       }
 
       if (isEditing && installment) {
@@ -674,7 +705,7 @@ export function InstallmentForm({
                       {/* Payment Date field (matches DTO with capital P) */}
                       <FormField
                         control={form.control}
-                        name="PaymentDate"
+                        name="paymentDate"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Fecha de pago</FormLabel>
@@ -1014,7 +1045,7 @@ export function InstallmentForm({
                     <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                       Cancelar
                     </Button>
-                    <Button type="submit" disabled={loading || !selectedLoan} className="gap-2">
+                    <Button type="submit" disabled={loading || (!isEditing && !selectedLoan)} className="gap-2">
                       {loading ? (
                         <>
                           <svg
