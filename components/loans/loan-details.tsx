@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { formatCurrency, formatDate, getInterest } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { CreditCard, Calculator, DollarSign, Percent } from "lucide-react"
+import { CreditCard, DollarSign, Percent } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { InstallmentForm } from "../installments/components/forms/installment-form"
@@ -17,7 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bike, Users } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { fetchLoan } from "@/lib/api"
-import { Loan } from "@/lib/dto/loan"
+import type { Loan } from "@/lib/dto/loan"
+
 type Payment = {
   id: string
   amount: number
@@ -104,8 +105,10 @@ export function LoanDetails({
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("payments")
   const { toast } = useToast()
-  const [interests, setInterests] = useState(0);
+  const [interests, setInterests] = useState(0)
   const dataFetchedRef = useRef(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   // Función para obtener datos del préstamo
   const fetchLoanData = () => {
@@ -113,10 +116,17 @@ export function LoanDetails({
     // Simulación de carga de datos
     setTimeout(async () => {
       try {
-        const response = await fetchLoan(loanId);
-        const periods = response.paymentFrequency === 'DAILY' ? 365 : response.paymentFrequency === 'WEEKLY' ? 52 : response.paymentFrequency === 'BIWEEKLY' ? 24 : 12; // <- Monthly
-        setInterests(getInterest(response.totalAmount, response.interestRate, periods));
-        setLoan(loanData);
+        const response = await fetchLoan(loanId)
+        const periods =
+          response.paymentFrequency === "DAILY"
+            ? 365
+            : response.paymentFrequency === "WEEKLY"
+              ? 52
+              : response.paymentFrequency === "BIWEEKLY"
+                ? 24
+                : 12 // <- Monthly
+        setInterests(getInterest(response.totalAmount, response.interestRate, periods))
+        setLoan(response)
       } catch (error) {
         console.error("Error al cargar datos del préstamo:", error)
         toast({
@@ -204,6 +214,7 @@ export function LoanDetails({
       setActiveTab("payments")
       setLoan(null)
       setLoading(true)
+      setCurrentPage(1) // Add this line
     }
   }
 
@@ -260,7 +271,9 @@ export function LoanDetails({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-medium text-white">{loan.user.name} {loan.user.refName}</h3>
+                      <h3 className="font-medium text-white">
+                        {loan.user.name} {loan.user.refName}
+                      </h3>
                       <p className="text-sm text-blue-200/70">Cliente</p>
                     </div>
                   </div>
@@ -343,14 +356,14 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">Precio Total</p>
                     <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Pago inicial: {formatCurrency(loan.totalAmount)}</span>
+                      <span>Pago inicial: {formatCurrency(loan.downPayment)}</span>
                       {/* <span>Financiado: {formatCurrency(loan.downPayment)}</span> */}
                     </div>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Total con Interés</p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount + (interests * loan.installments))}</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount + interests)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
                       <span>Tasa: {loan.interestRate}%</span>
                     </div>
@@ -408,7 +421,9 @@ export function LoanDetails({
                       <Percent className="h-4 w-4 text-blue-400 mr-1" />
                       <p className="text-sm font-medium text-blue-200/80">Interés Pagado</p>
                     </div>
-                    <p className="text-xl font-bold text-blue-400">{formatCurrency(interests * loan.paidInstallments)}</p>
+                    <p className="text-xl font-bold text-blue-400">
+                      {formatCurrency(interests * loan.paidInstallments)}
+                    </p>
 
                     {/* <p className="text-xs text-blue-200/60 mt-1">
                       {((loan.totalInterestPaid / (loan.totalWithInterest - loan.financedAmount)) * 100).toFixed(0)}%
@@ -421,13 +436,16 @@ export function LoanDetails({
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha de Inicio</p>
-                    <p className="text-base font-medium text-white">{loan.startDate ? formatDate(loan.startDate.split('T')[0]): ""}</p>
+                    <p className="text-base font-medium text-white">
+                      {loan.startDate ? formatDate(loan.startDate.split("T")[0]) : ""}
+                    </p>
                   </div>
-
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha Estimada de Finalización</p>
-                    <p className="text-base font-medium text-white">{loan.endDate ? formatDate(loan.endDate.split('T')[0]): ""}</p>
+                    <p className="text-base font-medium text-white">
+                      {loan.endDate ? formatDate(loan.endDate.split("T")[0]) : ""}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -437,11 +455,10 @@ export function LoanDetails({
             <div>
               <div className="flex space-x-1 rounded-lg bg-dark-blue-800/30 p-1">
                 <button
-                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${
-                    activeTab === "payments"
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium ${activeTab === "payments"
                       ? "bg-blue-500 text-white"
                       : "text-blue-200 hover:bg-dark-blue-700/50 hover:text-white"
-                  }`}
+                    }`}
                   onClick={() => setActiveTab("payments")}
                 >
                   Historial de Pagos
@@ -475,19 +492,33 @@ export function LoanDetails({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {loan.payments.length === 0 ? (
-                              <TableRow>
-                                <TableCell colSpan={5} className="text-center">
-                                  No hay pagos registrados
-                                </TableCell>
-                              </TableRow>
-                            ) : (
-                              loan.payments.map((payment) => (
+                            {(() => {
+                              // Sort payments by date (most recent first)
+                              const sortedPayments = [...loan.payments].sort(
+                                (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
+                              )
+
+                              // Calculate pagination
+                              const totalPages = Math.ceil(sortedPayments.length / itemsPerPage)
+                              const startIndex = (currentPage - 1) * itemsPerPage
+                              const endIndex = startIndex + itemsPerPage
+                              const currentPayments = sortedPayments.slice(startIndex, endIndex)
+
+                              if (sortedPayments.length === 0) {
+                                return (
+                                  <TableRow>
+                                    <TableCell colSpan={5} className="text-center">
+                                      No hay pagos registrados
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              }
+
+                              return currentPayments.map((payment) => (
                                 <TableRow key={payment.id}>
-                                  <TableCell>{formatDate(payment.paymentDate.split('T')[0])}</TableCell>
+                                  <TableCell>{formatDate(payment.paymentDate.split("T")[0])}</TableCell>
                                   <TableCell>{payment.id}</TableCell>
                                   <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                                  {/* <TableCell>{formatCurrency(payment.principalAmount)}</TableCell> */}
                                   <TableCell>
                                     {payment.isLate ? (
                                       <Badge variant="destructive">Atrasado</Badge>
@@ -499,65 +530,65 @@ export function LoanDetails({
                                   </TableCell>
                                 </TableRow>
                               ))
-                            )}
+                            })()}
                           </TableBody>
                         </Table>
                       </div>
+                      {loan.payments.length > 0 && (
+                        <div className="flex items-center justify-between space-x-2 py-4">
+                          <div className="text-sm text-muted-foreground">
+                            Mostrando {Math.min((currentPage - 1) * itemsPerPage + 1, loan.payments.length)} a{" "}
+                            {Math.min(currentPage * itemsPerPage, loan.payments.length)} de {loan.payments.length} pagos
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                              disabled={currentPage === 1}
+                            >
+                              Anterior
+                            </Button>
+                            <div className="flex items-center space-x-1">
+                              {Array.from({ length: Math.ceil(loan.payments.length / itemsPerPage) }, (_, i) => i + 1)
+                                .filter((page) => {
+                                  const totalPages = Math.ceil(loan.payments.length / itemsPerPage)
+                                  return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1
+                                })
+                                .map((page, index, array) => (
+                                  <div key={page} className="flex items-center">
+                                    {index > 0 && array[index - 1] !== page - 1 && (
+                                      <span className="px-2 text-muted-foreground">...</span>
+                                    )}
+                                    <Button
+                                      variant={currentPage === page ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => setCurrentPage(page)}
+                                      className="w-8 h-8 p-0"
+                                    >
+                                      {page}
+                                    </Button>
+                                  </div>
+                                ))}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setCurrentPage((prev) =>
+                                  Math.min(prev + 1, Math.ceil(loan.payments.length / itemsPerPage)),
+                                )
+                              }
+                              disabled={currentPage === Math.ceil(loan.payments.length / itemsPerPage)}
+                            >
+                              Siguiente
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
-{/* 
-                {activeTab === "amortization" && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center mb-4">
-                        <Calculator className="h-5 w-5 text-blue-400 mr-2" />
-                        <h3 className="text-lg font-medium">Tabla de Amortización</h3>
-                      </div>
-                      <p className="text-muted-foreground mb-4">
-                        Desglose de pagos mostrando la distribución entre capital e interés para cada cuota.
-                      </p>
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Cuota</TableHead>
-                              <TableHead>Fecha</TableHead>
-                              <TableHead>Pago</TableHead>
-                              <TableHead>Capital</TableHead>
-                              <TableHead>Interés</TableHead>
-                              <TableHead>Saldo</TableHead>
-                              <TableHead>Estado</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {loan.amortizationTable.map((row) => (
-                              <TableRow key={row.installmentNumber} className={row.isPaid ? "bg-blue-900/10" : ""}>
-                                <TableCell>{row.installmentNumber}</TableCell>
-                                <TableCell>{formatDate(row.date.split('T')[0])}</TableCell>
-                                <TableCell>{formatCurrency(row.payment)}</TableCell>
-                                <TableCell>{formatCurrency(row.principalPayment)}</TableCell>
-                                <TableCell>{formatCurrency(row.interestPayment)}</TableCell>
-                                <TableCell>{formatCurrency(row.remainingBalance)}</TableCell>
-                                <TableCell>
-                                  {row.isPaid ? (
-                                    <Badge variant="default" className="bg-green-500">
-                                      Pagado
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="text-blue-300 border-blue-300">
-                                      Pendiente
-                                    </Badge>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )} */}
               </div>
             </div>
           </div>

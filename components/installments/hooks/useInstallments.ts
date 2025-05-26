@@ -33,6 +33,7 @@ export function useInstallments(onRefreshCallback?: (refreshFn: () => void) => v
 
             const res = await HttpService.get(url)
             const rawData = res.data
+            // console.table(rawData)
 
             // Sort by date descending by default
             const sortedData = [...rawData].sort(
