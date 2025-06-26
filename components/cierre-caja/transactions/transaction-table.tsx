@@ -18,33 +18,22 @@ interface TransactionTableProps {
 
 export function TransactionTable({ token, onSelect }: TransactionTableProps) {
   const {
-    // Data
     currentItems,
     loading,
     refreshing,
     selectedIds,
-
-    // Summary
     totalIncome,
     totalExpense,
     netAmount,
-
-    // Filters
     filters,
     hasActiveFilters,
-
-    // Pagination
     currentPage,
     totalPages,
     indexOfFirstItem,
     indexOfLastItem,
-
-    // Dialog
     showProviderMismatchDialog,
     currentProviderName,
     attemptedProviderName,
-
-    // Actions
     fetchTransactions,
     handleSearchChange,
     handleTypeFilterChange,
