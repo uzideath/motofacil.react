@@ -1,4 +1,4 @@
-import type { User } from "@/hooks/use-auth"
+import type { User } from "@/hooks/useAuth"
 import { HttpService } from "../http"
 import type { LoginResponse } from "../types"
 

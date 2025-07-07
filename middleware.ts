@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { hasAccess } from "./lib/services/route-access"
-import type { Role } from "./hooks/use-auth"
+import type { Role } from "./hooks/useAuth"
 
 const publicRoutes = ["/login", "/forgot-password"]
 

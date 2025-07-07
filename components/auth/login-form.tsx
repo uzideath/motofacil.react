@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2, User, Lock, ArrowRight, AlertCircle } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import { AuthService } from "@/lib/services/auth.service"
 import { useNavigationStore } from "@/lib/nav"
 import { motion } from "framer-motion"

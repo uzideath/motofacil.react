@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from 'lucide-react'
 import { useWhatsApp } from "@/hooks/useWhatsapp"
 import { useState } from "react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/useToast"
 
 export function LogoutButton() {
     const { logout, isConnected } = useWhatsApp()

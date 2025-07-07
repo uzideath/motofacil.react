@@ -20,7 +20,11 @@ const COLORS = [
     "hsl(170, 50%, 50%)", // Teal
 ]
 
-export function ExpenseCategoryChart() {
+interface ExpenseCategoryChartProps {
+    compact?: boolean
+}
+
+export function ExpenseCategoryChart({ compact = false }: ExpenseCategoryChartProps) {
     const [data, setData] = useState<{ name: string; value: number }[]>([])
     const [loading, setLoading] = useState(true)
     const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined)
@@ -86,10 +90,16 @@ export function ExpenseCategoryChart() {
     // Elegant center label
     const CenterLabel = () => (
         <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-            <tspan x="50%" dy="-10" fontSize="14" fontWeight="500" className="fill-muted-foreground">
+            <tspan x="50%" dy="-10" fontSize={compact ? "12" : "14"} fontWeight="500" className="fill-muted-foreground">
                 Total
             </tspan>
-            <tspan x="50%" dy="30" fontSize="20" fontWeight="600" className="fill-foreground">
+            <tspan
+                x="50%"
+                dy={compact ? "25" : "30"}
+                fontSize={compact ? "16" : "20"}
+                fontWeight="600"
+                className="fill-foreground"
+            >
                 {formatCurrency(totalExpenses)}
             </tspan>
         </text>
@@ -98,6 +108,116 @@ export function ExpenseCategoryChart() {
     // Calculate percentage for display
     const getPercentage = (value: number) => {
         return totalExpenses > 0 ? ((value / totalExpenses) * 100).toFixed(1) + "%" : "0%"
+    }
+
+    if (compact) {
+        return (
+            <Card className="card-hover-effect">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold">Distribución de Egresos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="h-[300px]">
+                        {loading ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                                <Skeleton className="w-[150px] h-[150px] rounded-full" />
+                                <div className="space-y-2 w-full">
+                                    <Skeleton className="w-full h-3" />
+                                    <Skeleton className="w-4/5 h-3" />
+                                    <Skeleton className="w-3/5 h-3" />
+                                </div>
+                            </div>
+                        ) : data.length === 0 ? (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <p className="text-muted-foreground text-center text-sm">No hay egresos registrados</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Compact Chart */}
+                                <div className="h-[180px] flex items-center justify-center">
+                                    <ResponsiveContainer width="100%" height={180}>
+                                        <PieChart>
+                                            <defs>
+                                                {COLORS.map((color, index) => (
+                                                    <linearGradient
+                                                        key={`gradient-${index}`}
+                                                        id={`colorGradient-${index}`}
+                                                        x1="0"
+                                                        y1="0"
+                                                        x2="0"
+                                                        y2="1"
+                                                    >
+                                                        <stop offset="0%" stopColor={color} stopOpacity={1} />
+                                                        <stop offset="100%" stopColor={color} stopOpacity={0.8} />
+                                                    </linearGradient>
+                                                ))}
+                                            </defs>
+                                            <Pie
+                                                activeIndex={activeIndex}
+                                                activeShape={renderActiveShape}
+                                                data={data}
+                                                dataKey="value"
+                                                nameKey="name"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={40}
+                                                outerRadius={70}
+                                                paddingAngle={3}
+                                                animationDuration={750}
+                                                animationBegin={0}
+                                                animationEasing="ease-out"
+                                                onMouseEnter={(_, index) => setActiveIndex(index)}
+                                                onMouseLeave={() => setActiveIndex(undefined)}
+                                            >
+                                                {data.map((entry, index) => (
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={`url(#colorGradient-${index % COLORS.length})`}
+                                                        stroke="rgba(255,255,255,0.2)"
+                                                        strokeWidth={1}
+                                                    />
+                                                ))}
+                                                <CenterLabel />
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                {/* Compact Legend */}
+                                <div className="space-y-2 max-h-[100px] overflow-auto">
+                                    {data.slice(0, 4).map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className={cn(
+                                                "flex items-center justify-between p-2 rounded-md transition-all duration-200 text-sm",
+                                                activeIndex === index ? "bg-muted/80" : "hover:bg-muted/40",
+                                            )}
+                                            onMouseEnter={() => setActiveIndex(index)}
+                                            onMouseLeave={() => setActiveIndex(undefined)}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className="w-3 h-3 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                                />
+                                                <span className="font-medium truncate">{item.name}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-semibold text-xs">{formatCurrency(item.value)}</div>
+                                                <div className="text-xs text-muted-foreground">{getPercentage(item.value)}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {data.length > 4 && (
+                                        <div className="text-xs text-muted-foreground text-center pt-1">+{data.length - 4} más</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+        )
     }
 
     return (

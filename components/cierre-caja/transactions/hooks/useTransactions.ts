@@ -1,12 +1,17 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo, useRef } from "react"
 import { DEFAULT_ITEMS_PER_PAGE } from "../constants"
-import { SelectedTransaction, SortField, Transaction, TransactionFiltersState } from "../constants/types"
+import {
+    PaymentMethod,
+    type SelectedTransaction,
+    type SortField,
+    type Transaction,
+    type TransactionFiltersState,
+} from "../constants/types"
 import { calculatePagination, calculateTransactionSummary, filterAndSortTransactions } from "../utils/filters"
 import { fetchAvailableTransactions } from "../services"
 import { formatProviderName } from "../utils/formatters"
-import { filterTransactionsByProvider, getFirstProvider, hasSameProvider, mapSelectedTransactions } from "../utils/selection"
 
 interface UseTransactionsProps {
     token: string
@@ -19,7 +24,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
-    const [selectedIds, setSelectedIds] = useState<string[]>([])
+    const [globalSelectedIds, setGlobalSelectedIds] = useState<Set<string>>(new Set())
     const [currentPage, setCurrentPage] = useState(1)
 
     // Provider mismatch dialog state
@@ -36,20 +41,67 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         sortDirection: "asc",
     })
 
-    // Derived state
-    const filteredTransactions = filterAndSortTransactions(transactions, filters)
-    const { totalIncome, totalExpense, netAmount } = calculateTransactionSummary(filteredTransactions)
-    const { totalPages, indexOfFirstItem, indexOfLastItem } = calculatePagination(
-        filteredTransactions.length,
-        currentPage,
-        itemsPerPage,
+    // Throttling ref to prevent excessive updates
+    const throttleRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Memoized derived state
+    const filteredTransactions = useMemo(() => filterAndSortTransactions(transactions, filters), [transactions, filters])
+
+    const transactionSummary = useMemo(() => calculateTransactionSummary(filteredTransactions), [filteredTransactions])
+
+    const pagination = useMemo(
+        () => calculatePagination(filteredTransactions.length, currentPage, itemsPerPage),
+        [filteredTransactions.length, currentPage, itemsPerPage],
     )
-    const currentItems = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem)
-    const hasActiveFilters =
-        filters.searchTerm !== "" ||
-        filters.typeFilter !== "all" ||
-        filters.providerFilter !== "all" ||
-        filters.sortField !== null
+
+    const currentItems = useMemo(
+        () => filteredTransactions.slice(pagination.indexOfFirstItem, pagination.indexOfLastItem),
+        [filteredTransactions, pagination.indexOfFirstItem, pagination.indexOfLastItem],
+    )
+
+    // Get selected IDs for current page only (for UI display)
+    const currentPageSelectedIds = useMemo(() => {
+        return currentItems
+            .filter((transaction) => globalSelectedIds.has(transaction.id))
+            .map((transaction) => transaction.id)
+    }, [currentItems, globalSelectedIds])
+
+    // Calculate totals for selected transactions across all pages
+    const selectedTransactionsSummary = useMemo(() => {
+        const selectedTransactions = transactions.filter((transaction) => globalSelectedIds.has(transaction.id))
+
+        const totalIncome = selectedTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
+        const totalExpense = selectedTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+
+        return {
+            selectedTransactions,
+            totalIncome,
+            totalExpense,
+            netAmount: totalIncome - totalExpense,
+            count: selectedTransactions.length,
+        }
+    }, [transactions, globalSelectedIds])
+
+    const hasActiveFilters = useMemo(
+        () =>
+            filters.searchTerm !== "" ||
+            filters.typeFilter !== "all" ||
+            filters.providerFilter !== "all" ||
+            filters.sortField !== null,
+        [filters],
+    )
+
+    // Helper function to convert string to PaymentMethod enum
+    const getPaymentMethod = useCallback((paymentMethod: string | PaymentMethod): PaymentMethod => {
+        if (typeof paymentMethod === "string") {
+            const upperMethod = paymentMethod.toUpperCase()
+            if (Object.values(PaymentMethod).includes(upperMethod as PaymentMethod)) {
+                return upperMethod as PaymentMethod
+            }
+            return PaymentMethod.CASH
+        }
+        return paymentMethod
+    }, [])
 
     // Fetch transactions
     const fetchTransactions = useCallback(async () => {
@@ -66,36 +118,74 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         }
     }, [token])
 
+    // Throttled onSelect callback
+    const throttledOnSelect = useCallback(
+        (selectedTransactions: SelectedTransaction[]) => {
+            if (throttleRef.current) {
+                clearTimeout(throttleRef.current)
+            }
+
+            throttleRef.current = setTimeout(() => {
+                onSelect?.(selectedTransactions)
+            }, 50) // 50ms throttle
+        },
+        [onSelect],
+    )
+
     // Initial fetch
     useEffect(() => {
         fetchTransactions()
     }, [fetchTransactions])
 
-    // Filter handlers
-    const handleSearchChange = (value: string) => {
+    // Notify parent component when selection changes (throttled)
+    useEffect(() => {
+        const selectedTransactions: SelectedTransaction[] = selectedTransactionsSummary.selectedTransactions.map(
+            (transaction) => ({
+                id: transaction.id,
+                amount: transaction.amount,
+                type: transaction.type,
+                description: transaction.description,
+                date: transaction.date,
+                provider: transaction.provider || "",
+                paymentMethod: getPaymentMethod(transaction.paymentMethod),
+                reference: transaction.reference || "",
+            }),
+        )
+
+        throttledOnSelect(selectedTransactions)
+
+        return () => {
+            if (throttleRef.current) {
+                clearTimeout(throttleRef.current)
+            }
+        }
+    }, [selectedTransactionsSummary.selectedTransactions, getPaymentMethod, throttledOnSelect])
+
+    // Filter handlers with throttling
+    const handleSearchChange = useCallback((value: string) => {
         setFilters((prev) => ({ ...prev, searchTerm: value }))
         setCurrentPage(1)
-    }
+    }, [])
 
-    const handleTypeFilterChange = (value: string) => {
+    const handleTypeFilterChange = useCallback((value: string) => {
         setFilters((prev) => ({ ...prev, typeFilter: value }))
         setCurrentPage(1)
-    }
+    }, [])
 
-    const handleProviderFilterChange = (value: string) => {
+    const handleProviderFilterChange = useCallback((value: string) => {
         setFilters((prev) => ({ ...prev, providerFilter: value }))
         setCurrentPage(1)
-    }
+    }, [])
 
-    const handleSort = (field: SortField) => {
+    const handleSort = useCallback((field: SortField) => {
         setFilters((prev) => ({
             ...prev,
             sortField: field,
             sortDirection: prev.sortField === field && prev.sortDirection === "asc" ? "desc" : "asc",
         }))
-    }
+    }, [])
 
-    const resetFilters = () => {
+    const resetFilters = useCallback(() => {
         setFilters({
             searchTerm: "",
             typeFilter: "all",
@@ -104,93 +194,93 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             sortDirection: "asc",
         })
         setCurrentPage(1)
-    }
+    }, [])
 
     // Selection handlers
-    const handleSelection = (id: string, checked: boolean) => {
-        if (checked) {
-            // Get current transaction
-            const currentTransaction = transactions.find((t) => t.id === id)
+    const handleSelection = useCallback(
+        (id: string, checked: boolean) => {
+            if (checked) {
+                const currentTransaction = transactions.find((t) => t.id === id)
 
-            // Check if already selected transactions have a different provider
-            if (selectedIds.length > 0 && currentTransaction) {
-                const firstSelectedTransaction = transactions.find((t) => t.id === selectedIds[0])
-
-                if (firstSelectedTransaction && currentTransaction.provider !== firstSelectedTransaction.provider) {
-                    setCurrentProviderName(formatProviderName(firstSelectedTransaction.provider))
-                    setAttemptedProviderName(formatProviderName(currentTransaction.provider))
-                    setShowProviderMismatchDialog(true)
-                    return
+                if (globalSelectedIds.size > 0 && currentTransaction) {
+                    const firstSelectedTransaction = transactions.find((t) => globalSelectedIds.has(t.id))
+                    if (firstSelectedTransaction && currentTransaction.provider !== firstSelectedTransaction.provider) {
+                        setCurrentProviderName(formatProviderName(firstSelectedTransaction.provider))
+                        setAttemptedProviderName(formatProviderName(currentTransaction.provider))
+                        setShowProviderMismatchDialog(true)
+                        return
+                    }
                 }
-            }
 
-            // Add to selection
-            const updated = [...selectedIds, id]
-            setSelectedIds(updated)
-            onSelect?.(mapSelectedTransactions(transactions, updated))
-        } else {
-            // Remove from selection
-            const updated = selectedIds.filter((x) => x !== id)
-            setSelectedIds(updated)
-            onSelect?.(mapSelectedTransactions(transactions, updated))
-        }
-    }
-
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            if (selectedIds.length === 0) {
-                // Check if current items have multiple providers
-                if (!hasSameProvider(currentItems) && filters.providerFilter === "all") {
-                    const firstProvider = getFirstProvider(currentItems)
-                    const sameProviderItems = filterTransactionsByProvider(currentItems, firstProvider)
-
-                    // Show dialog
-                    setCurrentProviderName(formatProviderName(firstProvider))
-                    setAttemptedProviderName("Múltiples proveedores")
-                    setShowProviderMismatchDialog(true)
-
-                    // Select only items with same provider
-                    setSelectedIds(sameProviderItems.map((t) => t.id))
-                    onSelect?.(
-                        mapSelectedTransactions(
-                            transactions,
-                            sameProviderItems.map((t) => t.id),
-                        ),
-                    )
-                } else {
-                    // Select all current items
-                    setSelectedIds(currentItems.map((t) => t.id))
-                    onSelect?.(
-                        mapSelectedTransactions(
-                            transactions,
-                            currentItems.map((t) => t.id),
-                        ),
-                    )
-                }
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    newSet.add(id)
+                    return newSet
+                })
             } else {
-                // If already have selected items, only select those with same provider
-                const firstSelectedTransaction = transactions.find((t) => t.id === selectedIds[0])
-                const sameProviderItems = filterTransactionsByProvider(currentItems, firstSelectedTransaction?.provider)
-
-                setSelectedIds(sameProviderItems.map((t) => t.id))
-                onSelect?.(
-                    mapSelectedTransactions(
-                        transactions,
-                        sameProviderItems.map((t) => t.id),
-                    ),
-                )
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    newSet.delete(id)
+                    return newSet
+                })
             }
-        } else {
-            // Deselect all
-            setSelectedIds([])
-            onSelect?.([])
-        }
-    }
+        },
+        [transactions, globalSelectedIds],
+    )
 
-    // Pagination handler
-    const handlePageChange = (page: number) => {
+    const handleSelectAll = useCallback(
+        (checked: boolean) => {
+            if (checked) {
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    currentItems.forEach((transaction) => {
+                        newSet.add(transaction.id)
+                    })
+                    return newSet
+                })
+            } else {
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    currentItems.forEach((transaction) => {
+                        newSet.delete(transaction.id)
+                    })
+                    return newSet
+                })
+            }
+        },
+        [currentItems],
+    )
+
+    const handleSelectAllFiltered = useCallback(
+        (checked: boolean) => {
+            if (checked) {
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    filteredTransactions.forEach((transaction) => {
+                        newSet.add(transaction.id)
+                    })
+                    return newSet
+                })
+            } else {
+                setGlobalSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    filteredTransactions.forEach((transaction) => {
+                        newSet.delete(transaction.id)
+                    })
+                    return newSet
+                })
+            }
+        },
+        [filteredTransactions],
+    )
+
+    const clearAllSelections = useCallback(() => {
+        setGlobalSelectedIds(new Set())
+    }, [])
+
+    const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
-    }
+    }, [])
 
     return {
         // Data
@@ -199,12 +289,17 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         currentItems,
         loading,
         refreshing,
-        selectedIds,
+
+        // Selection
+        selectedIds: currentPageSelectedIds,
+        globalSelectedIds,
+        selectedCount: selectedTransactionsSummary.count,
+        selectedSummary: selectedTransactionsSummary,
 
         // Summary
-        totalIncome,
-        totalExpense,
-        netAmount,
+        totalIncome: transactionSummary.totalIncome,
+        totalExpense: transactionSummary.totalExpense,
+        netAmount: transactionSummary.netAmount,
 
         // Filters
         filters,
@@ -212,9 +307,10 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
 
         // Pagination
         currentPage,
-        totalPages,
-        indexOfFirstItem,
-        indexOfLastItem,
+        totalPages: pagination.totalPages,
+        indexOfFirstItem: pagination.indexOfFirstItem,
+        indexOfLastItem: pagination.indexOfLastItem,
+        totalItems: filteredTransactions.length,
 
         // Dialog
         showProviderMismatchDialog,
@@ -230,6 +326,8 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         resetFilters,
         handleSelection,
         handleSelectAll,
+        handleSelectAllFiltered,
+        clearAllSelections,
         handlePageChange,
         setShowProviderMismatchDialog,
     }

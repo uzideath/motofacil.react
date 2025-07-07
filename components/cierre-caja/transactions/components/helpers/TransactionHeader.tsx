@@ -15,9 +15,18 @@ import { Calendar, Download, FileText, Printer, RefreshCw } from "lucide-react"
 interface TransactionHeaderProps {
     refreshing: boolean
     onRefresh: () => void
+    selectedCount?: number
+    onExportSelected?: () => void
+    onExportAll?: () => void
 }
 
-export function TransactionHeader({ refreshing, onRefresh }: TransactionHeaderProps) {
+export function TransactionHeader({
+    refreshing,
+    onRefresh,
+    selectedCount = 0,
+    onExportSelected,
+    onExportAll,
+}: TransactionHeaderProps) {
     return (
         <CardHeader className="pb-3">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -25,17 +34,33 @@ export function TransactionHeader({ refreshing, onRefresh }: TransactionHeaderPr
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-primary" />
                         Registro de Transacciones
+                        {selectedCount > 0 && (
+                            <span className="text-sm font-normal text-muted-foreground">({selectedCount} seleccionadas)</span>
+                        )}
                     </CardTitle>
-                    <CardDescription>Gestiona y visualiza todas las transacciones del sistema</CardDescription>
+                    <CardDescription>
+                        Gestiona y visualiza todas las transacciones del sistema
+                        {selectedCount > 0 && (
+                            <span className="block text-blue-600 dark:text-blue-400 mt-1">
+                                {selectedCount} transacciones seleccionadas para exportar
+                            </span>
+                        )}
+                    </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing} className="h-9 gap-1.5">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onRefresh}
+                        disabled={refreshing}
+                        className="h-9 gap-1.5 bg-transparent"
+                    >
                         <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                         Actualizar
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9">
+                            <Button variant="outline" size="sm" className="h-9 bg-transparent">
                                 <Download className="h-4 w-4 mr-1.5" />
                                 Exportar
                             </Button>
@@ -43,13 +68,22 @@ export function TransactionHeader({ refreshing, onRefresh }: TransactionHeaderPr
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
+                            {selectedCount > 0 && (
+                                <>
+                                    <DropdownMenuItem onClick={onExportSelected}>
+                                        <FileText className="h-4 w-4 mr-2" />
+                                        Exportar seleccionadas ({selectedCount})
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
+                            <DropdownMenuItem onClick={onExportAll}>
                                 <FileText className="h-4 w-4 mr-2" />
-                                Exportar a CSV
+                                Exportar todas a CSV
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={onExportAll}>
                                 <FileText className="h-4 w-4 mr-2" />
-                                Exportar a Excel
+                                Exportar todas a Excel
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <Printer className="h-4 w-4 mr-2" />

@@ -1,11 +1,14 @@
 "use client"
 
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowDownUp } from "lucide-react"
-import { SortField } from "../constants/types"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import type { SortField } from "../constants/types"
 
 interface TransactionListHeaderProps {
     selectedAll: boolean
+    indeterminate?: boolean
     onSelectAll: (checked: boolean) => void
     sortField: SortField
     sortDirection: string
@@ -14,80 +17,63 @@ interface TransactionListHeaderProps {
 
 export function TransactionListHeader({
     selectedAll,
+    indeterminate = false,
     onSelectAll,
     sortField,
     sortDirection,
     onSort,
 }: TransactionListHeaderProps) {
     const getSortIcon = (field: SortField) => {
-        if (sortField !== field) return <ArrowDownUp className="ml-1 h-4 w-4 opacity-50" />
-        return sortDirection === "asc" ? (
-            <ArrowDownUp className="ml-1 h-4 w-4" />
-        ) : (
-            <ArrowDownUp className="ml-1 h-4 w-4 rotate-180" />
-        )
+        if (sortField !== field) {
+            return <ArrowUpDown className="ml-2 h-4 w-4" />
+        }
+        return sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
     }
 
     return (
-        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-            <TableRow className="hover:bg-slate-100 dark:hover:bg-slate-800/50">
-                <TableHead className="w-[40px]">
-                    <div className="flex items-center justify-center">
-                        <input
-                            type="checkbox"
-                            className="rounded border-slate-300 dark:border-slate-700"
-                            checked={selectedAll}
-                            onChange={(e) => onSelectAll(e.target.checked)}
-                        />
-                    </div>
+        <TableHeader>
+            <TableRow className="bg-slate-50 dark:bg-slate-900/50">
+                <TableHead className="w-12">
+                    <Checkbox
+                        checked={indeterminate ? "indeterminate" : selectedAll}
+                        onCheckedChange={(checked) => onSelectAll(!!checked)}
+                        aria-label="Seleccionar todas las transacciones"
+                    />
                 </TableHead>
-                <TableHead
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    onClick={() => onSort("time")}
-                >
-                    <div className="flex items-center">
-                        Hora
-                        {getSortIcon("time")}
-                    </div>
+                <TableHead>
+                    <Button
+                        variant="ghost"
+                        onClick={() => onSort("date")}
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                    >
+                        Fecha
+                        {getSortIcon("date")}
+                    </Button>
                 </TableHead>
-                <TableHead
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    onClick={() => onSort("description")}
-                >
-                    <div className="flex items-center">
-                        Placa
-                        {getSortIcon("description")}
-                    </div>
-                </TableHead>
-                <TableHead
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    onClick={() => onSort("category")}
-                >
-                    <div className="flex items-center">
-                        Categoría
-                        {getSortIcon("category")}
-                    </div>
-                </TableHead>
-                <TableHead
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    onClick={() => onSort("provider")}
-                >
-                    <div className="flex items-center">
+                <TableHead>Placa</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead>
+                    <Button
+                        variant="ghost"
+                        onClick={() => onSort("provider")}
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                    >
                         Proveedor
                         {getSortIcon("provider")}
-                    </div>
+                    </Button>
                 </TableHead>
-                <TableHead
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                    onClick={() => onSort("amount")}
-                >
-                    <div className="flex items-center">
+                <TableHead className="text-right">
+                    <Button
+                        variant="ghost"
+                        onClick={() => onSort("amount")}
+                        className="h-auto p-0 font-medium hover:bg-transparent"
+                    >
                         Monto
                         {getSortIcon("amount")}
-                    </div>
+                    </Button>
                 </TableHead>
                 <TableHead>Método de Pago</TableHead>
-                <TableHead>Referencia</TableHead>
+                <TableHead>ID</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
         </TableHeader>

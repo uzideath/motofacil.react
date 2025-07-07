@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,7 +18,7 @@ interface TransactionFiltersProps {
     hasActiveFilters: boolean
 }
 
-export function TransactionFilters({
+export const TransactionFilters = React.memo(function TransactionFilters({
     searchTerm,
     typeFilter,
     providerFilter,
@@ -40,7 +41,7 @@ export function TransactionFilters({
                 />
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                <Select value={typeFilter} onValueChange={onTypeFilterChange}>
+                <Select key={`type-${typeFilter}`} value={typeFilter} onValueChange={onTypeFilterChange}>
                     <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-2">
                             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -56,7 +57,7 @@ export function TransactionFilters({
                     </SelectContent>
                 </Select>
 
-                <Select value={providerFilter} onValueChange={onProviderFilterChange}>
+                <Select key={`provider-${providerFilter}`} value={providerFilter} onValueChange={onProviderFilterChange}>
                     <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-2">
                             <Bike className="h-4 w-4 text-muted-foreground" />
@@ -85,4 +86,4 @@ export function TransactionFilters({
             </div>
         </div>
     )
-}
+})
