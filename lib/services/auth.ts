@@ -1,4 +1,4 @@
-import { Role } from "@/hooks/use-auth";
+import { Role } from "@/hooks/useAuth";
 import { HttpService } from "../http"
 import { LoginPayload, LoginResponse } from "../types";
 

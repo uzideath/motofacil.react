@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { PlusCircle } from "lucide-react"
-import { LoanTable } from "@/components/loans/loan-table"
-import { LoanForm } from "@/components/loans/loan-form"
+import { LoanTable } from "@/components/loans/LoanTable"
+import { LoanForm } from "@/components/loans/LoanForm"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 
 export default function LoansPage() {

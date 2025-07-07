@@ -9,7 +9,7 @@ export const formatProviderName = (provider: string | undefined): string => {
     if (!provider) return "Desconocido"
 
     const providerKey = provider as Providers
-    return PROVIDER_DETAILS[providerKey]?.label || provider
+    return (PROVIDER_DETAILS as Record<string, { label: string }>)[providerKey]?.label || provider
 }
 
 /**

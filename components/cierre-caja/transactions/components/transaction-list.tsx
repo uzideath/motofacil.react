@@ -1,10 +1,11 @@
 "use client"
 
+import React from "react"
 import { Table, TableBody } from "@/components/ui/table"
 import { TransactionListEmpty } from "./transaction-list-empty"
 import { TransactionListHeader } from "./transaction-list-header"
 import { TransactionListLoading } from "./transaction-list-loading"
-import { SortField, Transaction } from "../constants/types"
+import type { SortField, Transaction } from "../constants/types"
 import { TransactionItem } from "./transactions-item"
 
 interface TransactionListProps {
@@ -18,7 +19,7 @@ interface TransactionListProps {
     onSort: (field: SortField) => void
 }
 
-export function TransactionList({
+export const TransactionList = React.memo(function TransactionList({
     loading,
     transactions,
     selectedIds,
@@ -28,7 +29,12 @@ export function TransactionList({
     sortDirection,
     onSort,
 }: TransactionListProps) {
-    const selectedAll = selectedIds.length > 0 && selectedIds.length === transactions.length
+    // Check if all current page items are selected
+    const selectedAll =
+        transactions.length > 0 && transactions.every((transaction) => selectedIds.includes(transaction.id))
+    // Check if some (but not all) current page items are selected
+    const indeterminate =
+        selectedIds.length > 0 && !selectedAll && transactions.some((transaction) => selectedIds.includes(transaction.id))
 
     return (
         <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
@@ -36,6 +42,7 @@ export function TransactionList({
                 <Table>
                     <TransactionListHeader
                         selectedAll={selectedAll}
+                        indeterminate={indeterminate}
                         onSelectAll={onSelectAll}
                         sortField={sortField}
                         sortDirection={sortDirection}
@@ -61,4 +68,4 @@ export function TransactionList({
             </div>
         </div>
     )
-}
+})

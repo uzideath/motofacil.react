@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useMemo } from "react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import { HttpService } from "@/lib/http"
 import type { FormState, SelectedTransaction } from "../types"
 import {

@@ -305,12 +305,12 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                                     </Button>
                                                 </TooltipTrigger>
                                                 <TooltipContent>
-                                                    <p>Descargar e imprimir PDF</p>
+                                                    <p>Imprimir PDF</p>
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
 
-                                        <TooltipProvider>
+                                        {/* <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button variant="outline" size="icon" className="h-8 w-8">
@@ -321,7 +321,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                                     <p>Exportar Excel</p>
                                                 </TooltipContent>
                                             </Tooltip>
-                                        </TooltipProvider>
+                                        </TooltipProvider> */}
                                     </div>
                                 </TableCell>
                             </TableRow>

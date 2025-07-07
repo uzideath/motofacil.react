@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Download, Printer } from "lucide-react"
 import { CashRegisterForm } from "@/components/cierre-caja/CashRegisterForm"
 import { DailySummary } from "@/components/cierre-caja/daily-summary"
-import { TransactionTable } from "@/components/cierre-caja/transactions/transaction-table"
+import { TransactionTable } from "@/components/cierre-caja/transactions/TransactionTable"
 import { CashRegisterHistory } from "@/components/cierre-caja/CashRegisterHistory"
 import { SelectedTransaction } from "@/components/cierre-caja/transactions/constants/types"
 

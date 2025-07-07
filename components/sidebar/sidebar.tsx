@@ -2,7 +2,7 @@
 
 import type * as React from "react"
 import Image from "next/image"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import { usePathname, useRouter } from "next/navigation"
 import { useNavigationStore } from "@/lib/nav"
 import { useState, useEffect } from "react"

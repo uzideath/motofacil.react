@@ -1,6 +1,6 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import type { Role } from "@/hooks/use-auth"
+import type { Role } from "@/hooks/useAuth"
 
 function parseJwt(token: string): any {
   try {

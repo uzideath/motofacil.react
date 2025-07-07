@@ -1,5 +1,4 @@
 // Common types used across transaction components
-
 export enum PaymentMethod {
   CASH = "CASH",
   CARD = "CARD",
@@ -78,7 +77,7 @@ export interface Transaction {
   amount: number
   baseAmount?: number
   gpsAmount?: number
-  paymentMethod: string
+  paymentMethod: PaymentMethod // Changed from string to PaymentMethod enum
   type: TransactionType
   reference: string
   client?: string
@@ -95,11 +94,17 @@ export interface SelectedTransaction {
   amount: number
   paymentMethod: PaymentMethod
   type: TransactionType
-  provider?: string
+  description: string
+  date: Date
+  provider: string
+  reference: string
 }
 
 export type TransactionType = "income" | "expense"
-export type SortField = "time" | "description" | "category" | "amount" | "provider" | null
+
+// Updated SortField to match the actual Transaction properties
+export type SortField = "time" | "description" | "category" | "amount" | "provider" | "date" | "type" | null
+
 export type SortDirection = "asc" | "desc"
 
 export interface TransactionFiltersState {
@@ -125,4 +130,14 @@ export interface PaginationState {
   currentPage: number
   totalPages: number
   itemsPerPage: number
+}
+
+export const PAYMENT_METHOD_LABELS = {
+  [PaymentMethod.CASH]: "Efectivo",
+  [PaymentMethod.CARD]: "Tarjeta",
+  [PaymentMethod.TRANSACTION]: "Transferencia",
+} as const
+
+export function getPaymentMethodLabel(method: PaymentMethod): string {
+  return PAYMENT_METHOD_LABELS[method] || "Desconocido"
 }

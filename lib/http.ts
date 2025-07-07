@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from "axios"
 import { getClientAuthToken } from "@/lib/token"
-import type { User } from "@/hooks/use-auth"
+import type { User } from "@/hooks/useAuth"
 import { AuthService } from "./services/auth.service"
 
 const HttpService: AxiosInstance = axios.create({

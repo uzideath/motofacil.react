@@ -1,4 +1,6 @@
-import React from "react"
+"use client"
+
+import type React from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
     Pagination,
@@ -9,7 +11,6 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination"
-import { getPageNumbers } from "../utils"
 
 interface PaginationControlsProps {
     currentPage: number
@@ -18,6 +19,48 @@ interface PaginationControlsProps {
     totalItems: number
     onPageChange: (page: number) => void
     onItemsPerPageChange: (value: string) => void
+}
+
+// Fixed getPageNumbers function to avoid duplicates
+const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+        // Show all pages if total pages is less than or equal to max visible pages
+        for (let i = 1; i <= totalPages; i++) {
+            pages.push(i)
+        }
+    } else if (currentPage <= 3) {
+        // Show first pages
+        for (let i = 1; i <= Math.min(4, totalPages); i++) {
+            pages.push(i)
+        }
+        if (totalPages > 4) {
+            pages.push("ellipsis-end")
+            pages.push(totalPages)
+        }
+    } else if (currentPage >= totalPages - 2) {
+        // Show last pages
+        pages.push(1)
+        if (totalPages > 4) {
+            pages.push("ellipsis-start")
+        }
+        for (let i = Math.max(totalPages - 3, 2); i <= totalPages; i++) {
+            pages.push(i)
+        }
+    } else {
+        // Show middle pages
+        pages.push(1)
+        pages.push("ellipsis-start")
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pages.push(i)
+        }
+        pages.push("ellipsis-end")
+        pages.push(totalPages)
+    }
+
+    return pages
 }
 
 export const PaginationControls: React.FC<PaginationControlsProps> = ({
@@ -36,8 +79,8 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center space-x-2">
                 <p className="text-sm text-muted-foreground">
-                    Mostrando {totalItems > 0 ? indexOfFirstItem + 1 : 0}-
-                    {Math.min(indexOfLastItem, totalItems)} de {totalItems} registros
+                    Mostrando {totalItems > 0 ? indexOfFirstItem + 1 : 0}-{Math.min(indexOfLastItem, totalItems)} de {totalItems}{" "}
+                    registros
                 </p>
                 <Select value={itemsPerPage} onValueChange={onItemsPerPageChange}>
                     <SelectTrigger className="w-[70px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
@@ -52,7 +95,6 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                 </Select>
                 <p className="text-sm text-muted-foreground">por página</p>
             </div>
-
             <Pagination>
                 <PaginationContent>
                     <PaginationItem>
@@ -63,16 +105,16 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                     </PaginationItem>
                     {getPageNumbers(currentPage, totalPages).map((n, idx) =>
                         typeof n === "string" ? (
-                            <PaginationItem key={idx}>
+                            <PaginationItem key={`${n}-${idx}`}>
                                 <PaginationEllipsis />
                             </PaginationItem>
                         ) : (
-                            <PaginationItem key={n}>
+                            <PaginationItem key={`page-${n}-${idx}`}>
                                 <PaginationLink isActive={currentPage === n} onClick={() => onPageChange(n)}>
                                     {n}
                                 </PaginationLink>
                             </PaginationItem>
-                        )
+                        ),
                     )}
                     <PaginationItem>
                         <PaginationNext

@@ -52,12 +52,19 @@ export function TransactionPagination({
         return pageNumbers
     }
 
+    if (totalPages <= 1) {
+        return (
+            <div className="flex justify-center items-center pt-2 text-sm text-muted-foreground">
+                Mostrando {totalItems} de {totalItems} transacciones
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 text-sm">
             <div className="text-muted-foreground">
                 Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} de {totalItems} transacciones
             </div>
-
             <div className="flex items-center gap-1">
                 <Button
                     variant="outline"
@@ -81,11 +88,10 @@ export function TransactionPagination({
                     <ChevronLeft className="h-4 w-4" />
                     <span className="sr-only">Página anterior</span>
                 </Button>
-
                 <div className="flex items-center gap-1 mx-2">
-                    {getPageNumbers().map((pageNumber) => (
+                    {getPageNumbers().map((pageNumber, index) => (
                         <Button
-                            key={pageNumber}
+                            key={`page-${pageNumber}-${index}`}
                             variant={currentPage === pageNumber ? "default" : "outline"}
                             size="icon"
                             className={`h-8 w-8 ${currentPage !== pageNumber ? "bg-white dark:bg-slate-950" : ""}`}
@@ -95,7 +101,6 @@ export function TransactionPagination({
                         </Button>
                     ))}
                 </div>
-
                 <Button
                     variant="outline"
                     size="icon"

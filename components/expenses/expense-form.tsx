@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import type { Expense } from "./expense-table"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/useAuth"
 import axios from "axios"
 
 enum Providers {

@@ -1,4 +1,4 @@
-import { Role } from "@/hooks/use-auth"
+import { Role } from "@/hooks/useAuth"
 import { getRequiredRole } from "./auth"
 
 export const routeRoleMap: Record<string, Role> = {
