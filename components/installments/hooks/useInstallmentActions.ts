@@ -39,11 +39,12 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate,
             paymentDate: installment.latePaymentDate || installment.paymentDate,
+            notes: installment.notes,
             receiptNumber: installment.id,
         }
 
 
-        console.table(payload) // útil para depuración
+        console.table(payload)
 
         try {
             const res = await HttpService.post("/api/v1/receipt", payload, {
