@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building, Bike, DollarSign, TrendingUp } from "lucide-react"
 import type { Provider } from "@/lib/types"
+import { formatCurrency } from "@/lib/utils"
 
 interface ProviderSummaryCardsProps {
     providers: Provider[]
@@ -23,12 +24,6 @@ export function ProviderSummaryCards({ providers, loading }: ProviderSummaryCard
         )
     }, 0)
 
-    const formatMoney = (amount: number) => {
-        return new Intl.NumberFormat("es-CO", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(amount)
-    }
 
     const cards = [
         {
@@ -54,7 +49,7 @@ export function ProviderSummaryCards({ providers, loading }: ProviderSummaryCard
         },
         {
             title: "Total en Caja",
-            value: `$${formatMoney(totalCashAmount)}`,
+            value: `${formatCurrency(totalCashAmount)}`,
             icon: DollarSign,
             color: "text-emerald-600 dark:text-emerald-400",
             bgColor: "bg-emerald-50 dark:bg-emerald-950/30",

@@ -43,9 +43,10 @@ export function ProviderTable() {
 
     return (
         <div className="space-y-6">
-            <ProviderSummaryCards providers={allProviders} loading={allProvidersLoading} />
+
 
             <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+
                 <ProviderTableHeader onRefresh={refreshProviders} onExport={exportToCSV} />
 
                 <CardContent className="p-6">
@@ -63,6 +64,7 @@ export function ProviderTable() {
 
                         <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
                             <div className="overflow-x-auto">
+                                {/* <ProviderSummaryCards providers={allProviders} loading={allProvidersLoading} /> */}
                                 <Table>
                                     <ProviderTableHeaders />
                                     <TableBody>
