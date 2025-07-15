@@ -83,7 +83,7 @@ export const formatProviderName = (provider: string | undefined): string => {
       return "Moto Facil"
     case Providers.OBRASOCIAL:
       return "Obra Social"
-    case Providers.PORCENTAJETITO:
+    case Providers.TITO:
       return "Tito"
     default:
       return provider
