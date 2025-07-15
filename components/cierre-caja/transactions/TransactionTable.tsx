@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { TransactionList } from "./components/transaction-list"
 import { ProviderMismatchDialog } from "./components/helpers/provider-mismatch"
-import { TransactionFilters } from "./components/helpers/transaction-filters"
+import { TransactionFilters } from "./components/helpers/TransactionFilters"
 
 import type { SelectedTransaction } from "./constants/types"
 import { useTransactions } from "./hooks/useTransactions"

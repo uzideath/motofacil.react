@@ -1,8 +1,9 @@
 "use client"
 
+import { Installment } from "@/lib/types"
 import { useState, useMemo } from "react"
 import type { DateRange } from "react-day-picker"
-import { Installment, SortField, SortDirection } from "../utils/types"
+import { SortField, SortDirection } from "../utils/types"
 
 export function useTableState(installments: Installment[]) {
     const [searchTerm, setSearchTerm] = useState("")

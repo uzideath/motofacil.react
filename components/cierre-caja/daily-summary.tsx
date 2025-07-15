@@ -8,30 +8,10 @@ import { ArrowUpToLine, CreditCard, Banknote, Wallet, PiggyBank, ArrowDownToLine
 import { Progress } from "@/components/ui/progress"
 import { HttpService } from "@/lib/http"
 import { ExpenseCategoryChart } from "./ExpenseCategoryChart"
+import { SummaryData } from "@/lib/types"
 
 
-type SummaryData = {
-    totalIncome: number
-    totalExpenses: number
-    balance: number
-    previousDayComparison: number
-    paymentMethods: {
-        cash: number
-        transfer: number
-        card: number
-        other: number
-    }
-    expenseMethods: {
-        CASH?: number
-        TRANSACTION?: number
-        CARD?: number
-    }
-    categories: {
-        loanPayments: number
-        otherIncome: number
-        expenses: Record<string, number>
-    }
-}
+
 
 export function DailySummary() {
     const [data, setData] = useState<SummaryData | null>(null)

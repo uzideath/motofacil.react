@@ -4,10 +4,11 @@ import type React from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Calendar, Bike, Filter } from "lucide-react"
+import { Search, Calendar, Bike, Filter, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import es from "date-fns/locale/es"
-import { Providers, type FilterState } from "../types"
+import type { FilterState } from "@/lib/types"
+import { useProviders } from "@/components/providers/hooks/useProviders"
 
 interface FiltersSectionProps {
     filters: FilterState
@@ -16,6 +17,8 @@ interface FiltersSectionProps {
 }
 
 export const FiltersSection: React.FC<FiltersSectionProps> = ({ filters, onFilterChange, onResetFilters }) => {
+    const { providers, loading: providersLoading, error: providersError } = useProviders()
+
     const hasActiveFilters =
         filters.searchTerm || filters.month !== "all" || filters.providerFilter !== "all" || filters.statusFilter !== "all"
 
@@ -53,18 +56,37 @@ export const FiltersSection: React.FC<FiltersSectionProps> = ({ filters, onFilte
                     </SelectContent>
                 </Select>
 
-                <Select value={filters.providerFilter} onValueChange={(value) => onFilterChange("providerFilter", value)}>
+                <Select
+                    value={filters.providerFilter}
+                    onValueChange={(value) => onFilterChange("providerFilter", value)}
+                    disabled={providersLoading}
+                >
                     <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-2">
                             <Bike className="h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Filtrar por proveedor" />
+                            {providersLoading ? (
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Cargando...</span>
+                                </div>
+                            ) : (
+                                <SelectValue placeholder="Filtrar por proveedor" />
+                            )}
                         </div>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todos los proveedores</SelectItem>
-                        <SelectItem value={Providers.MOTOFACIL}>Moto Facil</SelectItem>
-                        <SelectItem value={Providers.OBRASOCIAL}>Obra Social</SelectItem>
-                        <SelectItem value={Providers.PORCENTAJETITO}>Porcentaje Tito</SelectItem>
+                        {providersError ? (
+                            <SelectItem value="error" disabled>
+                                Error al cargar proveedores
+                            </SelectItem>
+                        ) : (
+                            providers.map((provider) => (
+                                <SelectItem key={provider.id} value={provider.name}>
+                                    {provider.name}
+                                </SelectItem>
+                            ))
+                        )}
                     </SelectContent>
                 </Select>
 

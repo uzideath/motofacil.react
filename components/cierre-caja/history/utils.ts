@@ -1,35 +1,21 @@
+import { CashRegisterDisplay, Closing } from "@/lib/types"
+import { formatProviderName } from "@/lib/utils"
 import { format } from "date-fns"
 import es from "date-fns/locale/es"
-import { Providers, CashRegister, CashRegisterDisplay, Payment, Expense } from "./types"
 
-export const formatProviderName = (provider: string | undefined): string => {
-    if (!provider) return "Desconocido"
 
-    switch (provider) {
-        case Providers.MOTOFACIL:
-            return "Moto Facil"
-        case Providers.OBRASOCIAL:
-            return "Obra Social"
-        case Providers.PORCENTAJETITO:
-            return "Porcentaje Tito"
-        default:
-            return provider
-    }
-}
 
-export const transformCashRegisterData = (data: CashRegister[]): CashRegisterDisplay[] => {
-    return data.map((item: CashRegister) => {
-        const totalIncome = item.payments.reduce((acc: number, p: Payment) => acc + p.amount + p.gps, 0)
-        const totalExpense = item.expense.reduce((acc: number, e: Expense) => acc + e.amount, 0)
+export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[] => {
+    return data.map((item) => {
+        const totalIncome = item.payments.reduce((acc, p) => acc + p.amount + p.gps, 0)
+        const totalExpense = item.expense.reduce((acc, e) => acc + e.amount, 0)
         const balance = totalIncome - totalExpense
         const createdAt = new Date(item.createdAt)
         const totalCashInSystem = item.cashInRegister + item.cashFromTransfers + item.cashFromCards
 
         const status: CashRegisterDisplay["status"] =
-            Math.abs(balance - totalCashInSystem) <= 1000
-                ? "balanced"
-                : Math.abs(balance - totalCashInSystem) <= 5000
-                    ? "minor-diff"
+            Math.abs(balance - totalCashInSystem) <= 1000 ? "balanced"
+                : Math.abs(balance - totalCashInSystem) <= 5000 ? "minor-diff"
                     : "major-diff"
 
         return {
@@ -41,7 +27,14 @@ export const transformCashRegisterData = (data: CashRegister[]): CashRegisterDis
             totalExpense,
             balance,
             status,
-            provider: item.provider,
+            provider: item.provider
+                ? {
+                    id: item.provider.id,
+                    name: item.provider.name,
+                    createdAt: item.provider.createdAt,
+                    updatedAt: item.provider.updatedAt,
+                }
+                : undefined, // or null, depending on your CashRegisterDisplay type
             cashInRegister: item.cashInRegister,
             cashFromTransfers: item.cashFromTransfers,
             cashFromCards: item.cashFromCards,
@@ -82,10 +75,10 @@ export const filterRegisters = (
         const matchesSearch =
             r.id.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
             r.user.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-            (r.provider && formatProviderName(r.provider).toLowerCase().includes(filters.searchTerm.toLowerCase()))
+            (r.provider && formatProviderName(r.provider.name).toLowerCase().includes(filters.searchTerm.toLowerCase()))
 
         const matchesMonth = filters.month === "all" || r.date.includes(getMonthFromFilter(filters.month))
-        const matchesProvider = filters.providerFilter === "all" || r.provider === filters.providerFilter
+        const matchesProvider = filters.providerFilter === "all" || r.provider?.name === filters.providerFilter
         const matchesStatus = filters.statusFilter === "all" || r.status === filters.statusFilter
 
         return matchesSearch && matchesMonth && matchesProvider && matchesStatus

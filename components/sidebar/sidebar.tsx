@@ -21,6 +21,7 @@ import {
     HelpCircle,
     Users2Icon,
     Smartphone,
+    BadgeCheck,
 } from "lucide-react"
 
 import {
@@ -79,6 +80,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
     const mainItems = [
         { path: "/usuarios", label: "Usuarios", icon: User2 },
         { path: "/motocicletas", label: "Motocicletas", icon: Bike },
+        { path: "/proveedores", label: "Proveedores", icon: BadgeCheck },
     ]
 
     // Finance items

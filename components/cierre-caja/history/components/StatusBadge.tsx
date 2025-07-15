@@ -1,7 +1,7 @@
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from 'lucide-react'
-import { CashRegisterDisplay } from "../types"
+import { CashRegisterDisplay } from "@/lib/types"
 
 interface StatusBadgeProps {
     status: CashRegisterDisplay["status"]

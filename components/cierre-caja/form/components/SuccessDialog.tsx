@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle2 } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
-import { Providers, type FormCalculations } from "../types"
-import { formatProviderName } from "../utils"
+import { type FormCalculations } from "../types"
+import { ProviderBadge } from "@/components/ProviderBadge"
 
 interface SuccessDialogProps {
     open: boolean
@@ -52,32 +52,29 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                         {currentProvider && (
                             <div className="flex justify-between items-center">
                                 <span className="text-sm">Proveedor:</span>
-                                <Badge
-                                    className={`${currentProvider === Providers.MOTOFACIL
-                                            ? "bg-cyan-100 text-cyan-800"
-                                            : currentProvider === Providers.OBRASOCIAL
-                                                ? "bg-amber-100 text-amber-800"
-                                                : "bg-violet-100 text-violet-800"
-                                        }`}
-                                    variant="outline"
-                                >
-                                    {formatProviderName(currentProvider)}
-                                </Badge>
+                                <ProviderBadge provider={currentProvider} />
                             </div>
                         )}
+
                         <div className="flex justify-between items-center">
                             <span className="text-sm">Total ingresos:</span>
-                            <span className="font-medium text-emerald-600">{formatCurrency(calculations.totalExpected)}</span>
+                            <span className="font-medium text-emerald-600">
+                                {formatCurrency(calculations.totalExpected)}
+                            </span>
                         </div>
 
                         <div className="flex justify-between items-center">
                             <span className="text-sm">Total egresos:</span>
-                            <span className="font-medium text-red-600">{formatCurrency(calculations.totalExpenses)}</span>
+                            <span className="font-medium text-red-600">
+                                {formatCurrency(calculations.totalExpenses)}
+                            </span>
                         </div>
 
                         <div className="flex justify-between items-center">
                             <span className="text-sm">Total registrado:</span>
-                            <span className="font-medium text-blue-600">{formatCurrency(calculations.totalRegistered)}</span>
+                            <span className="font-medium text-blue-600">
+                                {formatCurrency(calculations.totalRegistered)}
+                            </span>
                         </div>
 
                         <Separator className="my-1" />

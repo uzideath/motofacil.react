@@ -1,8 +1,8 @@
 // Este archivo contiene funciones para interactuar con la API del backend
 // En un entorno real, estas funciones harían peticiones HTTP al backend
 
+import { Loan } from "./types"
 import { HttpService } from "./http"
-import { Loan } from '@/lib/dto/loan'
 // Usuarios
 export async function fetchUsers() {
   // En un entorno real, esto haría una petición GET a la API

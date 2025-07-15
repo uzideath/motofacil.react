@@ -3,16 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
-
-type EnrichedLoan = {
-    debtRemaining: number
-    monthlyPayment: number
-    interestRate: number
-    interestType: string
-    nextInstallmentNumber: number
-    contractNumber: string
-    [key: string]: any
-}
+import { EnrichedLoan } from "../../hooks/useInstallmentForm"
 
 interface LoanInformationCardProps {
     loan: EnrichedLoan

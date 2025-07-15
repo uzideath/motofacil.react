@@ -1,10 +1,4 @@
-export enum Providers {
-    MOTOFACIL = "MOTOFACIL",
-    OBRASOCIAL = "OBRASOCIAL",
-    PORCENTAJETITO = "PORCENTAJETITO",
-}
-
-export type PaymentMethod = "CASH" | "TRANSACTION" | "CARD"
+import { PaymentMethod } from "@/lib/types"
 
 export type SelectedTransaction = {
     id: string

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, useMemo, useRef } from "react"
 import { DEFAULT_ITEMS_PER_PAGE } from "../constants"
 import {
-    PaymentMethod,
     type SelectedTransaction,
     type SortField,
     type Transaction,
@@ -12,6 +11,7 @@ import {
 import { calculatePagination, calculateTransactionSummary, filterAndSortTransactions } from "../utils/filters"
 import { fetchAvailableTransactions } from "../services"
 import { formatProviderName } from "../utils/formatters"
+import { PaymentMethod } from "@/lib/types"
 
 interface UseTransactionsProps {
     token: string

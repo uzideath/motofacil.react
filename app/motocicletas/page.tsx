@@ -1,7 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
-import { MotorcycleTable } from "@/components/motorcycles/motorcycle-table"
-import { MotorcycleForm } from "@/components/motorcycles/motorcycle-form"
+import { MotorcycleTable } from "@/components/motorcycles/MotorcycleTable"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 
 export default function MotorcyclesPage() {

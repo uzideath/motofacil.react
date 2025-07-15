@@ -7,18 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { User, Bike } from "lucide-react"
 import type { Control } from "react-hook-form"
+import { Loan } from "@/lib/types"
 
-type EnrichedLoan = {
-    id: string
-    user: { name: string; identification?: string }
-    motorcycle: { model: string; plate?: string }
-    [key: string]: any
-}
 
 interface ClientInformationCardProps {
     control: Control<any>
-    loans: EnrichedLoan[]
-    selectedLoan: EnrichedLoan | null
+    loans: Loan[]
+    selectedLoan: Loan | null
     onLoanChange: (loanId: string) => void
 }
 

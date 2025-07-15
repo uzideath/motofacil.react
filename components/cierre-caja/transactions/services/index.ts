@@ -1,7 +1,8 @@
 import { HttpService } from "@/lib/http"
 import { API_ENDPOINTS } from "../constants"
-import type { Expense, Installment, Transaction, TransactionResponse } from "../constants/types"
+import { Transaction, TransactionResponse } from "../constants/types"
 import { formatTimeFromDate } from "../utils/formatters"
+import { Installment, Expense } from "@/lib/types"
 
 /**
  * Fetches available transactions (installments and expenses)
@@ -30,7 +31,7 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
         id: installment.id,
         time: formatTimeFromDate(installment.paymentDate),
         description: `${installment.loan.motorcycle.plate}`,
-        category: "Cuota de préstamo",
+        category: "Cuota de arredamiento",
         amount: installment.amount + installment.gps, // Add GPS to the amount
         baseAmount: installment.amount, // Keep the original amount as baseAmount
         gpsAmount: installment.gps, // Store the GPS amount separately
@@ -38,7 +39,7 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
         type: "income",
         reference: installment.id,
         client: installment.loan.user.name,
-        provider: installment.loan.motorcycle.provider,
+        provider: installment.loan.motorcycle.provider.name,
         date: new Date(installment.paymentDate),
         createdBy: installment.createdBy,
     }))
@@ -57,7 +58,7 @@ const mapExpensesToTransactions = (expenses: Expense[]): Transaction[] => {
         paymentMethod: expense.paymentMethod, // Use enum directly
         type: "expense",
         reference: expense.reference ?? "",
-        provider: expense.provider,
+        provider: expense.provider?.name,
         date: new Date(expense.date),
         createdBy: expense.createdBy,
     }))

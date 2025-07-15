@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Copy, Check, KeyRound, Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import type { User } from "./types"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +30,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Owner } from "@/lib/types"
+
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -49,9 +51,9 @@ const formSchema = z.object({
 type UserFormProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  user: User | null
-  onSave: (user: User) => void
-  onDelete?: (user: User) => void
+  user: Owner | null
+  onSave: (user: Owner) => void
+  onDelete?: (user: Owner) => void
 }
 
 // Function to generate a random password
@@ -181,7 +183,7 @@ export function UserForm({ open, onOpenChange, user, onSave, onDelete }: UserFor
         const response = await HttpService.put(`/api/v1/owners/${user.id}`, updateData)
         const responseData = response.data
 
-        const updatedUser: User = {
+        const updatedUser: Owner = {
           id: user.id,
           name: values.name,
           username: values.username,
@@ -207,7 +209,7 @@ export function UserForm({ open, onOpenChange, user, onSave, onDelete }: UserFor
           password: generatedPassword,
         })
 
-        const newUser: User = response.data
+        const newUser: Owner = response.data
 
         onSave(newUser)
 

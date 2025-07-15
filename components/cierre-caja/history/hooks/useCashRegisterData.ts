@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { HttpService } from "@/lib/http"
-import { CashRegisterDisplay } from "../types"
 import { transformCashRegisterData } from "../utils"
+import { CashRegisterDisplay } from "@/lib/types"
 
 export const useCashRegisterData = () => {
     const [registers, setRegisters] = useState<CashRegisterDisplay[]>([])

@@ -1,7 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
-import { UserTable } from "@/components/users/user-table"
-import { UserForm } from "@/components/users/user-form"
+import { UserTable } from "@/components/users/UserTable"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 
 export default function UsersPage() {

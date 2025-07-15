@@ -12,64 +12,6 @@ import { LoanTablePagination } from "./components/LoanTablePagination"
 import { LoanTableRow } from "./components/LoanTableRow"
 import { useLoanTable } from "./hooks/useLoanTable"
 
-export type Loan = {
-  id: string
-  userId: string
-  contractNumber: string
-  motorcycleId: string
-  totalAmount: number
-  downPayment: number
-  installments: number
-  paidInstallments: number
-  remainingInstallments: number
-  totalPaid: number
-  debtRemaining: number
-  interestRate: number
-  interestType: "FIXED" | "COMPOUND"
-  paymentFrequency: "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY"
-  installmentPaymentAmmount: number
-  gpsInstallmentPayment: number
-  startDate: string
-  endDate: string | null
-  status: "PENDING" | "ACTIVE" | "COMPLETED" | "DEFAULTED"
-  archived: boolean
-  user: {
-    id: string
-    name: string
-    identification: string
-    idIssuedAt: string
-    age: number
-    phone: string
-    address: string
-    city: string
-    refName: string
-    refID: string
-    refPhone: string
-    createdAt: string
-  }
-  motorcycle: {
-    id: string
-    brand: string
-    model: string
-    plate: string
-    engine: string
-    chassis: string
-    color: string
-    cc: number
-    gps: number
-  }
-  payments: {
-    id: string
-    loanId: string
-    paymentMethod: "CASH" | "CARD" | "TRANSACTION"
-    amount: number
-    gps: number
-    paymentDate: string
-    isLate: boolean
-    cashRegisterId: string
-  }[]
-}
-
 export function LoanTable() {
   const {
     loading,

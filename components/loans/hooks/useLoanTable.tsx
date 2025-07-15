@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import { Loan } from "../LoanTable"
+import { Loan } from "@/lib/types"
 
 export function useLoanTable() {
     const [loans, setLoans] = useState<Loan[]>([])
@@ -273,7 +273,7 @@ export function useLoanTable() {
                     loan.installments,
                     loan.paidInstallments,
                     loan.debtRemaining,
-                    getPaymentFrequencyText(loan.paymentFrequency),
+                    getPaymentFrequencyText(loan.paymentFrequency || "DAILY"),
                     loan.status,
                     loan.archived ? "Sí" : "No",
                 ].join(","),
