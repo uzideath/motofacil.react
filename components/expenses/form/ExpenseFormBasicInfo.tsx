@@ -4,16 +4,19 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tag, Calendar, DollarSign, CreditCard } from 'lucide-react'
-import { Providers } from "@/lib/types"
+import { Tag, Calendar, DollarSign, CreditCard, Loader2 } from "lucide-react"
 import type { Control } from "react-hook-form"
 import { ExpenseFormValues } from "../hooks/useExpenseForm"
+import { useProviders } from "@/components/providers/hooks/useProviders"
+
 
 interface ExpenseBasicInfoProps {
     control: Control<ExpenseFormValues>
 }
 
 export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
+    const { providers, loading, error } = useProviders()
+
     return (
         <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
             <CardContent className="pt-6">
@@ -54,7 +57,6 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={control}
                         name="date"
@@ -76,7 +78,6 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={control}
                         name="amount"
@@ -100,7 +101,6 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={control}
                         name="paymentMethod"
@@ -129,7 +129,6 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={control}
                         name="provider"
@@ -139,19 +138,53 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                                     <Tag className="h-4 w-4 text-blue-500" />
                                     Proveedor
                                 </FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
                                     <FormControl>
                                         <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
-                                            <SelectValue placeholder="Seleccione un proveedor" />
+                                            <SelectValue
+                                                placeholder={
+                                                    loading
+                                                        ? "Cargando proveedores..."
+                                                        : error
+                                                            ? "Error al cargar proveedores"
+                                                            : "Seleccione un proveedor"
+                                                }
+                                            />
+                                            {loading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value={Providers.MOTOFACIL}>Moto Facil</SelectItem>
-                                        <SelectItem value={Providers.OBRASOCIAL}>Obra Social</SelectItem>
-                                        <SelectItem value={Providers.PORCENTAJETITO}>Tito</SelectItem>
+                                        {loading ? (
+                                            <SelectItem value="" disabled>
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                    Cargando proveedores...
+                                                </div>
+                                            </SelectItem>
+                                        ) : error ? (
+                                            <SelectItem value="" disabled>
+                                                Error al cargar proveedores
+                                            </SelectItem>
+                                        ) : providers.length === 0 ? (
+                                            <SelectItem value="" disabled>
+                                                No hay proveedores disponibles
+                                            </SelectItem>
+                                        ) : (
+                                            providers.map((provider) => (
+                                                <SelectItem key={provider.id} value={provider.name}>
+                                                    {provider.name}
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
-                                <FormDescription className="text-xs">Proveedor asociado al egreso</FormDescription>
+                                <FormDescription className="text-xs">
+                                    {loading
+                                        ? "Cargando lista de proveedores..."
+                                        : error
+                                            ? "Error al cargar proveedores. Intente nuevamente."
+                                            : "Proveedor asociado al egreso"}
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

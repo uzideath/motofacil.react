@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Download, RefreshCw, Wallet, FileSpreadsheet } from "lucide-react"
 import { FileIcon as FilePdf } from "lucide-react"
-import { CashRegisterDetailModal } from "./history-modal"
+import { CashRegisterDetailModal } from "./CashRegisterDetailModal"
 import { CashRegisterTable } from "./history/components/CashRegisterTable"
 import { FiltersSection } from "./history/components/FilterSection"
 import { PaginationControls } from "./history/components/PaginationControls"

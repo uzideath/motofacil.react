@@ -4,10 +4,9 @@ import { Bike } from "lucide-react"
 import { formatProviderName } from "@/lib/utils"
 
 interface ProviderBadgeProps {
-    provider: string // nombre técnico o raw (ej: "MOTOFACIL", "OBRASOCIAL", etc.)
+    provider: string 
 }
 
-// Generador de colores únicos basados en el nombre del proveedor
 function stringToColor(str: string) {
     let hash = 0
     for (let i = 0; i < str.length; i++) {

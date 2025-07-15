@@ -23,7 +23,8 @@ export function useProviders() {
             setLoading(true)
             setError(null)
             const token = getAuthToken()
-            const response = await HttpService.get("/api/v1/providers", {
+            // Add query parameter to include related data
+            const response = await HttpService.get("/api/v1/providers?include=motorcycles,cashRegisters", {
                 headers: {
                     Authorization: token ? `Bearer ${token}` : "",
                 },

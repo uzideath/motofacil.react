@@ -125,6 +125,8 @@ type Expense = {
 type Provider = {
     id: string
     name: string
+    motorcylces: Motorcycle[]
+    cashRegisters: Closing[]
     createdAt: string
     updatedAt: string
 }
@@ -191,13 +193,6 @@ export interface LoginResponse {
     }
 }
 
-
-export enum Providers {
-    MOTOFACIL = "MOTOFACIL",
-    OBRASOCIAL = "OBRASOCIAL",
-    PORCENTAJETITO = "PORCENTAJETITO",
-}
-
 export enum PaymentMethods {
     CASH = "CASH",
     TRANSACTION = "TRANSACTION",
@@ -228,6 +223,12 @@ enum LoanStatus {
     COMPLETED = "COMPLETED",
     DEFAULTED = "DEFAULTED",
     ARCHIVED = "ARCHIVED",
+}
+
+export enum Providers {
+    MOTOFACIL = "Moto Facil",
+    TITO = "Tito",
+    OBRASOCIAL = "Obra Social",
 }
 
 export type {

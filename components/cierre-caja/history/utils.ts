@@ -33,8 +33,10 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
                     name: item.provider.name,
                     createdAt: item.provider.createdAt,
                     updatedAt: item.provider.updatedAt,
+                    motorcylces: item.provider.motorcylces,
+                    cashRegisters: item.provider.cashRegisters,
                 }
-                : undefined, // or null, depending on your CashRegisterDisplay type
+                : undefined, 
             cashInRegister: item.cashInRegister,
             cashFromTransfers: item.cashFromTransfers,
             cashFromCards: item.cashFromCards,

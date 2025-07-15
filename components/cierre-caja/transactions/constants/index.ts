@@ -1,4 +1,4 @@
-import { PaymentMethod, Providers } from "@/lib/types"
+import { PaymentMethod } from "@/lib/types"
 import { CreditCard, Banknote, ArrowRightLeft, HelpCircle } from "lucide-react"
 
 export const DEFAULT_ITEMS_PER_PAGE = 10
