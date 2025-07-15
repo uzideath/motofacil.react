@@ -1,6 +1,5 @@
+import { Providers, PaymentMethod } from "@/lib/types"
 import { CATEGORY_DETAILS, PAYMENT_METHOD_LABELS, PROVIDER_DETAILS } from "../constants"
-import { PaymentMethod, Providers } from "../constants/types"
-
 
 /**
  * Formats a provider name for display

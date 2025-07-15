@@ -27,13 +27,14 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { UserForm } from "./user-form"
 import { HttpService } from "@/lib/http"
-import type { User } from "./types"
+import { Owner } from "@/lib/types"
+
 
 export function UserManagement({ filter = "all" }: { filter?: "all" | "active" | "inactive" }) {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<Owner[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<Owner | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const { toast } = useToast()
@@ -44,7 +45,7 @@ export function UserManagement({ filter = "all" }: { filter?: "all" | "active" |
       const res = await HttpService.get("/api/v1/owners")
       const rawData = res.data
 
-      const mapped: User[] = rawData.map((item: any) => ({
+      const mapped: Owner[] = rawData.map((item: any) => ({
         id: item.id,
         username: item.username,
         name: item.name || item.username, // Usar el campo name si existe, sino usar username como fallback

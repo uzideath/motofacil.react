@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
 import { DateRange } from "react-day-picker"
-import { Installment } from "../utils/types"
+import { Installment } from "@/lib/types"
 
 export function useInstallments(onRefreshCallback?: (refreshFn: () => void) => void) {
     const [installments, setInstallments] = useState<Installment[]>([])

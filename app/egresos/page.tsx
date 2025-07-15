@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { FileDown, FileUp } from "lucide-react"
 import { ExpenseModal } from "@/components/expenses/expense-modal"
 import { ExpenseSummary } from "@/components/expenses/expense-summary"
-import { ExpenseTable } from "@/components/expenses/expense-table"
+import { ExpenseTable } from "@/components/expenses/ExpenseTable"
 
 
 export default function ExpensesPage() {

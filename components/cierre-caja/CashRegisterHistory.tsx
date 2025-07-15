@@ -21,8 +21,8 @@ import { SummaryCards } from "./history/components/SummaryCard"
 import { useCashRegisterData } from "./history/hooks/useCashRegisterData"
 import { useCashRegisterFilters } from "./history/hooks/useCashRegisterFilter"
 import { usePrintPdf } from "./history/hooks/usePrintPDF"
-import { CashRegisterDisplay } from "./history/types"
 import { filterRegisters, calculateSummaryStats } from "./history/utils"
+import { CashRegisterDisplay } from "@/lib/types"
 
 export function CashRegisterHistory() {
     const [selectedRegister, setSelectedRegister] = useState<CashRegisterDisplay | null>(null)

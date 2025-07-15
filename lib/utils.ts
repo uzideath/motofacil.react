@@ -1,6 +1,7 @@
 import { toast } from "@/components/ui/use-toast";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { Providers } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -72,4 +73,19 @@ export function capitalize(text: string): string {
 export function getInterest(capital: number, tasaAnual: number, numeroPeriodos: number) {
   const tasaPorPeriodo = tasaAnual / numeroPeriodos;
   return (capital * tasaPorPeriodo) / (1 - Math.pow(1 + tasaPorPeriodo, -numeroPeriodos))
+}
+
+export const formatProviderName = (provider: string | undefined): string => {
+  if (!provider) return "Desconocido"
+
+  switch (provider) {
+    case Providers.MOTOFACIL:
+      return "Moto Facil"
+    case Providers.OBRASOCIAL:
+      return "Obra Social"
+    case Providers.PORCENTAJETITO:
+      return "Tito"
+    default:
+      return provider
+  }
 }

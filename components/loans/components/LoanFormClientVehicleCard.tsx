@@ -7,23 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { UserIcon, Bike, ChevronsUpDownIcon as ChevronUpDown } from "lucide-react"
 import type { Control } from "react-hook-form"
-
-type User = {
-    id: string
-    name: string
-    identification: string
-    phone: string
-    address: string
-    city: string
-}
-
-type Motorcycle = {
-    id: string
-    brand: string
-    model: string
-    plate: string
-    price: number
-}
+import { Motorcycle, User } from "@/lib/types"
 
 interface LoanFormClientVehicleCardProps {
     control: Control<any>
@@ -147,7 +131,7 @@ export function LoanFormClientVehicleCard({
                                                                 <span className={moto.id === field.value ? "font-medium" : ""}>
                                                                     {moto.brand} {moto.model} ({moto.plate})
                                                                 </span>
-                                                                <span className="text-xs text-muted-foreground">{formatCurrency(moto.price)}</span>
+                                                                <span className="text-xs text-muted-foreground">{formatCurrency(moto.price || 0)}</span>
                                                             </div>
                                                         </CommandItem>
                                                     ))}

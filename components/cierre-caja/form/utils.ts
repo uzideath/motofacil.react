@@ -1,19 +1,6 @@
-import { ChartData, FormCalculations, FormState, Providers, SelectedTransaction } from "./types"
+import { Providers } from "@/lib/types"
+import { ChartData, FormCalculations, FormState, SelectedTransaction } from "./types"
 
-export const formatProviderName = (provider: string | undefined): string => {
-    if (!provider) return "Desconocido"
-
-    switch (provider) {
-        case Providers.MOTOFACIL:
-            return "Moto Facil"
-        case Providers.OBRASOCIAL:
-            return "Obra Social"
-        case Providers.PORCENTAJETITO:
-            return "Porcentaje Tito"
-        default:
-            return provider
-    }
-}
 
 export const getProviderFromTransactions = (transactions: SelectedTransaction[]): string | undefined => {
     const incomes = transactions.filter((t) => t.type === "income")

@@ -2,7 +2,6 @@ import { Role } from "@/hooks/useAuth";
 import { HttpService } from "../http"
 import { LoginPayload, LoginResponse } from "../types";
 
-
 export async function loginRequest(payload: LoginPayload): Promise<LoginResponse> {
     try {
         const response = await HttpService.post<LoginResponse>("/api/v1/auth/login", payload);

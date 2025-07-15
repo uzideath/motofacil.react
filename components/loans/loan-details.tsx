@@ -17,79 +17,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Bike, Users } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { fetchLoan } from "@/lib/api"
-import type { Loan } from "@/lib/dto/loan"
+import { Loan } from "@/lib/types"
 
-type Payment = {
-  id: string
-  amount: number
-  principalAmount: number
-  interestAmount: number
-  date: string
-  isLate: boolean
-}
-
-type AmortizationRow = {
-  installmentNumber: number
-  date: string
-  payment: number
-  principalPayment: number
-  interestPayment: number
-  remainingBalance: number
-  isPaid: boolean
-}
-
-// Función para generar una tabla de amortización de ejemplo
-function generateAmortizationTable(
-  installments: number,
-  principal: number,
-  monthlyPayment: number,
-  interestRate: number,
-  interestType: string,
-  paidInstallments: number,
-) {
-  const table = []
-  const monthlyInterestRate = interestRate / 100 / 12
-  let balance = principal
-
-  for (let i = 1; i <= installments; i++) {
-    let interestPayment: number
-    let principalPayment: number
-
-    if (interestType === "FIXED") {
-      // Para interés fijo, el interés se distribuye uniformemente
-      interestPayment = (principal * (interestRate / 100) * (installments / 12)) / installments
-      principalPayment = monthlyPayment - interestPayment
-    } else {
-      // Para interés compuesto, el interés se calcula sobre el saldo restante
-      interestPayment = balance * monthlyInterestRate
-      principalPayment = monthlyPayment - interestPayment
-    }
-
-    balance -= principalPayment
-
-    // Asegurarse de que el saldo final sea exactamente 0
-    if (i === installments) {
-      principalPayment += balance
-      balance = 0
-    }
-
-    // Calcular la fecha de pago
-    const date = new Date("2023-01-10")
-    date.setMonth(date.getMonth() + i - 1)
-
-    table.push({
-      installmentNumber: i,
-      date: date.toISOString(),
-      payment: monthlyPayment,
-      principalPayment,
-      interestPayment,
-      remainingBalance: Math.max(0, balance),
-      isPaid: i <= paidInstallments,
-    })
-  }
-
-  return table
-}
 
 export function LoanDetails({
   children,
@@ -371,11 +300,11 @@ export function LoanDetails({
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">
-                      Cuota {getPaymentFrequencyText(loan.paymentFrequency)}
+                      Cuota {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
                     </p>
                     <p className="text-xl font-bold text-white">{formatCurrency(loan.installmentPaymentAmmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Tipo: {getInterestTypeText(loan.interestType)}</span>
+                      <span>Tipo: {getInterestTypeText(loan.interestType || "FIXED")}</span>
                       <span>Cuotas: {loan.installments}</span>
                     </div>
                   </div>

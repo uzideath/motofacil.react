@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import { Installment } from "../utils/types"
 import { utcToZonedTime, format } from "date-fns-tz"
+import { Installment } from "@/lib/types"
 
 export function useInstallmentActions(refreshInstallments: () => void) {
     const [isGenerating, setIsGenerating] = useState(false)

@@ -6,8 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import { Loan } from "../LoanTable"
-
+import { Loan, Motorcycle, User } from "@/lib/types"
 
 const loanSchema = z.object({
     userId: z.string().min(1, { message: "Por favor, selecciona un cliente." }),
@@ -24,38 +23,10 @@ const loanSchema = z.object({
 
 type LoanFormValues = z.infer<typeof loanSchema>
 
-type User = {
-    id: string
-    name: string
-    identification: string
-    idIssuedAt: string
-    age: number
-    phone: string
-    address: string
-    city: string
-    refName: string
-    refID: string
-    refPhone: string
-    createdAt: string
-}
-
-type Motorcycle = {
-    id: string
-    brand: string
-    model: string
-    plate: string
-    engine: string
-    chassis: string
-    color: string
-    cc: number
-    gps: number
-    price: number
-}
-
 interface UseLoanFormProps {
     loanId?: string
     loanData?: Loan
-    onSaved?: (updatedLoan?: any) => void
+    onSaved?: (updatedLoan?: Loan) => void
 }
 
 // Helper functions
@@ -345,7 +316,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
 
     const handleMotorcycleChange = (motorcycleId: string) => {
         const selected = motorcycles.find((m) => m.id === motorcycleId)
-        if (selected) form.setValue("totalAmount", selected.price)
+        if (selected) form.setValue("totalAmount", selected.price || 0)
     }
 
     const onSubmit = async (values: LoanFormValues) => {

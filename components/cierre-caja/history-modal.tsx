@@ -5,7 +5,7 @@ import type React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, formatProviderName } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import es from "date-fns/locale/es"
 import {
@@ -33,33 +33,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-
-enum Providers {
-    MOTOFACIL = "MOTOFACIL",
-    OBRASOCIAL = "OBRASOCIAL",
-    PORCENTAJETITO = "PORCENTAJETITO",
-}
-
-enum PaymentMethods {
-    CASH = "CASH",
-    TRANSACTION = "TRANSACTION",
-    CARD = "CARD",
-}
-
-const formatProviderName = (provider: string | undefined): string => {
-    if (!provider) return "Desconocido"
-
-    switch (provider) {
-        case Providers.MOTOFACIL:
-            return "Moto Facil"
-        case Providers.OBRASOCIAL:
-            return "Obra Social"
-        case Providers.PORCENTAJETITO:
-            return "Porcentaje Tito"
-        default:
-            return provider
-    }
-}
+import { Providers, PaymentMethods, Closing } from "@/lib/types"
 
 const providerMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     [Providers.MOTOFACIL]: {
@@ -74,7 +48,7 @@ const providerMap: Record<string, { label: string; color: string; icon: React.Re
         icon: <Building className="h-4 w-4" />,
     },
     [Providers.PORCENTAJETITO]: {
-        label: "Porcentaje Tito",
+        label: "Tito",
         color:
             "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300 border-violet-200 dark:border-violet-800/30",
         icon: <Percent className="h-4 w-4" />,
@@ -134,100 +108,12 @@ const categoryMap: Record<string, { label: string; color: string; icon: React.Re
     },
 }
 
-type Loan = {
-    id: string
-    userId: string
-    contractNumber: string
-    motorcycleId: string
-    totalAmount: number
-    downPayment: number
-    installments: number
-    paidInstallments: number
-    remainingInstallments: number
-    totalPaid: number
-    debtRemaining: number
-    interestRate: number
-    interestType: string
-    paymentFrequency: string
-    installmentPaymentAmmount: number
-    gpsInstallmentPayment: number
-    createdAt: string
-    updatedAt: string
-    startDate: string
-    endDate: string | null
-    status: string
-    user: {
-        id: string
-        name: string
-    }
-    motorcycle: {
-        id: string
-        plate: string
-    }
-}
 
-type Payment = {
-    id: string
-    loanId: string
-    paymentMethod: PaymentMethods
-    amount: number
-    gps: number
-    paymentDate: string
-    isLate: boolean
-    latePaymentDate: string | null
-    notes: string | null
-    attachmentUrl: string | null
-    createdById: string
-    createdAt: string
-    updatedAt: string
-    cashRegisterId: string
-    loan: Loan
-    createdBy: {
-        id: string
-        username: string
-    }
-}
-
-type Expense = {
-    id: string
-    amount: number
-    date: string
-    provider: string
-    category: string
-    paymentMethod: PaymentMethods
-    beneficiary: string
-    reference: string
-    description: string
-    attachmentUrl: string | null
-    cashRegisterId: string
-    createdById: string
-    createdAt: string
-    updatedAt: string
-}
-
-type CashRegister = {
-    id: string
-    date: string
-    provider: string
-    cashInRegister: number
-    cashFromTransfers: number
-    cashFromCards: number
-    notes: string
-    createdAt: string
-    updatedAt: string
-    createdById: string
-    payments: Payment[]
-    expense: Expense[]
-    createdBy: {
-        id: string
-        username: string
-    }
-}
 
 type Props = {
     open: boolean
     onClose: () => void
-    cashRegister: CashRegister
+    cashRegister: Closing
 }
 
 export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) {
@@ -352,7 +238,7 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-muted-foreground text-xs">Proveedor:</span>
-                                    <div className="mt-1">{renderProvider(cashRegister.provider)}</div>
+                                    <div className="mt-1">{renderProvider(cashRegister.provider.name)}</div>
                                 </div>
 
                                 {cashRegister.notes && (
@@ -589,7 +475,7 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                                                                     variant="outline"
                                                                     className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/30 flex items-center gap-1.5"
                                                                 >
-                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>A tiempo
+                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Al día
                                                                 </Badge>
                                                             )}
                                                         </TableCell>
@@ -693,7 +579,7 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                                                                 <span>{formatMethod(e.paymentMethod)}</span>
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell>{renderProvider(e.provider)}</TableCell>
+                                                        <TableCell>{renderProvider(e.provider?.name)}</TableCell>
                                                         <TableCell className="text-right font-medium text-red-600 dark:text-red-400">
                                                             {formatCurrency(e.amount)}
                                                         </TableCell>

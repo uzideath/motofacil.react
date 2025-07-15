@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Loan as BaseLoan } from "@/components/loans/LoanTable"
+import { Loan as BaseLoan, Installment } from "@/lib/types"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
 import { useAuth } from "@/hooks/useAuth"
@@ -42,10 +42,10 @@ const installmentSchema = z
 
 type InstallmentFormValues = z.infer<typeof installmentSchema>
 
-type EnrichedLoan = BaseLoan & {
+export type EnrichedLoan = BaseLoan & {
     user: { name: string; identification?: string }
     motorcycle: { model: string; plate?: string }
-    payments: { amount: number; paymentDate: Date }[]
+    payments: Installment[]
     monthlyPayment: number
     financedAmount: number
     totalCapitalPaid: number

@@ -6,8 +6,8 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, Receipt, FileEdit } from "lucide-react"
-import { ExpenseForm } from "./expense-form"
-import type { Expense } from "./expense-table"
+import { ExpenseForm } from "./ExpenseForm"
+import { Expense } from "@/lib/types"
 
 interface ExpenseModalProps {
     onSuccess?: () => void

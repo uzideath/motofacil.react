@@ -11,8 +11,7 @@ import { LoanFormDetailsCard } from "./components/LoanFormsDetailsCard"
 import { LoanFormSummaryCard } from "./components/LoanFormSummaryCard"
 import { LoanFormTermsCard } from "./components/LoanFormTermsCard"
 import { useLoanForm } from "./hooks/useLoanForm"
-import { Loan } from "./LoanTable"
-
+import { Loan } from "@/lib/types"
 
 interface LoanFormProps {
   children: React.ReactNode

@@ -1,5 +1,5 @@
+import { FilterState, PaginationState } from "@/lib/types"
 import { useState } from "react"
-import { FilterState, PaginationState } from "../types"
 
 export const useCashRegisterFilters = () => {
     const [filters, setFilters] = useState<FilterState>({

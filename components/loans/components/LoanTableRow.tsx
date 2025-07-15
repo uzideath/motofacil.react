@@ -31,7 +31,8 @@ import {
 import { LoanDetails } from "../loan-details"
 import { InstallmentForm } from "../../installments/components/forms/installment-form"
 import { LoanForm } from "../LoanForm"
-import { Loan } from "../LoanTable"
+import { Loan } from "@/lib/types"
+
 
 interface LoanTableRowProps {
     loan: Loan
@@ -136,7 +137,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 </div>
                 <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                     <CalendarIcon className="h-3 w-3 text-gray-400" />
-                    {getPaymentFrequencyText(loan.paymentFrequency)}
+                    {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">

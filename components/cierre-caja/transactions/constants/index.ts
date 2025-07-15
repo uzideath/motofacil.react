@@ -1,5 +1,5 @@
+import { PaymentMethod, Providers } from "@/lib/types"
 import { CreditCard, Banknote, ArrowRightLeft, HelpCircle } from "lucide-react"
-import { PaymentMethod, Providers } from "./types"
 
 export const DEFAULT_ITEMS_PER_PAGE = 10
 
@@ -76,12 +76,6 @@ export const FILTER_OPTIONS = {
         { value: "all", label: "Todos los movimientos" },
         { value: "income", label: "Solo ingresos" },
         { value: "expense", label: "Solo egresos" },
-    ],
-    PROVIDER: [
-        { value: "all", label: "Todos los proveedores" },
-        { value: Providers.MOTOFACIL, label: "Moto Facil" },
-        { value: Providers.OBRASOCIAL, label: "Obra Social" },
-        { value: Providers.PORCENTAJETITO, label: "Porcentaje Tito" },
     ],
 }
 

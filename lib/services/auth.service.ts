@@ -1,6 +1,7 @@
 import type { User } from "@/hooks/useAuth"
 import { HttpService } from "../http"
-import type { LoginResponse } from "../types"
+import { LoginResponse } from "../types"
+
 
 const ACCESS_TOKEN_COOKIE = "authToken"
 const REFRESH_TOKEN_KEY = "refreshToken"

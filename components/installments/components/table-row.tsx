@@ -6,10 +6,10 @@ import { formatCurrency } from "@/lib/utils"
 
 import { User, BikeIcon as Motorcycle, BikeIcon, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
 import { CreditCard, FileText } from 'lucide-react'
-import { Installment } from "../utils/types"
 import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
 import { NoteDisplay } from "./dialogs/note-display"
+import { Installment } from "@/lib/types"
 
 interface InstallmentRowProps {
     installment: Installment
@@ -111,9 +111,9 @@ export function InstallmentRow({
                 <div className="flex items-center">
                     <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
                     <NoteDisplay
-                        notes={installment.notes}
+                        notes={installment.notes || ""}
                         maxLength={30}
-                        onViewMore={() => onViewNotes && onViewNotes(installment.notes)}
+                        onViewMore={() => onViewNotes && onViewNotes(installment.notes || "")}
                     />
                 </div>
             </TableCell>

@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, RefreshCw, Trash2 } from "lucide-react"
-import { Installment } from "../../utils/types"
+import { Installment } from "@/lib/types"
 
 interface DeleteDialogProps {
     installment: Installment | null

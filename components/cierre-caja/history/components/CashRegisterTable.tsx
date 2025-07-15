@@ -19,9 +19,9 @@ import {
 } from "lucide-react"
 import { FileIcon as FilePdf } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
-import { CashRegisterDisplay } from "../types"
-import { ProviderBadge } from "./ProviderBadge"
 import { StatusBadge } from "./StatusBadge"
+import { CashRegisterDisplay } from "@/lib/types"
+import { ProviderBadge } from "@/components/ProviderBadge"
 
 interface CashRegisterTableProps {
     data: CashRegisterDisplay[]
@@ -257,7 +257,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <ProviderBadge provider={r.provider} />
+                                    <ProviderBadge provider={r.provider?.name!} />
                                 </TableCell>
                                 <TableCell className="text-right font-medium text-green-600 dark:text-green-400">
                                     {formatCurrency(r.totalIncome)}
