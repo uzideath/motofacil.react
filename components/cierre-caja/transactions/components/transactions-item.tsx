@@ -44,8 +44,8 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
 
     // Get provider details if available
     const providerDetails = transaction.provider
-        ? PROVIDER_DETAILS[transaction.provider as unknown as keyof typeof PROVIDER_DETAILS] || {
-            label: formatProviderName(transaction.provider),
+        ? PROVIDER_DETAILS[transaction.provider.name as unknown as keyof typeof PROVIDER_DETAILS] || {
+            label: formatProviderName(transaction.provider.name),
             color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
             icon: FileText,
         }

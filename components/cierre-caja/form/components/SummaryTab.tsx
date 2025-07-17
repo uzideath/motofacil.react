@@ -5,13 +5,13 @@ import { TrendingUp, Banknote, ArrowDownToLine, CreditCard, AlertCircle } from "
 import { formatCurrency, cn } from "@/lib/utils"
 import { ProviderBadge } from "@/components/ProviderBadge"
 import { FormCalculations } from "../types"
-import { Expense, Installment } from "@/lib/types"
+import { Expense, Installment, Provider } from "@/lib/types"
 
 interface SummaryTabProps {
     calculations: FormCalculations
     incomes: any[]
     expenses: any[]
-    currentProvider?: string
+    currentProvider?: Provider
 }
 
 export const SummaryTab: React.FC<SummaryTabProps> = ({ calculations, incomes, expenses, currentProvider }) => {

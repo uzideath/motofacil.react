@@ -1,9 +1,10 @@
 import { ProviderBadge } from "@/components/ProviderBadge"
 import { AlertCircle } from "lucide-react"
 import type React from "react"
+import { Provider } from "@/lib/types";
 
 interface ProviderDisplayProps {
-    provider?: string
+    provider?: Provider
 }
 
 export const ProviderDisplay: React.FC<ProviderDisplayProps> = ({ provider }) => {

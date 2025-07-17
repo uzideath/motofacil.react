@@ -7,11 +7,12 @@ import { useAuth } from "@/hooks/useAuth"
 import { HttpService } from "@/lib/http"
 import type { FormState, SelectedTransaction } from "../types"
 import {
-    getProviderFromTransactions,
+    getProviderDetailsFromTransactions,
     calculateFormValues,
     calculateTransactionTotals,
     calculateAutoFillValues,
 } from "../utils"
+import { Provider } from "@/lib/types";
 
 const initialFormState: FormState = {
     cashInRegister: "",
@@ -26,7 +27,7 @@ const initialFormState: FormState = {
 
 export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[]) => {
     const [formState, setFormState] = useState<FormState>(initialFormState)
-    const [currentProvider, setCurrentProvider] = useState<string | undefined>(undefined)
+    const [currentProvider, setCurrentProvider] = useState<Provider | undefined>(undefined);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
     const { user } = useAuth()
 
@@ -56,8 +57,8 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
     // Auto-fill form when transactions change
     useEffect(() => {
         if (incomes.length > 0) {
-            const provider = getProviderFromTransactions(selectedTransactions)
-            setCurrentProvider(provider)
+            const provider = getProviderDetailsFromTransactions(selectedTransactions);
+            setCurrentProvider(provider);
 
             const { cash, transfers, cards } = calculateAutoFillValues(incomes)
 
@@ -97,6 +98,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
                 expenseIds: expenses.map((e) => e.id),
                 createdById: user?.id,
                 provider: currentProvider,
+                providerId: currentProvider?.id,
             })
 
             setFormState((prev) => ({

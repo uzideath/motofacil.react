@@ -257,7 +257,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <ProviderBadge provider={r.provider?.name!} />
+                                    <ProviderBadge provider={r.provider!} />
                                 </TableCell>
                                 <TableCell className="text-right font-medium text-green-600 dark:text-green-400">
                                     {formatCurrency(r.totalIncome)}

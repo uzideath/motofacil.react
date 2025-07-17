@@ -2,9 +2,10 @@ import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Bike } from "lucide-react"
 import { formatProviderName } from "@/lib/utils"
+import { Provider } from "@/lib/types"
 
 interface ProviderBadgeProps {
-    provider: string 
+    provider: Provider 
 }
 
 function stringToColor(str: string) {
@@ -19,8 +20,8 @@ function stringToColor(str: string) {
 }
 
 export const ProviderBadge: React.FC<ProviderBadgeProps> = ({ provider }) => {
-    const color = stringToColor(provider)
-    const formatted = formatProviderName(provider)
+    const color = stringToColor(provider.name)
+    const formatted = formatProviderName(provider.name)
 
     return (
         <Badge

@@ -1,11 +1,11 @@
-import { PaymentMethod } from "@/lib/types"
+import { PaymentMethod, Provider } from "@/lib/types"
 
 export type SelectedTransaction = {
     id: string
     amount: number
     paymentMethod: PaymentMethod
     type: "income" | "expense"
-    provider?: string
+    provider?: Provider
 }
 
 export type FormState = {
