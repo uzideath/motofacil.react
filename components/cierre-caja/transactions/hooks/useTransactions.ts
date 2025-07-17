@@ -146,7 +146,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
                 type: transaction.type,
                 description: transaction.description,
                 date: transaction.date,
-                provider: transaction.provider || "",
+                provider: transaction.provider,
                 paymentMethod: getPaymentMethod(transaction.paymentMethod),
                 reference: transaction.reference || "",
             }),
@@ -205,8 +205,8 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
                 if (globalSelectedIds.size > 0 && currentTransaction) {
                     const firstSelectedTransaction = transactions.find((t) => globalSelectedIds.has(t.id))
                     if (firstSelectedTransaction && currentTransaction.provider !== firstSelectedTransaction.provider) {
-                        setCurrentProviderName(formatProviderName(firstSelectedTransaction.provider))
-                        setAttemptedProviderName(formatProviderName(currentTransaction.provider))
+                        setCurrentProviderName(formatProviderName(firstSelectedTransaction.provider?.name))
+                        setAttemptedProviderName(formatProviderName(currentTransaction.provider?.name))
                         setShowProviderMismatchDialog(true)
                         return
                     }

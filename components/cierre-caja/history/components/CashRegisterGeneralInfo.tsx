@@ -53,7 +53,7 @@ export const GeneralInfoCard: React.FC<GeneralInfoCardProps> = ({ cashRegister, 
                     <div className="flex flex-col">
                         <span className="text-muted-foreground text-xs">Proveedor:</span>
                         <div className="mt-1">
-                            <ProviderBadge provider={cashRegister.provider.name} />
+                            <ProviderBadge provider={cashRegister.provider} />
                         </div>
                     </div>
                     {cashRegister.notes && (

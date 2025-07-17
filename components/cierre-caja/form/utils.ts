@@ -1,10 +1,10 @@
-import { Providers } from "@/lib/types"
+import { Provider } from "@/lib/types"
 import { ChartData, FormCalculations, FormState, SelectedTransaction } from "./types"
 
 
-export const getProviderFromTransactions = (transactions: SelectedTransaction[]): string | undefined => {
-    const incomes = transactions.filter((t) => t.type === "income")
-    return incomes.length > 0 ? incomes[0].provider : undefined
+export const getProviderDetailsFromTransactions = (transactions: SelectedTransaction[]): Provider | undefined => {
+    const incomesWithProvider = transactions.filter((t) => t.type === "income" && t.provider);
+    return incomesWithProvider.length > 0 ? incomesWithProvider[0].provider : undefined;
 }
 
 export const calculateFormValues = (formState: FormState): FormCalculations => {

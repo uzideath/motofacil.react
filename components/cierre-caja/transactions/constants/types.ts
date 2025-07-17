@@ -1,4 +1,4 @@
-import { Expense, ExpenseCategory, Installment, PaymentMethod } from "@/lib/types"
+import { Expense, ExpenseCategory, Installment, PaymentMethod, Provider } from "@/lib/types"
 
 
 export interface Transaction {
@@ -13,7 +13,7 @@ export interface Transaction {
   type: TransactionType
   reference: string
   client?: string
-  provider?: string
+  provider?: Provider
   date: Date
   createdBy?: {
     id: string
@@ -28,7 +28,7 @@ export interface SelectedTransaction {
   type: TransactionType
   description: string
   date: Date
-  provider: string
+  provider?: Provider
   reference: string
 }
 

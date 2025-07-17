@@ -24,7 +24,7 @@ export function filterAndSortTransactions(
 
   // Apply provider filter
   if (filters.providerFilter !== "all") {
-    filtered = filtered.filter((transaction) => transaction.provider === filters.providerFilter)
+    filtered = filtered.filter((transaction) => transaction.provider?.name === filters.providerFilter)
   }
 
   // Apply sorting

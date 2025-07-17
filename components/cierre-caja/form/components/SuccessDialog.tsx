@@ -16,12 +16,13 @@ import { CheckCircle2 } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
 import { type FormCalculations } from "../types"
 import { ProviderBadge } from "@/components/ProviderBadge"
+import { Provider } from "@/lib/types"
 
 interface SuccessDialogProps {
     open: boolean
     onClose: () => void
     onNewClosure: () => void
-    currentProvider?: string
+    currentProvider?: Provider
     calculations: FormCalculations
 }
 

@@ -264,7 +264,7 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                                                             </TableCell>
                                                             <TableCell>
                                                                 {e.provider?.name ? (
-                                                                    <ProviderBadge provider={e.provider.name} />
+                                                                    <ProviderBadge provider={e.provider} />
                                                                 ) : (
                                                                     <span className="text-muted-foreground text-sm">—</span>
                                                                 )}

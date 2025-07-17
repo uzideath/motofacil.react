@@ -39,7 +39,7 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
         type: "income",
         reference: installment.id,
         client: installment.loan.user.name,
-        provider: installment.loan.motorcycle.provider.name,
+        provider: installment.loan.motorcycle.provider,
         date: new Date(installment.paymentDate),
         createdBy: installment.createdBy,
     }))
@@ -58,7 +58,7 @@ const mapExpensesToTransactions = (expenses: Expense[]): Transaction[] => {
         paymentMethod: expense.paymentMethod, // Use enum directly
         type: "expense",
         reference: expense.reference ?? "",
-        provider: expense.provider?.name,
+        provider: expense.provider || undefined,
         date: new Date(expense.date),
         createdBy: expense.createdBy,
     }))
