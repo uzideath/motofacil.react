@@ -22,6 +22,7 @@ import {
     Users2Icon,
     Smartphone,
     BadgeCheck,
+    Calendar,
 } from "lucide-react"
 
 import {
@@ -89,6 +90,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         { path: "/cuotas", label: "Cuotas", icon: BadgeDollarSign },
         { path: "/egresos", label: "Egresos", icon: FileDown },
         { path: "/cierre-caja", label: "Cierre de Caja", icon: LogOut },
+        { path: "/calendario-pagos", label: "Calendario", icon: Calendar },
     ]
 
     // Operations items
