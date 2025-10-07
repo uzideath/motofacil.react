@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Checkbox } from "@/components/ui/checkbox"
 import { formatCurrency } from "@/lib/utils"
 import {
     ArrowDownToLine,
@@ -22,11 +23,16 @@ import {
     FileText,
     MoreHorizontal,
     Printer,
+    DollarSign,
+    User,
+    CreditCard,
+    Clock,
 } from "lucide-react"
 import { Transaction } from "../constants/types"
 import { CATEGORY_DETAILS, PAYMENT_METHOD_ICONS, PROVIDER_DETAILS, TRANSACTION_TYPE_STYLES } from "../constants"
 import { formatProviderName } from "../utils/formatters"
-
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 interface TransactionItemProps {
     transaction: Transaction
@@ -62,87 +68,166 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
     const ProviderIcon = providerDetails?.icon || FileText
     const PaymentIcon = paymentMethodIcon.icon
 
+    const formatSpanishDate = (date: Date) => {
+        return format(new Date(date), "d 'de' MMMM, yyyy", { locale: es })
+    }
+
+    const getPaymentMethodLabel = (method: string) => {
+        const labels: Record<string, string> = {
+            CASH: "Efectivo",
+            CARD: "Tarjeta",
+            TRANSACTION: "Transferencia",
+        }
+        return labels[method] || method
+    }
+
     return (
         <TableRow
-            className={`hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors ${isSelected ? "bg-primary/5 hover:bg-primary/10" : ""
-                }`}
+            className={`
+                border-b border-border/40 transition-all duration-200
+                ${isSelected 
+                    ? "bg-primary/10 hover:bg-primary/15 shadow-sm" 
+                    : "bg-card hover:bg-muted/30"
+                }
+            `}
         >
-            <TableCell>
+            <TableCell className="py-3">
                 <div className="flex items-center justify-center">
-                    <input
-                        type="checkbox"
-                        className="rounded border-slate-300 dark:border-slate-700"
+                    <Checkbox
                         checked={isSelected}
-                        onChange={(e) => onSelect(transaction.id, e.target.checked)}
+                        onCheckedChange={(checked) => onSelect(transaction.id, !!checked)}
+                        aria-label={`Seleccionar transacción ${transaction.id}`}
+                        className="border-primary/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                 </div>
             </TableCell>
-            <TableCell>
-                <div className="flex items-center gap-2">
-                    <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full">
-                        <Calendar className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-                    </div>
-                    <span>{transaction.time}</span>
-                </div>
-            </TableCell>
-            <TableCell className="font-medium">
-                <div className="flex items-center">
-                    <div className={`p-1.5 rounded-full mr-2 ${typeStyles.iconBg}`}>
-                        {transaction.type === "income" ? (
-                            <ArrowUpToLine className={`h-3.5 w-3.5 ${typeStyles.iconColor}`} />
-                        ) : (
-                            <ArrowDownToLine className={`h-3.5 w-3.5 ${typeStyles.iconColor}`} />
-                        )}
-                    </div>
-                    <span className="line-clamp-1">{transaction.description}</span>
-                </div>
-            </TableCell>
-            <TableCell>
+            
+            {/* Type */}
+            <TableCell className="py-3">
                 <Badge
-                    className={`flex items-center justify-center gap-1.5 text-sm px-3 py-1 rounded-full ${categoryDetails.color}`}
-                    variant="outline"
+                    className={`
+                        flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm
+                        ${transaction.type === "income"
+                            ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white border-0"
+                            : "bg-gradient-to-r from-rose-500 to-red-600 text-white border-0"
+                        }
+                    `}
                 >
-                    <CategoryIcon className="h-3 w-3" />
-                    <span>{categoryDetails.label}</span>
+                    {transaction.type === "income" ? (
+                        <>
+                            <ArrowUpToLine className="h-3.5 w-3.5" />
+                            <span>Ingreso</span>
+                        </>
+                    ) : (
+                        <>
+                            <ArrowDownToLine className="h-3.5 w-3.5" />
+                            <span>Egreso</span>
+                        </>
+                    )}
                 </Badge>
             </TableCell>
-            <TableCell>
-                {providerDetails ? (
+
+            {/* Payment Date */}
+            <TableCell className="hidden md:table-cell text-foreground py-3">
+                <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-950/50">
+                        <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-sm font-medium">{formatSpanishDate(transaction.date)}</span>
+                </div>
+            </TableCell>
+
+            {/* Closing Date (Due Date for late payments, Payment Date for on-time) */}
+            <TableCell className="hidden lg:table-cell py-3">
+                {transaction.isLate && transaction.latePaymentDate ? (
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md bg-amber-100 dark:bg-amber-950/50 ring-2 ring-amber-200 dark:ring-amber-900">
+                            <Calendar className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-amber-700 dark:text-amber-500">
+                                {formatSpanishDate(transaction.latePaymentDate)}
+                            </span>
+                            <span className="text-xs text-amber-600/70 dark:text-amber-500/70">Vencimiento</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-900">
+                            <Calendar className="h-3.5 w-3.5 text-slate-500" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">{formatSpanishDate(transaction.date)}</span>
+                    </div>
+                )}
+            </TableCell>
+
+            {/* Creation Date */}
+            <TableCell className="hidden xl:table-cell text-foreground py-3">
+                <div className="flex items-center gap-2 opacity-60">
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{formatSpanishDate(transaction.date)}</span>
+                </div>
+            </TableCell>
+
+            {/* Description */}
+            <TableCell className="font-medium text-foreground py-3">
+                <div className="flex flex-col gap-1.5">
+                    <span className="line-clamp-1 text-sm font-semibold">{transaction.description}</span>
                     <Badge
-                        className={`flex items-center justify-center gap-1.5 text-sm px-3 py-1 rounded-full ${providerDetails.color}`}
+                        className={`inline-flex w-fit items-center gap-1 text-xs px-2 py-0.5 rounded-md ${categoryDetails.color} font-medium`}
                         variant="outline"
                     >
-                        <ProviderIcon className="h-3 w-3" />
+                        <CategoryIcon className="h-3 w-3" />
+                        <span>{categoryDetails.label}</span>
+                    </Badge>
+                </div>
+            </TableCell>
+
+            {/* Provider */}
+            <TableCell className="py-3">
+                {providerDetails ? (
+                    <Badge
+                        className={`flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 rounded-lg ${providerDetails.color} font-semibold shadow-sm`}
+                        variant="outline"
+                    >
+                        <ProviderIcon className="h-3.5 w-3.5" />
                         <span>{providerDetails.label}</span>
                     </Badge>
                 ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-muted-foreground text-sm">—</span>
                 )}
             </TableCell>
-            <TableCell>
-                <div className={`inline-flex items-center gap-1.5 font-medium ${typeStyles.textColor}`}>
-                    {transaction.type === "income" ? "+" : "-"}
+
+            {/* Amount */}
+            <TableCell className="text-right py-3">
+                <div className={`inline-flex flex-col items-end gap-0.5`}>
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span>{formatCurrency(transaction.amount)}</span>
+                                <span className={`text-base font-bold ${
+                                    transaction.type === "income" 
+                                        ? "text-emerald-600 dark:text-emerald-400" 
+                                        : "text-rose-600 dark:text-rose-400"
+                                }`}>
+                                    {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+                                </span>
                             </TooltipTrigger>
                             {transaction.type === "income" &&
                                 transaction.baseAmount !== undefined &&
                                 transaction.gpsAmount !== undefined && (
-                                    <TooltipContent>
-                                        <div className="space-y-1 text-xs">
-                                            <div className="flex justify-between gap-4">
-                                                <span>Cuota base:</span>
-                                                <span className="font-medium">{formatCurrency(transaction.baseAmount)}</span>
+                                    <TooltipContent side="left" className="bg-slate-900 text-white border-slate-700">
+                                        <div className="space-y-1.5 text-xs">
+                                            <div className="flex justify-between gap-6">
+                                                <span className="text-slate-300">Cuota base:</span>
+                                                <span className="font-semibold">{formatCurrency(transaction.baseAmount)}</span>
                                             </div>
-                                            <div className="flex justify-between gap-4">
-                                                <span>GPS:</span>
-                                                <span className="font-medium">{formatCurrency(transaction.gpsAmount)}</span>
+                                            <div className="flex justify-between gap-6">
+                                                <span className="text-slate-300">GPS:</span>
+                                                <span className="font-semibold">{formatCurrency(transaction.gpsAmount)}</span>
                                             </div>
-                                            <div className="flex justify-between gap-4 border-t pt-1 font-medium">
+                                            <div className="flex justify-between gap-6 border-t border-slate-700 pt-1.5 font-semibold">
                                                 <span>Total:</span>
-                                                <span>{formatCurrency(transaction.amount)}</span>
+                                                <span className="text-emerald-400">{formatCurrency(transaction.amount)}</span>
                                             </div>
                                         </div>
                                     </TooltipContent>
@@ -151,55 +236,72 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
                     </TooltipProvider>
                 </div>
             </TableCell>
-            <TableCell>
+
+            {/* Payment Method */}
+            <TableCell className="text-foreground py-3">
                 <div className="flex items-center gap-2">
-                    <PaymentIcon className={`h-4 w-4 ${paymentMethodIcon.color}`} />
-                    <span>{transaction.paymentMethod}</span>
+                    <div className={`p-1.5 rounded-md ${
+                        transaction.paymentMethod === "CASH" ? "bg-green-100 dark:bg-green-950/50" :
+                        transaction.paymentMethod === "CARD" ? "bg-blue-100 dark:bg-blue-950/50" :
+                        "bg-purple-100 dark:bg-purple-950/50"
+                    }`}>
+                        <PaymentIcon className={`h-3.5 w-3.5 ${paymentMethodIcon.color}`} />
+                    </div>
+                    <span className="text-sm font-medium">{getPaymentMethodLabel(transaction.paymentMethod)}</span>
                 </div>
             </TableCell>
-            <TableCell>
-                <span className="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                    {transaction.reference.substring(0, 8)}...
-                </span>
+
+            {/* Created By */}
+            <TableCell className="text-foreground py-3">
+                <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-950/50">
+                        <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-sm font-medium">{transaction.createdBy?.username ?? "—"}</span>
+                </div>
             </TableCell>
-            <TableCell className="text-right">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">Ver detalles</span>
+
+            {/* Actions */}
+            <TableCell className="text-right py-3">
+                <div className="flex items-center justify-end gap-1">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                    <Eye className="h-4 w-4" />
+                                    <span className="sr-only">Ver detalles</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Ver detalles</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Más opciones</span>
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Ver detalles</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Más opciones</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Opciones</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver detalles
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Printer className="h-4 w-4 mr-2" />
-                            Imprimir recibo
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Download className="h-4 w-4 mr-2" />
-                            Descargar comprobante
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuLabel className="font-semibold">Opciones</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="cursor-pointer">
+                                <Eye className="h-4 w-4 mr-2 text-blue-500" />
+                                Ver detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                                <Printer className="h-4 w-4 mr-2 text-purple-500" />
+                                Imprimir recibo
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                                <Download className="h-4 w-4 mr-2 text-green-500" />
+                                Descargar comprobante
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </TableCell>
         </TableRow>
     )

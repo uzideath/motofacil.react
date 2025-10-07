@@ -187,17 +187,35 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                     <TableHeader className="bg-muted/50">
                         <TableRow className="hover:bg-muted">
                             <TableHead className="w-[80px]">ID</TableHead>
-                            <TableHead className="w-[100px]">
-                                <div className="flex items-center">
-                                    <Calendar className="h-4 w-4 mr-2" />
-                                    Fecha
-                                </div>
+                            <TableHead className="w-[120px]">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center cursor-help">
+                                                <Calendar className="h-4 w-4 mr-2" />
+                                                Fecha Cierre
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Fecha de cierre de las transacciones</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </TableHead>
-                            <TableHead className="w-[80px]">
-                                <div className="flex items-center">
-                                    <Clock className="h-4 w-4 mr-2" />
-                                    Hora
-                                </div>
+                            <TableHead className="w-[140px]">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center cursor-help">
+                                                <Clock className="h-4 w-4 mr-2" />
+                                                Registrado
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Fecha y hora en que se registró el cierre</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </TableHead>
                             <TableHead>
                                 <div className="flex items-center">
@@ -240,14 +258,37 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                     <div className="bg-muted px-2 py-1 rounded w-fit">{r.id.substring(0, 8)}</div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-muted p-1.5 rounded-full">
-                                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                        </div>
-                                        <span>{r.date}</span>
-                                    </div>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-2 cursor-help">
+                                                    <div className="bg-muted p-1.5 rounded-full">
+                                                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    </div>
+                                                    <span>{r.date}</span>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="text-xs">Fecha de cierre de las transacciones</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </TableCell>
-                                <TableCell>{r.time}</TableCell>
+                                <TableCell>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-2 cursor-help">
+                                                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    <span>{r.time}</span>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="text-xs">Fecha y hora en que se registró el cierre</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <div className="bg-muted p-1.5 rounded-full">

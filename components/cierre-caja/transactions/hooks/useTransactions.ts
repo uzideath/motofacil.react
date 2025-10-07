@@ -17,10 +17,9 @@ interface UseTransactionsProps {
     token: string
     onSelect?: (transactions: SelectedTransaction[]) => void
     itemsPerPage?: number
-    filterByDate?: Date
 }
 
-export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_PER_PAGE, filterByDate }: UseTransactionsProps) => {
+export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_PER_PAGE }: UseTransactionsProps) => {
     // State
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
@@ -119,7 +118,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         try {
             setLoading(true)
             setRefreshing(true)
-            const data = await fetchAvailableTransactions(token, filterByDate)
+            const data = await fetchAvailableTransactions(token)
             console.log('📦 useTransactions - Fetched transactions:', data);
             setTransactions(data)
         } catch (error) {
@@ -128,11 +127,11 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             setLoading(false)
             setTimeout(() => setRefreshing(false), 500)
         }
-    }, [token, filterByDate])
+    }, [token])
 
     // Initial fetch
     useEffect(() => {
-        console.log('🚀 useTransactions - Fetching with token:', token ? 'Token exists' : 'NO TOKEN', 'filterByDate:', filterByDate);
+        console.log('🚀 useTransactions - Fetching with token:', token ? 'Token exists' : 'NO TOKEN');
         fetchTransactions()
     }, [fetchTransactions])
 
@@ -237,18 +236,41 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
                         return
                     }
 
-                    // Date mismatch validation - check if dates are different
+                    // Date mismatch validation - check if transactions belong to the same closing date
+                    // IMPORTANT: Transactions must have the same "closing date":
+                    // - For on-time payments: use paymentDate (the date it was paid)
+                    // - For late payments: use latePaymentDate (the original due date)
+                    // This prevents mixing transactions from different due dates in the same closing
                     if (firstSelectedTransaction) {
-                        const firstDate = new Date(firstSelectedTransaction.date).toDateString()
-                        const currentDate = new Date(currentTransaction.date).toDateString()
+                        // Get the "closing date" for each transaction
+                        const getClosingDate = (transaction: typeof firstSelectedTransaction) => {
+                            // If it's a late payment, use the due date (latePaymentDate)
+                            // Otherwise, use the payment date
+                            if (transaction.isLate && transaction.latePaymentDate) {
+                                return new Date(transaction.latePaymentDate).toDateString()
+                            }
+                            return new Date(transaction.date).toDateString()
+                        }
+
+                        const firstClosingDate = getClosingDate(firstSelectedTransaction)
+                        const currentClosingDate = getClosingDate(currentTransaction)
                         
-                        if (firstDate !== currentDate) {
-                            setCurrentDate(new Date(firstSelectedTransaction.date).toLocaleDateString('es-CO', { 
+                        if (firstClosingDate !== currentClosingDate) {
+                            // Format dates for display
+                            const firstDisplayDate = firstSelectedTransaction.isLate && firstSelectedTransaction.latePaymentDate
+                                ? new Date(firstSelectedTransaction.latePaymentDate)
+                                : new Date(firstSelectedTransaction.date)
+                            
+                            const currentDisplayDate = currentTransaction.isLate && currentTransaction.latePaymentDate
+                                ? new Date(currentTransaction.latePaymentDate)
+                                : new Date(currentTransaction.date)
+
+                            setCurrentDate(firstDisplayDate.toLocaleDateString('es-CO', { 
                                 year: 'numeric', 
                                 month: 'long', 
                                 day: 'numeric' 
                             }))
-                            setAttemptedDate(new Date(currentTransaction.date).toLocaleDateString('es-CO', { 
+                            setAttemptedDate(currentDisplayDate.toLocaleDateString('es-CO', { 
                                 year: 'numeric', 
                                 month: 'long', 
                                 day: 'numeric' 

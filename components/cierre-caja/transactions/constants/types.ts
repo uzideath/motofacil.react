@@ -14,7 +14,9 @@ export interface Transaction {
   reference: string
   client?: string
   provider?: Provider
-  date: Date
+  date: Date // Actual payment date
+  isLate?: boolean // Whether this is a late payment
+  latePaymentDate?: Date | null // Original due date (for late payments)
   createdBy?: {
     id: string
     username: string
@@ -30,6 +32,8 @@ export interface SelectedTransaction {
   date: Date
   provider?: Provider
   reference: string
+  isLate?: boolean
+  latePaymentDate?: Date | null
 }
 
 export type TransactionType = "income" | "expense"

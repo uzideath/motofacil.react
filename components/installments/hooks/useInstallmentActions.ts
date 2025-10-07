@@ -37,8 +37,8 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             latePaymentDate: installment.latePaymentDate,
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
-            date: installment.paymentDate,
-            paymentDate: installment.latePaymentDate || installment.paymentDate,
+            date: installment.paymentDate, // Actual payment date
+            paymentDate: installment.paymentDate, // Actual payment date
             notes: installment.notes,
             receiptNumber: installment.id,
         }

@@ -1,16 +1,30 @@
 import { CashRegisterDisplay, Closing } from "@/lib/types"
 import { formatProviderName } from "@/lib/utils"
-import { format } from "date-fns"
+import { format, parseISO } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 import es from "date-fns/locale/es"
 
-
+// Helper function to parse UTC date without timezone conversion
+const parseUTCDate = (dateString: string): Date => {
+    const date = parseISO(dateString)
+    // Extract just the date part to avoid timezone issues
+    const year = date.getUTCFullYear()
+    const month = date.getUTCMonth()
+    const day = date.getUTCDate()
+    return new Date(year, month, day)
+}
 
 export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[] => {
     return data.map((item) => {
         const totalIncome = item.payments.reduce((acc, p) => acc + p.amount + p.gps, 0)
         const totalExpense = item.expense.reduce((acc, e) => acc + e.amount, 0)
         const balance = totalIncome - totalExpense
+        
+        // Parse closing date from UTC without timezone conversion
+        const closingDate = parseUTCDate(item.date)
+        // Use createdAt for the full registration date and time
         const createdAt = new Date(item.createdAt)
+        
         const totalCashInSystem = item.cashInRegister + item.cashFromTransfers + item.cashFromCards
 
         const status: CashRegisterDisplay["status"] =
@@ -20,8 +34,8 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
 
         return {
             id: item.id,
-            date: format(createdAt, "dd/MM/yyyy", { locale: es }),
-            time: format(createdAt, "HH:mm", { locale: es }),
+            date: format(closingDate, "dd/MM/yyyy", { locale: es }), // Show closing date (no timezone shift)
+            time: format(createdAt, "dd/MM/yyyy HH:mm", { locale: es }), // Show full registration date and time
             user: item.createdBy?.username || "N/A",
             totalIncome,
             totalExpense,
@@ -33,7 +47,8 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
                     name: item.provider.name,
                     createdAt: item.provider.createdAt,
                     updatedAt: item.provider.updatedAt,
-                    motorcylces: item.provider.motorcylces,
+                    vehicles: item.provider.motorcylces || [], // Use motorcylces from API response
+                    motorcylces: item.provider.motorcylces, // Keep for backwards compatibility
                     cashRegisters: item.provider.cashRegisters,
                 }
                 : undefined, 

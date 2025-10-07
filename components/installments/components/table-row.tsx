@@ -77,15 +77,21 @@ export function InstallmentRow({
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell text-foreground">
+                <div className="flex items-center">
+                    <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {formatSpanishDate(installment.paymentDate)}
+                </div>
+            </TableCell>
+            <TableCell className="hidden lg:table-cell text-foreground">
                 {installment.isLate && installment.latePaymentDate ? (
                     <div className="flex items-center text-red-400">
-                        <AlertTriangle className="mr-2 h-4 w-4" />
-                        Pagado: {formatSpanishDate(installment.latePaymentDate)}
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.latePaymentDate)}
                     </div>
                 ) : (
-                    <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                        {formatSpanishDate(installment.createdAt)}
+                    <div className="flex items-center text-muted-foreground">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.paymentDate)}
                     </div>
                 )}
             </TableCell>

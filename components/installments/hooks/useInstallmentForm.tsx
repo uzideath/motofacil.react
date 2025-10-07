@@ -207,30 +207,35 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
 
         // Calculate last installment info
         if (loan.payments && loan.payments.length > 0) {
-            // Sort payments by the due date (paymentDate) to get the most recent one
+            // Sort payments by the actual payment date to get the most recent one
             const sortedPayments = [...loan.payments].sort(
                 (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
             )
             const lastPayment = sortedPayments[0]
-            // Use the due date (paymentDate) for display - this is what the payment belongs to
-            const lastPaymentDate = new Date(lastPayment.paymentDate)
+            
+            // For late payments, calculate days since the DUE date (latePaymentDate)
+            // For on-time payments, calculate days since the payment date
+            const relevantDate = lastPayment.isLate && lastPayment.latePaymentDate 
+                ? new Date(lastPayment.latePaymentDate)  // Due date (how late it was)
+                : new Date(lastPayment.paymentDate)      // Payment date (on-time)
+            
             const today = new Date()
 
             // Set time to start of day for accurate day comparison
             const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-            const lastPaymentStart = new Date(
-                lastPaymentDate.getFullYear(),
-                lastPaymentDate.getMonth(),
-                lastPaymentDate.getDate(),
+            const relevantDateStart = new Date(
+                relevantDate.getFullYear(),
+                relevantDate.getMonth(),
+                relevantDate.getDate(),
             )
 
-            // Calculate days since the due date (not when it was paid)
+            // Calculate days since the relevant date
             const daysSinceLastPayment = Math.floor(
-                (todayStart.getTime() - lastPaymentStart.getTime()) / (1000 * 60 * 60 * 24),
+                (todayStart.getTime() - relevantDateStart.getTime()) / (1000 * 60 * 60 * 24),
             )
 
             setLastInstallmentInfo({
-                lastPaymentDate,
+                lastPaymentDate: relevantDate,
                 daysSinceLastPayment,
             })
         } else {

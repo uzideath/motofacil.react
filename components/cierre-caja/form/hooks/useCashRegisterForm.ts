@@ -106,10 +106,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 providerId: currentProvider?.id,
             }
 
-            // Add closingDate if provided
-            if (closingDate) {
-                payload.closingDate = closingDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
-            }
+            // Note: closingDate is no longer sent - backend determines it from transactions
 
             await HttpService.post("/api/v1/closing", payload)
 

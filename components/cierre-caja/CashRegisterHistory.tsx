@@ -46,7 +46,9 @@ export function CashRegisterHistory() {
                             <Wallet className="h-5 w-5 text-primary" />
                             Historial de Cierres de Caja
                         </CardTitle>
-                        <CardDescription>Consulta y gestiona todos los cierres de caja realizados</CardDescription>
+                        <CardDescription>
+                            Consulta todos los cierres registrados. "Fecha Cierre" indica el día de las transacciones, "Registrado" muestra cuándo se creó el cierre.
+                        </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={refetch} disabled={refreshing} className="h-9 gap-1.5">

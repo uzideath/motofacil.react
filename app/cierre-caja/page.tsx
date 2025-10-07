@@ -3,25 +3,16 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Download, Printer, CalendarIcon } from "lucide-react"
 import { CashRegisterForm } from "@/components/cierre-caja/CashRegisterForm"
 import { DailySummary } from "@/components/cierre-caja/daily-summary"
 import { TransactionTable } from "@/components/cierre-caja/transactions/TransactionTable"
 import { CashRegisterHistory } from "@/components/cierre-caja/CashRegisterHistory"
 import { SelectedTransaction } from "@/components/cierre-caja/transactions/constants/types"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
 
 export default function CierreCajaPage() {
     // Single shared state for transaction selections across all tabs
     const [selectedTransactions, setSelectedTransactions] = useState<SelectedTransaction[]>([])
     const [token, setToken] = useState<string>("")
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     const [activeTab, setActiveTab] = useState<string>("summary")
 
     useEffect(() => {
@@ -72,52 +63,20 @@ export default function CierreCajaPage() {
                         <Card className="bg-card border-border h-full flex flex-col">
                             <CardHeader className="py-3 shrink-0">
                                 <CardTitle className="text-lg">Cierre de Caja</CardTitle>
-                                <CardDescription>Registre el cierre de caja del día</CardDescription>
+                                <CardDescription>Registre el cierre de caja del día seleccionando las transacciones</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-1 overflow-auto space-y-4 py-3">
-                                {/* Date Selector */}
-                                <div className="bg-muted border-border border rounded-lg p-3">
-                                    <div className="space-y-2">
-                                        <Label className="text-sm font-medium">Fecha del Cierre</Label>
-                                        <p className="text-xs text-muted-foreground mb-2">
-                                            Seleccione la fecha a la que pertenecen las transacciones de este cierre
-                                        </p>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className={cn(
-                                                        "w-full justify-start text-left font-normal",
-                                                        !selectedDate && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {selectedDate ? format(selectedDate, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={selectedDate}
-                                                    onSelect={(date) => date && setSelectedDate(date)}
-                                                    initialFocus
-                                                    locale={es}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
-
-                                {/* Transactions for Selected Date */}
+                                {/* Transactions Table */}
                                 <div>
                                     <h3 className="text-base font-semibold mb-2">
-                                        Transacciones disponibles para {format(selectedDate, "PPP", { locale: es })}
+                                        Transacciones disponibles
                                     </h3>
+                                    <p className="text-sm text-muted-foreground mb-3">
+                                        Seleccione las transacciones que desea incluir en el cierre. La fecha del cierre se determinará automáticamente según las transacciones seleccionadas.
+                                    </p>
                                     <TransactionTable
                                         token={token}
                                         onSelect={(selected) => setSelectedTransactions(selected)}
-                                        filterByDate={selectedDate}
                                     />
                                 </div>
 
@@ -125,7 +84,6 @@ export default function CierreCajaPage() {
                                 <CashRegisterForm
                                     token={token}
                                     selectedTransactions={selectedTransactions}
-                                    closingDate={selectedDate}
                                 />
                             </CardContent>
                         </Card>
