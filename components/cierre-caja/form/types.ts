@@ -22,6 +22,7 @@ export type FormState = {
 export type CashRegisterFormProps = {
     token: string
     selectedTransactions: SelectedTransaction[]
+    closingDate?: Date
 }
 
 export type ChartData = {

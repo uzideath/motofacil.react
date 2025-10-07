@@ -81,7 +81,7 @@ export function RecentLoans() {
           </Avatar>
           <div className="ml-4 flex-1">
             <p className="font-medium">{loan.userName}</p>
-            <p className="text-sm text-muted-foreground">{loan.motorcycleModel}</p>
+            <p className="text-sm text-muted-foreground">{loan.vehicleModel}</p>
           </div>
           <div className="ml-auto text-right">
             <p className="font-medium">{formatCurrency(loan.amount)}</p>

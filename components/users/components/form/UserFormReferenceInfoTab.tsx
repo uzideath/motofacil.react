@@ -12,9 +12,9 @@ interface ReferenceInfoTabProps {
 
 export function ReferenceInfoTab({ control }: ReferenceInfoTabProps) {
     return (
-        <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-primary">
                     <Users className="h-5 w-5" />
                     Datos del referente
                 </h3>
@@ -25,7 +25,7 @@ export function ReferenceInfoTab({ control }: ReferenceInfoTabProps) {
                         label="Nombre del referente"
                         placeholder="Nombre completo del referente"
                         description="Persona que puede dar referencias del cliente"
-                        icon={<User className="h-4 w-4 text-blue-500" />}
+                        icon={<User className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -34,7 +34,7 @@ export function ReferenceInfoTab({ control }: ReferenceInfoTabProps) {
                         label="Identificación del referente"
                         placeholder="Número de identificación"
                         description="Documento de identidad del referente"
-                        icon={<FileText className="h-4 w-4 text-blue-500" />}
+                        icon={<FileText className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -43,7 +43,7 @@ export function ReferenceInfoTab({ control }: ReferenceInfoTabProps) {
                         label="Teléfono del referente"
                         placeholder="Número de contacto"
                         description="Número de contacto del referente"
-                        icon={<Phone className="h-4 w-4 text-blue-500" />}
+                        icon={<Phone className="h-4 w-4 text-primary" />}
                     />
                 </div>
             </CardContent>

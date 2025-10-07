@@ -49,11 +49,7 @@ export default function RootLayout({
 
               <div className="flex h-screen w-full overflow-hidden">
                 <AppSidebar />
-                <div className="flex-1 overflow-auto w-full p-4 md:p-6">
-                  <div className="glass-effect rounded-xl p-4 md:p-6 min-h-[calc(100vh-3rem)]">
-                    {children}
-                  </div>
-                </div>
+                {children}
               </div>
               <Suspense fallback={null}>
                 <ExpiredSessionHandler />

@@ -17,9 +17,10 @@ interface UseTransactionsProps {
     token: string
     onSelect?: (transactions: SelectedTransaction[]) => void
     itemsPerPage?: number
+    filterByDate?: Date
 }
 
-export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_PER_PAGE }: UseTransactionsProps) => {
+export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_PER_PAGE, filterByDate }: UseTransactionsProps) => {
     // State
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
@@ -108,7 +109,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         try {
             setLoading(true)
             setRefreshing(true)
-            const data = await fetchAvailableTransactions(token)
+            const data = await fetchAvailableTransactions(token, filterByDate)
             setTransactions(data)
         } catch (error) {
             console.error("Error loading transactions:", error)
@@ -116,7 +117,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             setLoading(false)
             setTimeout(() => setRefreshing(false), 500)
         }
-    }, [token])
+    }, [token, filterByDate])
 
     // Throttled onSelect callback
     const throttledOnSelect = useCallback(

@@ -19,7 +19,7 @@ import { useCashRegisterForm } from "./form/hooks/useCashRegisterForm"
 import { CashRegisterFormProps } from "./form/types"
 
 
-export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFormProps) {
+export function CashRegisterForm({ token, selectedTransactions, closingDate }: CashRegisterFormProps) {
     const [activeTab, setActiveTab] = useState("summary")
 
     const {
@@ -35,7 +35,7 @@ export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFo
         handleSubmit,
         resetForm,
         setShowSuccessDialog,
-    } = useCashRegisterForm(selectedTransactions)
+    } = useCashRegisterForm(selectedTransactions, closingDate)
 
     return (
         <>

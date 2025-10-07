@@ -27,11 +27,11 @@ export function UserTableControls({
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-primary/70" />
                 <Input
                     type="search"
                     placeholder="Buscar por nombre, identificación, lugar o ciudad..."
-                    className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                    className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -44,7 +44,7 @@ export function UserTableControls({
                         setCurrentPage(1)
                     }}
                 >
-                    <SelectTrigger className="w-[130px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                    <SelectTrigger className="w-[130px]">
                         <SelectValue placeholder="Mostrar" />
                     </SelectTrigger>
                     <SelectContent>
@@ -55,7 +55,7 @@ export function UserTableControls({
                     </SelectContent>
                 </Select>
                 <UserForm onCreated={onUserCreated}>
-                    <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Usuario
                     </Button>

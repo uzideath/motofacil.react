@@ -19,7 +19,7 @@ export function FormNavigation({ activeTab, loading, isEditing, onNext, onPrevio
                 <Button
                     type="button"
                     onClick={onNext}
-                    className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                     Siguiente
                 </Button>
@@ -33,14 +33,13 @@ export function FormNavigation({ activeTab, loading, isEditing, onNext, onPrevio
                 type="button"
                 variant="outline"
                 onClick={onPrevious}
-                className="border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/30 bg-transparent"
             >
                 Anterior
             </Button>
             <Button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-md hover:shadow-lg transition-all"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
             >
                 {loading ? (
                     <>

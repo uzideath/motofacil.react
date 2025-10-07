@@ -15,9 +15,10 @@ import { TransactionPagination } from "./components/helpers/TransactionPaginatio
 interface TransactionTableProps {
   token: string
   onSelect?: (transactions: SelectedTransaction[]) => void
+  filterByDate?: Date
 }
 
-export function TransactionTable({ token, onSelect }: TransactionTableProps) {
+export function TransactionTable({ token, onSelect, filterByDate }: TransactionTableProps) {
   const {
     currentItems,
     loading,
@@ -53,6 +54,7 @@ export function TransactionTable({ token, onSelect }: TransactionTableProps) {
   } = useTransactions({
     token,
     onSelect,
+    filterByDate,
   })
 
   // Export handlers

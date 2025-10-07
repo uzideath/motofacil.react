@@ -6,11 +6,23 @@ import { Installment, Expense } from "@/lib/types"
 
 /**
  * Fetches available transactions (installments and expenses)
+ * @param token - Authentication token
+ * @param filterByDate - Optional date to filter transactions for a specific date
  */
-export const fetchAvailableTransactions = async (token: string): Promise<Transaction[]> => {
+export const fetchAvailableTransactions = async (token: string, filterByDate?: Date): Promise<Transaction[]> => {
     try {
+        // Build query parameters
+        const params: any = {}
+        
+        if (filterByDate) {
+            // Format date as YYYY-MM-DD
+            const dateStr = filterByDate.toISOString().split('T')[0]
+            params.specificDate = dateStr
+        }
+
         const response = await HttpService.get<TransactionResponse>(API_ENDPOINTS.AVAILABLE_PAYMENTS, {
             headers: { Authorization: token ? `Bearer ${token}` : "" },
+            params,
         })
 
         const incomes = mapInstallmentsToTransactions(response.data.installments)

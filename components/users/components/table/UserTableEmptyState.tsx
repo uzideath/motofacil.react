@@ -11,13 +11,13 @@ interface TableEmptyStateProps {
 
 export function UserTableEmptyState({ searchTerm, onClearSearch }: TableEmptyStateProps) {
     return (
-        <TableRow className="border-blue-100 dark:border-blue-900/30">
-            <TableCell colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <TableRow>
+            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                 <div className="flex flex-col items-center justify-center gap-2">
-                    <Users className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
+                    <Users className="h-10 w-10 text-muted-foreground/50" />
                     <p className="text-sm">No se encontraron usuarios</p>
                     {searchTerm && (
-                        <Button variant="link" onClick={onClearSearch} className="text-blue-500 dark:text-blue-400">
+                        <Button variant="link" onClick={onClearSearch} className="text-primary">
                             Limpiar búsqueda
                         </Button>
                     )}

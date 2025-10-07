@@ -11,9 +11,9 @@ interface PersonalInfoTabProps {
 
 export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
     return (
-        <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-primary">
                     <User className="h-5 w-5" />
                     Datos personales
                 </h3>
@@ -24,7 +24,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Nombre completo"
                         placeholder="Nombre y apellidos"
                         description="Ingrese el nombre completo del cliente"
-                        icon={<User className="h-4 w-4 text-blue-500" />}
+                        icon={<User className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -33,7 +33,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Edad"
                         placeholder="Edad"
                         description="La edad debe ser mayor o igual a 18 años"
-                        icon={<Calendar className="h-4 w-4 text-blue-500" />}
+                        icon={<Calendar className="h-4 w-4 text-primary" />}
                         type="number"
                     />
 
@@ -43,7 +43,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Identificación"
                         placeholder="Número de identificación"
                         description="Cédula de ciudadanía, extranjería o pasaporte"
-                        icon={<Hash className="h-4 w-4 text-blue-500" />}
+                        icon={<Hash className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -52,7 +52,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Lugar de expedición"
                         placeholder="Ciudad o municipio de expedición"
                         description="Lugar donde se expidió el documento de identidad"
-                        icon={<MapPin className="h-4 w-4 text-blue-500" />}
+                        icon={<MapPin className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -61,7 +61,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Teléfono"
                         placeholder="Número de teléfono"
                         description="Número de contacto principal"
-                        icon={<Phone className="h-4 w-4 text-blue-500" />}
+                        icon={<Phone className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -70,7 +70,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Dirección"
                         placeholder="Dirección completa"
                         description="Dirección de residencia actual"
-                        icon={<Home className="h-4 w-4 text-blue-500" />}
+                        icon={<Home className="h-4 w-4 text-primary" />}
                     />
 
                     <FormFieldWrapper
@@ -79,7 +79,7 @@ export function PersonalInfoTab({ control }: PersonalInfoTabProps) {
                         label="Ciudad de residencia"
                         placeholder="Ciudad donde reside"
                         description="Ciudad o municipio de residencia actual"
-                        icon={<MapPin className="h-4 w-4 text-blue-500" />}
+                        icon={<MapPin className="h-4 w-4 text-primary" />}
                     />
                 </div>
             </CardContent>
