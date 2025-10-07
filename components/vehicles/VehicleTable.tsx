@@ -3,30 +3,33 @@
 import { Table, TableBody } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
 import { DeleteConfirmationDialog } from "./delete-dialog"
-import { useMotorcycleTable } from "./hooks/useMotorcycleTable"
-import { MotorcycleTableHeader } from "./table/MotorcycleTableHeader"
-import { MotorcycleTableControls } from "./table/MotorcycleTableControls"
-import { MotorcycleTableHeaders } from "./table/MotorcycleTableHeaders"
-import { MotorcycleTablePagination } from "./table/MotorcycleTablePagination"
-import { MotorcycleTableRow } from "./table/MotorcycleTableRow"
-import { MotorcycleTableSkeleton } from "./table/MotorcycleTableSkeleton"
-import { MotorcycleTableEmptyState } from "./table/MotorcycleTableState"
+import { useVehicleTable } from "./hooks/useVehicleTable"
+import { VehicleTableHeader } from "./table/VehicleTableHeader"
+import { VehicleTableControls } from "./table/VehicleTableControls"
+import { VehicleTableHeaders } from "./table/VehicleTableHeaders"
+import { VehicleTablePagination } from "./table/VehicleTablePagination"
+import { VehicleTableRow } from "./table/VehicleTableRow"
+import { VehicleTableSkeleton } from "./table/VehicleTableSkeleton"
+import { VehicleTableEmptyState } from "./table/VehicleTableState"
+import type { Vehicle } from "@/lib/types"
 
-export function MotorcycleTable() {
+export function VehicleTable() {
   const {
-    motorcycles,
+    vehicles,
     loading,
     searchTerm,
     setSearchTerm,
     providerFilter,
     setProviderFilter,
+    vehicleTypeFilter,
+    setVehicleTypeFilter,
     currentPage,
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
     deleteDialogOpen,
     setDeleteDialogOpen,
-    handleMotorcycleCreated,
+    handleVehicleCreated,
     handleDelete,
     confirmDelete,
     refreshData,
@@ -38,46 +41,53 @@ export function MotorcycleTable() {
     endIndex,
     getPageNumbers,
     uniqueProviders,
+    uniqueVehicleTypes,
     getProviderLabel,
+    getVehicleTypeLabel,
     hasActiveFilters,
-  } = useMotorcycleTable()
+  } = useVehicleTable()
 
   return (
     <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
-      <MotorcycleTableHeader onRefresh={refreshData} onExport={exportToCSV} />
+      <VehicleTableHeader onRefresh={refreshData} onExport={exportToCSV} />
 
       <CardContent className="p-6">
         <div className="space-y-6">
-          <MotorcycleTableControls
+          <VehicleTableControls
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             providerFilter={providerFilter}
             setProviderFilter={setProviderFilter}
+            vehicleTypeFilter={vehicleTypeFilter}
+            setVehicleTypeFilter={setVehicleTypeFilter}
             itemsPerPage={itemsPerPage}
             setItemsPerPage={setItemsPerPage}
             setCurrentPage={setCurrentPage}
             uniqueProviders={uniqueProviders}
+            uniqueVehicleTypes={uniqueVehicleTypes}
             getProviderLabel={getProviderLabel}
-            onMotorcycleCreated={handleMotorcycleCreated}
+            getVehicleTypeLabel={getVehicleTypeLabel}
+            onVehicleCreated={handleVehicleCreated}
           />
 
           <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
-                <MotorcycleTableHeaders />
+                <VehicleTableHeaders />
                 <TableBody>
                   {loading ? (
-                    <MotorcycleTableSkeleton />
-                  ) : motorcycles.length === 0 ? (
-                    <MotorcycleTableEmptyState hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
+                    <VehicleTableSkeleton />
+                  ) : vehicles.length === 0 ? (
+                    <VehicleTableEmptyState hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
                   ) : (
-                    motorcycles.map((motorcycle, index) => (
-                      <MotorcycleTableRow
-                        key={`moto-row-${motorcycle.id}-${index}`}
-                        motorcycle={motorcycle}
+                    vehicles.map((vehicle: Vehicle, index: number) => (
+                      <VehicleTableRow
+                        key={`vehicle-row-${vehicle.id}-${index}`}
+                        vehicle={vehicle}
                         index={index}
                         getProviderLabel={getProviderLabel}
-                        onEdit={handleMotorcycleCreated}
+                        getVehicleTypeLabel={getVehicleTypeLabel}
+                        onEdit={handleVehicleCreated}
                         onDelete={handleDelete}
                       />
                     ))
@@ -87,7 +97,7 @@ export function MotorcycleTable() {
             </div>
           </div>
 
-          <MotorcycleTablePagination
+          <VehicleTablePagination
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalItems}
@@ -104,7 +114,7 @@ export function MotorcycleTable() {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={confirmDelete}
         title="Confirmar eliminación"
-        description="¿Está seguro que desea eliminar esta motocicleta? Esta acción no se puede deshacer."
+        description="¿Está seguro que desea eliminar este vehículo? Esta acción no se puede deshacer."
       />
     </Card>
   )

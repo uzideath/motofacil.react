@@ -2,12 +2,12 @@
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import type { Control, FieldPath } from "react-hook-form"
-import { MotorcycleFormValues } from "../hooks/useMotorcycleForm"
+import { VehicleFormValues } from "../hooks/useVehicleForm"
 
 
-interface MotorcycleFormFieldProps {
-    control: Control<MotorcycleFormValues>
-    name: FieldPath<MotorcycleFormValues>
+interface VehicleFormFieldProps {
+    control: Control<VehicleFormValues>
+    name: FieldPath<VehicleFormValues>
     label: string
     placeholder: string
     description: string
@@ -16,7 +16,7 @@ interface MotorcycleFormFieldProps {
     className?: string
 }
 
-export function MotorcycleFormField({
+export function VehicleFormField({
     control,
     name,
     label,
@@ -25,7 +25,7 @@ export function MotorcycleFormField({
     type = "text",
     required = true,
     className = "",
-}: MotorcycleFormFieldProps) {
+}: VehicleFormFieldProps) {
     return (
         <FormField
             control={control}
@@ -51,3 +51,4 @@ export function MotorcycleFormField({
         />
     )
 }
+

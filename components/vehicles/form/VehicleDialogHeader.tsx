@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button"
 import { DialogTitle } from "@/components/ui/dialog"
 import { X, Bike } from "lucide-react"
 
-interface MotorcycleDialogHeaderProps {
+interface VehicleDialogHeaderProps {
     isEditing: boolean
     onClose: () => void
 }
 
-export function MotorcycleDialogHeader({ isEditing, onClose }: MotorcycleDialogHeaderProps) {
+export function VehicleDialogHeader({ isEditing, onClose }: VehicleDialogHeaderProps) {
     return (
         <>
-            <DialogTitle className="sr-only">{isEditing ? "Editar Motocicleta" : "Nueva Motocicleta"}</DialogTitle>
+            <DialogTitle className="sr-only">{isEditing ? "Editar vehículo" : "Nueva vehículo"}</DialogTitle>
             <div className="relative">
                 <div className="absolute top-4 right-4 z-10">
                     <Button
@@ -30,9 +30,9 @@ export function MotorcycleDialogHeader({ isEditing, onClose }: MotorcycleDialogH
                         <Bike className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white">{isEditing ? "Editar Motocicleta" : "Nueva Motocicleta"}</h2>
+                        <h2 className="text-xl font-bold text-white">{isEditing ? "Editar vehículo" : "Nueva vehículo"}</h2>
                         <p className="text-blue-100 text-sm">
-                            {isEditing ? "Actualiza los datos de tu motocicleta" : "Ingresa los datos de tu nueva motocicleta"}
+                            {isEditing ? "Actualiza los datos de tu vehículo" : "Ingresa los datos de tu nueva vehículo"}
                         </p>
                     </div>
                 </div>
@@ -40,3 +40,4 @@ export function MotorcycleDialogHeader({ isEditing, onClose }: MotorcycleDialogH
         </>
     )
 }
+

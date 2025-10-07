@@ -2,10 +2,10 @@
 
 import { AlertCircle } from "lucide-react"
 import type { FieldErrors } from "react-hook-form"
-import { MotorcycleFormValues } from "../hooks/useMotorcycleForm"
+import { VehicleFormValues } from "../hooks/useVehicleForm"
 
 interface FormErrorSummaryProps {
-    errors: FieldErrors<MotorcycleFormValues>
+    errors: FieldErrors<VehicleFormValues>
 }
 
 export function FormErrorSummary({ errors }: FormErrorSummaryProps) {
@@ -29,3 +29,4 @@ export function FormErrorSummary({ errors }: FormErrorSummaryProps) {
         </div>
     )
 }
+

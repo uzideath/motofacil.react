@@ -1,7 +1,7 @@
 import { TableRow, TableCell } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function MotorcycleTableSkeleton() {
+export function VehicleTableSkeleton() {
     return (
         <>
             {Array.from({ length: 4 }).map((_, index) => (
@@ -19,3 +19,4 @@ export function MotorcycleTableSkeleton() {
         </>
     )
 }
+

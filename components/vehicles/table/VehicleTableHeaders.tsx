@@ -1,6 +1,6 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-export function MotorcycleTableHeaders() {
+export function VehicleTableHeaders() {
     return (
         <TableHeader>
             <TableRow className="bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50">
@@ -18,3 +18,4 @@ export function MotorcycleTableHeaders() {
         </TableHeader>
     )
 }
+

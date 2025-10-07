@@ -26,16 +26,26 @@ type User = {
     updatedAt: string
 }
 
-type Motorcycle = {
+export enum VehicleType {
+    MOTORCYCLE = "MOTORCYCLE",
+    CAR = "CAR",
+    TRUCK = "TRUCK",
+    VAN = "VAN",
+    ATV = "ATV",
+    OTHER = "OTHER",
+}
+
+type Vehicle = {
     id: string
     providerId: string
     provider: Provider
+    vehicleType: VehicleType
     brand: string
     model: string
     plate: string
     price?: number
-    engine: string
-    chassis: string
+    engine?: string
+    chassis?: string
     color: string | null
     cc: number | null
     gps: number | null
@@ -43,11 +53,14 @@ type Motorcycle = {
     updatedAt: string
 }
 
+// Legacy type alias for backwards compatibility
+type Motorcycle = Vehicle
+
 export type Loan = {
     id: string
     userId: string
     contractNumber: string | null
-    motorcycleId: string
+    vehicleId: string
     totalAmount: number
     downPayment: number
     installments: number
@@ -68,7 +81,10 @@ export type Loan = {
     status: LoanStatus
     payments: Installment[]
     user: User
-    motorcycle: Motorcycle
+    vehicle: Vehicle
+    // Legacy property for backwards compatibility
+    motorcycleId?: string
+    motorcycle?: Vehicle
 }
 
 
@@ -125,7 +141,8 @@ type Expense = {
 type Provider = {
     id: string
     name: string
-    motorcylces: Motorcycle[]
+    vehicles: Vehicle[]
+    motorcylces?: Motorcycle[] // Legacy property for backwards compatibility
     cashRegisters: Closing[]
     createdAt: string
     updatedAt: string
@@ -236,6 +253,7 @@ export type {
     Installment,
     User,
     Provider,
+    Vehicle,
     Motorcycle,
     Expense,
     SummaryData

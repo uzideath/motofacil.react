@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { RefreshCw, MoreHorizontal, FileSpreadsheet, SlidersHorizontal, Bike } from "lucide-react"
 
-interface MotorcycleTableHeaderProps {
+interface VehicleTableHeaderProps {
     onRefresh: () => void
     onExport: () => void
 }
 
-export function MotorcycleTableHeader({ onRefresh, onExport }: MotorcycleTableHeaderProps) {
+export function VehicleTableHeader({ onRefresh, onExport }: VehicleTableHeaderProps) {
     return (
         <CardHeader className="bg-gradient-to-r from-blue-600 to-sky-500 text-white p-6">
             <div className="flex items-center justify-between">
@@ -27,8 +27,8 @@ export function MotorcycleTableHeader({ onRefresh, onExport }: MotorcycleTableHe
                         <Bike className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <CardTitle className="text-xl font-bold">Gestión de Motocicletas</CardTitle>
-                        <CardDescription className="text-blue-100">Administra el inventario de motocicletas</CardDescription>
+                        <CardTitle className="text-xl font-bold">Gestión de vehículos</CardTitle>
+                        <CardDescription className="text-blue-100">Administra el inventario de vehículos</CardDescription>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -73,3 +73,4 @@ export function MotorcycleTableHeader({ onRefresh, onExport }: MotorcycleTableHe
         </CardHeader>
     )
 }
+

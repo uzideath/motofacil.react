@@ -24,7 +24,16 @@ import { useTableState } from "./hooks/useTableState"
 import { NotesDialog } from "./components/dialogs/note"
 
 export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
-  const { installments, loading, fetchInstallments, refreshInstallments } = useInstallments(onRefresh)
+  const { 
+    installments, 
+    loading, 
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    fetchInstallments, 
+    refreshInstallments 
+  } = useInstallments(onRefresh)
 
   const {
     isGenerating,
@@ -62,12 +71,10 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     setPaymentFilter,
     statusFilter,
     setStatusFilter,
-    currentPage,
     itemsPerPage,
     dateRange,
     filteredInstallments,
     paginatedInstallments,
-    totalPages,
     indexOfFirstItem,
     indexOfLastItem,
     hasActiveFilters,
@@ -76,7 +83,16 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     handlePageChange,
     handleItemsPerPageChange,
     handleDateRangeChange,
-  } = useTableState(installments)
+  } = useTableState({
+    installments,
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    onFiltersChange: (filters) => {
+      fetchInstallments(filters)
+    }
+  })
 
   return (
     <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
@@ -104,7 +120,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           onDateRangeChange={(range) => {
             handleDateRangeChange(range)
             if (range === undefined || (range.from && range.to)) {
-              fetchInstallments(range)
+              fetchInstallments({ dateRange: range })
             }
           }}
           paymentFilter={paymentFilter}
@@ -112,7 +128,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           onResetFilters={resetFilters}
-          onRefresh={() => fetchInstallments(dateRange)}
+          onRefresh={() => fetchInstallments({ dateRange })}
           hasActiveFilters={hasActiveFilters}
         />
 
@@ -151,8 +167,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={itemsPerPage}
-            totalItems={filteredInstallments.length}
-            visibleItems={paginatedInstallments.length}
+            totalItems={totalItems}
+            visibleItems={filteredInstallments.length}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             indexOfFirstItem={indexOfFirstItem}
@@ -164,8 +180,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           dateRange={dateRange}
           paymentFilter={paymentFilter}
           statusFilter={statusFilter}
-          totalFiltered={filteredInstallments.length}
-          totalItems={installments.length}
+          totalFiltered={totalItems}
+          totalItems={totalItems}
         />
       </CardContent>
 

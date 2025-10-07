@@ -5,24 +5,26 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Edit, Trash2 } from "lucide-react"
-import type { Motorcycle } from "@/lib/types"
-import { MotorcycleForm } from "../MotorcycleForm"
+import type { Vehicle } from "@/lib/types"
+import { VehicleForm } from "../VehicleForm"
 
-interface MotorcycleTableRowProps {
-    motorcycle: Motorcycle
+interface VehicleTableRowProps {
+    vehicle: Vehicle
     index: number
     getProviderLabel: (providerName: string) => string
-    onEdit: (motorcycle?: Motorcycle) => void
+    getVehicleTypeLabel: (type: any) => string
+    onEdit: (vehicle?: Vehicle) => void
     onDelete: (id: string) => void
 }
 
-export function MotorcycleTableRow({
-    motorcycle: moto,
+export function VehicleTableRow({
+    vehicle: moto,
     index,
     getProviderLabel,
+    getVehicleTypeLabel,
     onEdit,
     onDelete,
-}: MotorcycleTableRowProps) {
+}: VehicleTableRowProps) {
     return (
         <TableRow
             key={`moto-row-${moto.id}-${index}`}
@@ -101,7 +103,7 @@ export function MotorcycleTableRow({
             <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                     <div key={`edit-wrapper-${moto.id}-${index}`}>
-                        <MotorcycleForm motorcycleId={moto.id} motorcycleData={moto} onCreated={onEdit}>
+                        <VehicleForm vehicleId={moto.id} vehicleData={moto} onCreated={onEdit}>
                             <Button
                                 variant="outline"
                                 size="icon"
@@ -110,7 +112,7 @@ export function MotorcycleTableRow({
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Editar</span>
                             </Button>
-                        </MotorcycleForm>
+                        </VehicleForm>
                     </div>
                     <TooltipProvider key={`delete-tooltip-${moto.id}-${index}`}>
                         <Tooltip>
@@ -126,7 +128,7 @@ export function MotorcycleTableRow({
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Eliminar motocicleta</p>
+                                <p>Eliminar vehículo</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
@@ -135,3 +137,4 @@ export function MotorcycleTableRow({
         </TableRow>
     )
 }
+

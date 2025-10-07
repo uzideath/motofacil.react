@@ -5,12 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 import { Loader2 } from "lucide-react"
 import type { Control } from "react-hook-form"
-import { MotorcycleFormValues } from "../hooks/useMotorcycleForm"
+import { VehicleFormValues } from "../hooks/useVehicleForm"
 import { useProviders } from "@/components/providers/hooks/useProviders"
 
 
 interface ProviderSelectFieldProps {
-    control: Control<MotorcycleFormValues>
+    control: Control<VehicleFormValues>
     name: "providerId"
     label?: string
     description?: string
@@ -21,7 +21,7 @@ export function ProviderSelectField({
     control,
     name,
     label = "Proveedor",
-    description = "Selecciona el proveedor para esta motocicleta",
+    description = "Selecciona el proveedor para esta vehículo",
     required = true,
 }: ProviderSelectFieldProps) {
     const { providers, loading, error } = useProviders()
@@ -69,3 +69,4 @@ export function ProviderSelectField({
         />
     )
 }
+

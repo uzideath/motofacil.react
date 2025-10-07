@@ -5,34 +5,42 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 import { Search, Plus, Filter } from "lucide-react"
-import type { Motorcycle } from "@/lib/types"
-import { MotorcycleForm } from "../MotorcycleForm"
+import type { Vehicle } from "@/lib/types"
+import { VehicleForm } from "../VehicleForm"
 
-interface MotorcycleTableControlsProps {
+interface VehicleTableControlsProps {
     searchTerm: string
     setSearchTerm: (term: string) => void
     providerFilter: string
     setProviderFilter: (provider: string) => void
+    vehicleTypeFilter: string
+    setVehicleTypeFilter: (type: string) => void
     itemsPerPage: number
     setItemsPerPage: (items: number) => void
     setCurrentPage: (page: number) => void
     uniqueProviders: string[]
+    uniqueVehicleTypes: any[]
     getProviderLabel: (providerName: string) => string
-    onMotorcycleCreated: (motorcycle?: Motorcycle) => void
+    getVehicleTypeLabel: (type: any) => string
+    onVehicleCreated: (vehicle?: Vehicle) => void
 }
 
-export function MotorcycleTableControls({
+export function VehicleTableControls({
     searchTerm,
     setSearchTerm,
     providerFilter,
     setProviderFilter,
+    vehicleTypeFilter,
+    setVehicleTypeFilter,
     itemsPerPage,
     setItemsPerPage,
     setCurrentPage,
     uniqueProviders,
+    uniqueVehicleTypes,
     getProviderLabel,
-    onMotorcycleCreated,
-}: MotorcycleTableControlsProps) {
+    getVehicleTypeLabel,
+    onVehicleCreated,
+}: VehicleTableControlsProps) {
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -87,13 +95,14 @@ export function MotorcycleTableControls({
                         <SelectItem value="50">50 por página</SelectItem>
                     </SelectContent>
                 </Select>
-                <MotorcycleForm onCreated={onMotorcycleCreated}>
+                <VehicleForm onCreated={onVehicleCreated}>
                     <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />
-                        Nueva Motocicleta
+                        Nueva vehículo
                     </Button>
-                </MotorcycleForm>
+                </VehicleForm>
             </div>
         </div>
     )
 }
+
