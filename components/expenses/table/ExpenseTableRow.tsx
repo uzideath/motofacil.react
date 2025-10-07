@@ -100,10 +100,10 @@ const categoryMap: Record<string, { label: string; color: string; icon: React.Re
 
 const paymentMethodMap: Record<string, { label: string; icon: React.ReactNode }> = {
     CASH: { label: "Efectivo", icon: <DollarSign className="h-4 w-4 text-green-500" /> },
-    TRANSACTION: { label: "Transferencia", icon: <CreditCard className="h-4 w-4 text-blue-500" /> },
+    TRANSACTION: { label: "Transferencia", icon: <CreditCard className="h-4 w-4 text-primary" /> },
     CARD: { label: "Tarjeta", icon: <CreditCard className="h-4 w-4 text-purple-500" /> },
     CHECK: { label: "Cheque", icon: <FileText className="h-4 w-4 text-amber-500" /> },
-    OTHER: { label: "Otro", icon: <FileText className="h-4 w-4 text-gray-500" /> },
+    OTHER: { label: "Otro", icon: <FileText className="h-4 w-4 text-muted-foreground" /> },
 }
 
 const providerMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -135,11 +135,11 @@ export function ExpenseTableRow({
     onViewAttachment,
 }: ExpenseTableRowProps) {
     return (
-        <TableRow className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20">
-            <TableCell className="font-mono text-xs text-gray-600 dark:text-gray-300">{expense.id}</TableCell>
+        <TableRow className="border-border hover:bg-muted/50">
+            <TableCell className="font-mono text-xs text-muted-foreground">{expense.id}</TableCell>
             <TableCell>
                 <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-blue-500" />
+                    <Calendar className="h-4 w-4 text-primary" />
                     <span className="font-medium">{format(new Date(expense.date), "dd/MM/yyyy", { locale: es })}</span>
                 </div>
             </TableCell>
@@ -173,7 +173,7 @@ export function ExpenseTableRow({
             </TableCell>
             <TableCell>
                 <div className="flex items-center gap-1.5">
-                    {paymentMethodMap[expense.paymentMethod]?.icon || <FileText className="h-4 w-4 text-gray-500" />}
+                    {paymentMethodMap[expense.paymentMethod]?.icon || <FileText className="h-4 w-4 text-muted-foreground" />}
                     <span>{paymentMethodMap[expense.paymentMethod]?.label || expense.paymentMethod}</span>
                 </div>
             </TableCell>
@@ -185,7 +185,7 @@ export function ExpenseTableRow({
             </TableCell>
             <TableCell className="hidden md:table-cell max-w-[150px] truncate" title={expense.reference || "—"}>
                 <div className="flex items-center gap-1.5">
-                    <Hash className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <Hash className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="truncate">{expense.reference}</span>
                 </div>
             </TableCell>
@@ -202,7 +202,7 @@ export function ExpenseTableRow({
                             variant="ghost"
                             size="icon"
                             onClick={() => onViewAttachment(expense.attachmentUrl!)}
-                            className="h-8 w-8 p-0 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                            className="h-8 w-8 p-0"
                             title="Ver comprobante"
                         >
                             <Eye className="h-4 w-4" />
@@ -213,7 +213,7 @@ export function ExpenseTableRow({
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                className="h-8 w-8 p-0 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                                className="h-8 w-8 p-0"
                             >
                                 <span className="sr-only">Abrir menú</span>
                                 <MoreVertical className="h-4 w-4" />
@@ -222,7 +222,7 @@ export function ExpenseTableRow({
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => onViewDetails(expense)}>
-                                <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                                <Eye className="mr-2 h-4 w-4 text-primary" />
                                 <span>Ver detalles</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit(expense)}>

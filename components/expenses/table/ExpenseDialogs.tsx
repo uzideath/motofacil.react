@@ -105,10 +105,10 @@ const categoryMap: Record<string, { label: string; color: string; icon: React.Re
 
 const paymentMethodMap: Record<string, { label: string; icon: React.ReactNode }> = {
     CASH: { label: "Efectivo", icon: <DollarSign className="h-4 w-4 text-green-500" /> },
-    TRANSACTION: { label: "Transferencia", icon: <CreditCard className="h-4 w-4 text-blue-500" /> },
+    TRANSACTION: { label: "Transferencia", icon: <CreditCard className="h-4 w-4 text-primary" /> },
     CARD: { label: "Tarjeta", icon: <CreditCard className="h-4 w-4 text-purple-500" /> },
     CHECK: { label: "Cheque", icon: <FileText className="h-4 w-4 text-amber-500" /> },
-    OTHER: { label: "Otro", icon: <FileText className="h-4 w-4 text-gray-500" /> },
+    OTHER: { label: "Otro", icon: <FileText className="h-4 w-4 text-muted-foreground" /> },
 }
 
 const providerMap: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -174,7 +174,7 @@ export function ExpenseDialogs({
             <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <DialogTitle className="flex items-center gap-2 text-primary">
                             <Receipt className="h-5 w-5" />
                             Detalles del Egreso
                         </DialogTitle>
@@ -184,13 +184,13 @@ export function ExpenseDialogs({
                         <div className="space-y-6 py-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">ID</p>
+                                    <p className="text-sm text-muted-foreground">ID</p>
                                     <p className="font-mono text-sm">{viewExpense.id}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Fecha</p>
+                                    <p className="text-sm text-muted-foreground">Fecha</p>
                                     <p className="font-medium flex items-center gap-1.5">
-                                        <Calendar className="h-4 w-4 text-blue-500" />
+                                        <Calendar className="h-4 w-4 text-primary" />
                                         {format(new Date(viewExpense.date), "dd MMMM yyyy", { locale: es })}
                                     </p>
                                 </div>

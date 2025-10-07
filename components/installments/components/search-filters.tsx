@@ -29,6 +29,7 @@ interface SearchFiltersProps {
     onResetFilters: () => void
     onRefresh: () => void
     hasActiveFilters: boolean
+    actionButton?: React.ReactNode
 }
 
 export function SearchFilters({
@@ -43,6 +44,7 @@ export function SearchFilters({
     onResetFilters,
     onRefresh,
     hasActiveFilters,
+    actionButton,
 }: SearchFiltersProps) {
     return (
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
@@ -58,6 +60,8 @@ export function SearchFilters({
             </div>
 
             <div className="flex gap-2 flex-wrap">
+                {actionButton && actionButton}
+                
                 <DateRangePicker onRangeChange={onDateRangeChange} className="w-full sm:w-[280px]" />
 
                 <DropdownMenu>

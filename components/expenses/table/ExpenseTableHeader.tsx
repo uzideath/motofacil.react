@@ -20,7 +20,7 @@ interface ExpenseTableHeaderProps {
 
 export function ExpenseTableHeader({ onRefresh, onExport }: ExpenseTableHeaderProps) {
     return (
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-sky-500 text-white p-6">
+        <CardHeader className="bg-primary text-primary-foreground p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
@@ -28,7 +28,7 @@ export function ExpenseTableHeader({ onRefresh, onExport }: ExpenseTableHeaderPr
                     </div>
                     <div>
                         <CardTitle className="text-xl font-bold">Gestión de Egresos</CardTitle>
-                        <CardDescription className="text-blue-100">Administra los gastos y pagos realizados</CardDescription>
+                        <CardDescription className="text-primary-foreground/90">Administra los gastos y pagos realizados</CardDescription>
                     </div>
                 </div>
                 <div className="flex gap-2">
