@@ -5,28 +5,33 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Edit, Trash2, Building, Calendar, Bike, DollarSign } from "lucide-react"
+import { Edit, Trash2, Building, Calendar, Bike, DollarSign, Eye, TrendingUp, Activity } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import type { Provider } from "@/lib/types"
+import type { Provider, ProviderStats } from "@/lib/types"
 import { ProviderCashRegistersDialog } from "../components/ProvidersCashRegistersDialog"
 import { ProviderMotorcyclesDialog } from "../components/ProvidersMotorcyclesDialog"
 import { ProviderForm } from "../form/ProviderForm"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ProviderTableRowProps {
     provider: Provider
+    stats?: ProviderStats
     index: number
     onEdit: (provider?: Provider) => void
     onDelete: (id: string) => void
+    onViewDetails: (providerId: string) => void
     createProvider: (name: string) => Promise<Provider>
     updateProvider: (id: string, name: string) => Promise<Provider>
 }
 
 export function ProviderTableRow({
     provider,
+    stats,
     index,
     onEdit,
     onDelete,
+    onViewDetails,
     createProvider,
     updateProvider,
 }: ProviderTableRowProps) {
@@ -35,6 +40,14 @@ export function ProviderTableRow({
 
     const motorcycleCount = provider.motorcylces?.length || 0
     const cashRegisterCount = provider.cashRegisters?.length || 0
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+        }).format(amount)
+    }
 
     return (
         <>
@@ -55,29 +68,48 @@ export function ProviderTableRow({
                 </TableCell>
 
                 <TableCell className="text-center">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setMotorcyclesDialogOpen(true)}
-                                    className="h-8 px-3 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-200 dark:hover:bg-blue-900/30"
-                                >
-                                    <Bike className="h-4 w-4 mr-1" />
-                                    <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                                    >
-                                        {motorcycleCount}
-                                    </Badge>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Ver motocicletas ({motorcycleCount})</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                {stats.totalVehicles} total
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                                {stats.vehiclesByStatus.RENTED} arrendados
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-20 mx-auto" />
+                    )}
+                </TableCell>
+
+                <TableCell className="text-center">
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                {stats.activeLoans} activos
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                                {stats.completedLoans} completados
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-20 mx-auto" />
+                    )}
+                </TableCell>
+
+                <TableCell className="text-center">
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="font-medium text-green-600 dark:text-green-400">
+                                {formatCurrency(stats.totalRevenue)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                                {formatCurrency(stats.pendingPayments)} pendiente
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-24 mx-auto" />
+                    )}
                 </TableCell>
 
                 <TableCell className="text-center">
@@ -88,12 +120,12 @@ export function ProviderTableRow({
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setCashRegistersDialogOpen(true)}
-                                    className="h-8 px-3 text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-200 dark:hover:bg-green-900/30"
+                                    className="h-8 px-3 text-amber-600 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-200 dark:hover:bg-amber-900/30"
                                 >
                                     <DollarSign className="h-4 w-4 mr-1" />
                                     <Badge
                                         variant="secondary"
-                                        className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                        className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
                                     >
                                         {cashRegisterCount}
                                     </Badge>
@@ -115,6 +147,24 @@ export function ProviderTableRow({
 
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => onViewDetails(provider.id)}
+                                        className="border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 dark:hover:text-purple-300"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                        <span className="sr-only">Ver detalles</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Ver detalles completos</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>

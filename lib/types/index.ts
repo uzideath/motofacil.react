@@ -148,6 +148,76 @@ type Provider = {
     updatedAt: string
 }
 
+export interface ProviderStats {
+    id: string
+    name: string
+    totalVehicles: number
+    activeLoans: number
+    completedLoans: number
+    totalRevenue: number
+    pendingPayments: number
+    totalCashRegisters: number
+    lastCashRegisterDate: string | null
+    totalExpenses: number
+    vehiclesByStatus: {
+        AVAILABLE: number
+        RENTED: number
+        MAINTENANCE: number
+        SOLD: number
+    }
+    recentActivity: {
+        lastLoan: string | null
+        lastPayment: string | null
+        lastExpense: string | null
+    }
+    financialSummary: {
+        totalIncome: number
+        totalExpenses: number
+        netProfit: number
+    }
+}
+
+export interface ProviderDetails {
+    provider: {
+        id: string
+        name: string
+        createdAt: string
+        updatedAt: string
+    }
+    stats: ProviderStats
+    recentVehicles: Array<{
+        id: string
+        brand: string
+        model: string
+        year: number
+        plate: string
+        status: string
+        purchasePrice: number
+        createdAt: string
+    }>
+    recentLoans: Array<{
+        id: string
+        loanAmount: number
+        status: string
+        startDate: string
+        vehicle: {
+            brand: string
+            model: string
+            plate: string
+        }
+        user: {
+            name: string
+        }
+    }>
+    recentExpenses: Array<{
+        id: string
+        description: string
+        amount: number
+        category: string
+        date: string
+    }>
+}
+
 export interface Closing {
     id: string
     date: string

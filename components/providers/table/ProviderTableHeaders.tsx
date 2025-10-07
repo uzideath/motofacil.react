@@ -1,5 +1,5 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Building, Calendar, Edit, Bike, DollarSign } from "lucide-react"
+import { Building, Calendar, Edit, Bike, DollarSign, TrendingUp, Activity } from "lucide-react"
 
 export function ProviderTableHeaders() {
     return (
@@ -14,19 +14,31 @@ export function ProviderTableHeaders() {
                 <TableHead className="text-blue-700 dark:text-blue-300 font-medium text-center">
                     <div className="flex items-center justify-center gap-1.5">
                         <Bike className="h-4 w-4" />
-                        <span>Motocicletas</span>
+                        <span>Vehículos</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-blue-700 dark:text-blue-300 font-medium text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                        <Activity className="h-4 w-4" />
+                        <span>Arrendamientos</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-blue-700 dark:text-blue-300 font-medium text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                        <TrendingUp className="h-4 w-4" />
+                        <span>Ingresos</span>
                     </div>
                 </TableHead>
                 <TableHead className="text-blue-700 dark:text-blue-300 font-medium text-center">
                     <div className="flex items-center justify-center gap-1.5">
                         <DollarSign className="h-4 w-4" />
-                        <span>Cierres de Caja</span>
+                        <span>Cierres</span>
                     </div>
                 </TableHead>
                 <TableHead className="text-blue-700 dark:text-blue-300 font-medium">
                     <div className="flex items-center gap-1.5">
                         <Calendar className="h-4 w-4" />
-                        <span>Fecha de Creación</span>
+                        <span>Creación</span>
                     </div>
                 </TableHead>
                 <TableHead className="text-right text-blue-700 dark:text-blue-300 font-medium">
