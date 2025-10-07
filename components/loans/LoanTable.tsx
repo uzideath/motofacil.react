@@ -90,9 +90,12 @@ export function LoanTable() {
                       </div>
                     </TableHead>
                     <TableHead className="hidden xl:table-cell text-blue-700 dark:text-blue-300 font-medium">
-                      <div className="flex items-center gap-1.5">
-                        <CalendarDays className="h-4 w-4" />
-                        <span>Fecha Inicio</span>
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarDays className="h-4 w-4" />
+                          <span>Fechas</span>
+                        </div>
+                        <span className="text-xs font-normal text-gray-500 dark:text-gray-400">Inicio / Fin</span>
                       </div>
                     </TableHead>
                     <TableHead className="hidden lg:table-cell text-blue-700 dark:text-blue-300 font-medium">

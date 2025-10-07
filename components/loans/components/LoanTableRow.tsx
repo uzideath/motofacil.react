@@ -170,25 +170,30 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 </div>
             </TableCell>
             <TableCell className="hidden xl:table-cell">
-                <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-                    <CalendarIcon className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                        {loan.startDate ? new Date(loan.startDate).toLocaleDateString('es-CO', { 
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric' 
-                        }) : 'No establecida'}
-                    </span>
-                </div>
-                {loan.endDate && (
-                    <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                        <CalendarIcon className="h-3 w-3 text-gray-400" />
-                        Fin: {new Date(loan.endDate).toLocaleDateString('es-CO', { 
-                            month: 'short', 
-                            day: 'numeric' 
-                        })}
+                <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                            {loan.startDate ? new Date(loan.startDate).toLocaleDateString('es-CO', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                            }) : 'No establecida'}
+                        </span>
                     </div>
-                )}
+                    {loan.endDate && (
+                        <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span className="text-sm font-medium">
+                                {new Date(loan.endDate).toLocaleDateString('es-CO', { 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                })}
+                            </span>
+                        </div>
+                    )}
+                </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell font-medium">
                 <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400">

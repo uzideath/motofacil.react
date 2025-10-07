@@ -59,7 +59,19 @@ const calculateInstallmentsFromDates = (startDate: string, endDate: string, freq
     
     switch (frequency) {
         case "DAILY":
-            return diffDays
+            // Count business days (Monday-Saturday, excluding Sundays)
+            let businessDays = 0
+            const currentDate = new Date(start)
+            
+            while (currentDate <= end) {
+                // If it's not Sunday (0 = Sunday), count it
+                if (currentDate.getDay() !== 0) {
+                    businessDays++
+                }
+                currentDate.setDate(currentDate.getDate() + 1)
+            }
+            
+            return Math.max(1, businessDays)
         case "WEEKLY":
             return Math.ceil(diffDays / 7)
         case "BIWEEKLY":
@@ -186,7 +198,17 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             let paymentAmount: number
             let totalPaymentWithGps: number
 
-            const totalInstallments = getInstallmentsFromMonths(loanTermMonths, values.paymentFrequency)
+            // Calculate installments based on dates if available, otherwise use loanTermMonths
+            let totalInstallments: number
+            if (values.startDate && values.endDate) {
+                totalInstallments = calculateInstallmentsFromDates(
+                    values.startDate,
+                    values.endDate,
+                    values.paymentFrequency
+                )
+            } else {
+                totalInstallments = getInstallmentsFromMonths(loanTermMonths, values.paymentFrequency)
+            }
 
             if (values.interestType === "FIXED") {
                 const interestAmount = financedAmount * (interestRate / 100) * (loanTermMonths / 12)
@@ -250,7 +272,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         ],
     })
 
-    // Watch for date changes to auto-calculate loan term
+    // Watch for date changes to auto-calculate loan term and installments
     useEffect(() => {
         if (isMounted.current) {
             const startDate = form.getValues("startDate")
@@ -259,9 +281,14 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             
             if (startDate && endDate) {
                 const calculatedMonths = calculateMonthsFromDates(startDate, endDate)
+                const calculatedInstallments = calculateInstallmentsFromDates(startDate, endDate, paymentFrequency)
+                
                 if (calculatedMonths > 0) {
                     form.setValue("loanTermMonths", calculatedMonths, { shouldValidate: true })
                 }
+                
+                // The installments will be calculated automatically when submitting
+                // but we need to ensure the loan summary reflects the correct number
             }
         }
     }, [form.watch("startDate"), form.watch("endDate"), form.watch("paymentFrequency")])
@@ -395,7 +422,17 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 .find((c) => c.startsWith("authToken="))
                 ?.split("=")[1]
 
-            const totalInstallments = getInstallmentsFromMonths(values.loanTermMonths, values.paymentFrequency)
+            // Calculate installments based on dates if available, otherwise use loanTermMonths
+            let totalInstallments: number
+            if (values.startDate && values.endDate) {
+                totalInstallments = calculateInstallmentsFromDates(
+                    values.startDate,
+                    values.endDate,
+                    values.paymentFrequency
+                )
+            } else {
+                totalInstallments = getInstallmentsFromMonths(values.loanTermMonths, values.paymentFrequency)
+            }
 
             const submissionValues: any = {
                 ...values,

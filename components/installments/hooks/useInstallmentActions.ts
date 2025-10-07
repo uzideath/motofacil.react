@@ -31,7 +31,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
 
         const payload = {
             name: installment.loan.user.name.trim(),
-            identification: installment.loan.motorcycle.plate,
+            identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
             concept: "Monto",
             amount: installment.amount,
             latePaymentDate: installment.latePaymentDate,
@@ -112,13 +112,13 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             const receiptData = {
                 phoneNumber,
                 name: installment.loan.user.name,
-                identification: installment.loan.motorcycle.plate,
+                identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
                 concept: `Monto`,
                 amount: installment.amount,
                 latePaymentDate: installment.latePaymentDate,
                 gps: installment.gps,
                 total: installment.amount,
-                date: installment.createdAt,
+                date: installment.paymentDate,
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
             }
