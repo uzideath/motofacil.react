@@ -185,28 +185,34 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
     const calculatePaymentBreakdown = (loan: EnrichedLoan, paymentAmount: number, gpsAmount: number) => {
         const paymentAmountNum = Number(paymentAmount) || 0
         const gpsAmountNum = Number(gpsAmount) || 0
-        const monthlyRate = loan.interestRate / 100 / 12
-        const remainingPrincipal = loan.debtRemaining
+        const interestRate = Number(loan.interestRate) || 0
+        const installments = Number(loan.installments) || 1
+        const financedAmount = Number(loan.financedAmount) || 0
+        const remainingPrincipal = Number(loan.debtRemaining) || 0
+        
+        const monthlyRate = interestRate / 100 / 12
+        
         const interestAmount =
             loan.interestType === "FIXED"
                 ? Math.min(
                     paymentAmountNum,
-                    (loan.financedAmount * (loan.interestRate / 100) * (loan.installments / 12)) / loan.installments,
+                    (financedAmount * (interestRate / 100) * (installments / 12)) / installments,
                 )
                 : Math.min(paymentAmountNum, remainingPrincipal * monthlyRate)
 
-        const principalAmount = paymentAmountNum - interestAmount
+        const principalAmount = Math.max(0, paymentAmountNum - interestAmount)
         const totalAmount = paymentAmountNum + gpsAmountNum
 
         setPaymentBreakdown({ principalAmount, interestAmount, totalAmount })
 
         // Calculate last installment info
         if (loan.payments && loan.payments.length > 0) {
-            // Sort payments by date to get the most recent one
+            // Sort payments by the due date (paymentDate) to get the most recent one
             const sortedPayments = [...loan.payments].sort(
                 (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
             )
             const lastPayment = sortedPayments[0]
+            // Use the due date (paymentDate) for display - this is what the payment belongs to
             const lastPaymentDate = new Date(lastPayment.paymentDate)
             const today = new Date()
 
@@ -218,6 +224,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 lastPaymentDate.getDate(),
             )
 
+            // Calculate days since the due date (not when it was paid)
             const daysSinceLastPayment = Math.floor(
                 (todayStart.getTime() - lastPaymentStart.getTime()) / (1000 * 60 * 60 * 24),
             )
@@ -254,8 +261,8 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             const rawData = res.data
             const mappedLoans: EnrichedLoan[] = rawData.map((loan) => {
                 const financedAmount = loan.totalAmount - loan.downPayment
-                const monthlyPayment =
-                    loan.paymentFrequency === "MONTHLY" ? loan.installmentPaymentAmmount : loan.installmentPaymentAmmount * 30
+                // Use the installmentPaymentAmmount directly - it's already the correct amount per installment
+                const monthlyPayment = loan.installmentPaymentAmmount || 0
                 return {
                     ...loan,
                     userName: loan.user?.name ?? "Sin nombre",
@@ -266,8 +273,8 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                     motorcyclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
                     monthlyPayment,
                     financedAmount,
-                    totalCapitalPaid: loan.totalPaid,
-                    nextInstallmentNumber: loan.paidInstallments + 1,
+                    totalCapitalPaid: loan.totalPaid || 0,
+                    nextInstallmentNumber: (loan.paidInstallments || 0) + 1,
                     payments: loan.payments || [],
                 }
             })
@@ -277,8 +284,12 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 if (loan) {
                     setSelectedLoan(loan)
                     form.setValue("loanId", loanId)
-                    form.setValue("amount", loan.monthlyPayment)
-                    calculatePaymentBreakdown(loan, loan.monthlyPayment, 0)
+                    // Use the actual loan's payment amount
+                    const paymentAmount = loan.monthlyPayment || loan.installmentPaymentAmmount || 0
+                    const gpsAmount = loan.gpsInstallmentPayment || 0
+                    form.setValue("amount", paymentAmount)
+                    form.setValue("gps", gpsAmount)
+                    calculatePaymentBreakdown(loan, paymentAmount, gpsAmount)
                 }
             }
             setLoadingData(false)
@@ -296,9 +307,11 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         const loan = loans.find((l) => l.id === loanId)
         if (loan) {
             setSelectedLoan(loan)
-            form.setValue("amount", 32000)
-            form.setValue("gps", 2000)
-            calculatePaymentBreakdown(loan, 32000, 2000)
+            // Use the actual loan's payment amount
+            form.setValue("amount", loan.monthlyPayment || loan.installmentPaymentAmmount || 0)
+            // Use the actual GPS amount from the loan
+            form.setValue("gps", loan.gpsInstallmentPayment || 0)
+            calculatePaymentBreakdown(loan, loan.monthlyPayment || loan.installmentPaymentAmmount || 0, loan.gpsInstallmentPayment || 0)
         } else {
             setSelectedLoan(null)
             setPaymentBreakdown(null)
