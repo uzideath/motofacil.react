@@ -34,7 +34,8 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
             concept: "Monto",
             amount: installment.amount,
-            latePaymentDate: installment.latePaymentDate,
+            isLate: installment.isLate, // Include isLate flag
+            latePaymentDate: installment.latePaymentDate, // Include late payment date
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate, // Actual payment date
@@ -115,10 +116,13 @@ export function useInstallmentActions(refreshInstallments: () => void) {
                 identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
                 concept: `Monto`,
                 amount: installment.amount,
-                latePaymentDate: installment.latePaymentDate,
+                isLate: installment.isLate, // Include isLate flag
+                latePaymentDate: installment.latePaymentDate, // Include late payment date
                 gps: installment.gps,
                 total: installment.amount,
                 date: installment.paymentDate,
+                paymentDate: installment.paymentDate,
+                notes: installment.notes,
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
             }
