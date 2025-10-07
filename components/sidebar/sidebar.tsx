@@ -79,6 +79,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Main navigation items
     const mainItems = [
+        { path: "/dashboard", label: "Vista General", icon: LayoutDashboard },
         { path: "/usuarios", label: "Usuarios", icon: User2 },
         { path: "/vehiculos", label: "Vehículos", icon: Bike },
         { path: "/proveedores", label: "Proveedores", icon: BadgeCheck },

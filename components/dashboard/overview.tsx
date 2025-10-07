@@ -15,59 +15,17 @@ import {
 import { useEffect, useState } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-
-const monthlyData = [
-  {
-    name: "Ene",
-    total: 1800000,
-    pagos: 1500000,
-  },
-  {
-    name: "Feb",
-    total: 2200000,
-    pagos: 1900000,
-  },
-  {
-    name: "Mar",
-    total: 2800000,
-    pagos: 2500000,
-  },
-  {
-    name: "Abr",
-    total: 2400000,
-    pagos: 2200000,
-  },
-  {
-    name: "May",
-    total: 2900000,
-    pagos: 2700000,
-  },
-  {
-    name: "Jun",
-    total: 3300000,
-    pagos: 3000000,
-  },
-  {
-    name: "Jul",
-    total: 3500000,
-    pagos: 3200000,
-  },
-]
-
-const weeklyData = [
-  { name: "Lun", total: 450000, pagos: 400000 },
-  { name: "Mar", total: 520000, pagos: 480000 },
-  { name: "Mié", total: 480000, pagos: 450000 },
-  { name: "Jue", total: 600000, pagos: 550000 },
-  { name: "Vie", total: 750000, pagos: 700000 },
-  { name: "Sáb", total: 350000, pagos: 320000 },
-  { name: "Dom", total: 250000, pagos: 230000 },
-]
+import { Skeleton } from "@/components/ui/skeleton"
+import { useDashboardContext } from "./dashboard-provider"
 
 export function Overview() {
   const [isMounted, setIsMounted] = useState(false)
   const [view, setView] = useState<"bar" | "line">("bar")
   const [timeframe, setTimeframe] = useState<"monthly" | "weekly">("monthly")
+  const { data, loading } = useDashboardContext()
+
+  const monthlyData = data?.overview?.monthly || []
+  const weeklyData = data?.overview?.weekly || []
 
   useEffect(() => {
     setIsMounted(true)
@@ -82,10 +40,34 @@ export function Overview() {
   }
 
   if (!isMounted) {
-    return <div className="h-[350px] flex items-center justify-center">Cargando gráfico...</div>
+    return (
+      <div className="h-[350px] space-y-3">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    )
   }
 
-  const data = timeframe === "monthly" ? monthlyData : weeklyData
+  if (loading) {
+    return (
+      <div className="h-[350px] space-y-3">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    )
+  }
+
+  const displayData = timeframe === "monthly" ? monthlyData : weeklyData
+
+  if (displayData.length === 0) {
+    return <div className="h-[350px] flex items-center justify-center text-muted-foreground">No hay datos disponibles</div>
+  }
 
   return (
     <div className="w-full">
@@ -124,7 +106,7 @@ export function Overview() {
       <div className="w-full h-[350px] mt-4">
         {view === "bar" ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+            <BarChart data={displayData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="name"
@@ -173,7 +155,7 @@ export function Overview() {
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+            <LineChart data={displayData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="name"

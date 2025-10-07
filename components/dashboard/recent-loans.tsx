@@ -1,69 +1,17 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useEffect, useState } from "react"
 import { formatCurrency } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CreditCard, Eye } from "lucide-react"
 import Link from "next/link"
-
-type Loan = {
-  id: string
-  userName: string
-  motorcycleModel: string
-  amount: number
-  date: string
-  status: "ACTIVE" | "COMPLETED" | "DEFAULTED"
-}
+import { useDashboardContext } from "./dashboard-provider"
 
 export function RecentLoans() {
-  const [loans, setLoans] = useState<Loan[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      setLoans([
-        {
-          id: "1",
-          userName: "Carlos Rodríguez",
-          motorcycleModel: "Honda CB 125F",
-          amount: 8500000,
-          date: "2023-04-10",
-          status: "ACTIVE",
-        },
-        {
-          id: "2",
-          userName: "María López",
-          motorcycleModel: "Yamaha FZ 150",
-          amount: 12000000,
-          date: "2023-04-08",
-          status: "ACTIVE",
-        },
-        {
-          id: "3",
-          userName: "Juan Pérez",
-          motorcycleModel: "Suzuki Gixxer 250",
-          amount: 15000000,
-          date: "2023-04-05",
-          status: "ACTIVE",
-        },
-        {
-          id: "4",
-          userName: "Ana Gómez",
-          motorcycleModel: "Bajaj Pulsar NS 200",
-          amount: 10500000,
-          date: "2023-04-01",
-          status: "COMPLETED",
-        },
-      ])
-      setLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [])
+  const { data, loading } = useDashboardContext()
+  const loans = data?.recentLoans || []
 
   const getStatusText = (status: string) => {
     switch (status) {

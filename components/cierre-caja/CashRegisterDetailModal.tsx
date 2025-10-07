@@ -145,9 +145,9 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {p.loan?.motorcycle?.plate ? (
+                                                            {p.loan?.vehicle?.plate ? (
                                                                 <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 font-mono text-xs">
-                                                                    {p.loan.motorcycle.plate}
+                                                                    {p.loan.vehicle.plate}
                                                                 </Badge>
                                                             ) : (
                                                                 <span className="text-muted-foreground">—</span>
