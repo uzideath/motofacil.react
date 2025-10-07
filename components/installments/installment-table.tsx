@@ -95,15 +95,15 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   })
 
   return (
-    <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
+    <Card className="bg-card border-border shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl text-white flex items-center">
-            <Calendar className="mr-2 h-5 w-5 text-blue-300" />
+          <CardTitle className="text-xl flex items-center">
+            <Calendar className="mr-2 h-5 w-5 text-primary" />
             Registro de Cuotas
           </CardTitle>
           <InstallmentForm onSaved={refreshInstallments}>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1">
               <PlusCircle className="h-4 w-4" />
               Nueva Cuota
             </Button>
@@ -134,7 +134,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
 
         <DateRangeSummary dateRange={dateRange} />
 
-        <div className="rounded-lg border border-dark-blue-800/50 overflow-hidden shadow-md">
+        <div className="rounded-lg border border-border overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <Table>
               <InstallmentTableHeader sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />

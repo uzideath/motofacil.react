@@ -45,38 +45,38 @@ export function InstallmentRow({
     }
 
     return (
-        <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/30 transition-colors duration-150">
-            <TableCell className="font-medium text-white">
+        <TableRow className="border-border hover:bg-muted/50 transition-colors duration-150">
+            <TableCell className="font-medium text-foreground">
                 <div className="flex items-center">
-                    <User className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <User className="mr-2 h-4 w-4 text-muted-foreground" />
                     {installment.loan.user.name}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-muted-foreground">
                 <div className="flex items-center">
-                    <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <Car className="mr-2 h-4 w-4 text-muted-foreground" />
                     {installment.loan.vehicle?.model || installment.loan.motorcycle?.model || "—"}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-muted-foreground">
                 <div className="flex items-center">
-                    <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <Car className="mr-2 h-4 w-4 text-muted-foreground" />
                     {installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "—"}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200 font-medium">
+            <TableCell className="text-foreground font-medium">
                 <div className="flex items-center">
                     <DollarSign className="mr-1 h-4 w-4 text-green-400" />
                     {formatCurrency(installment.amount)}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200 font-medium">
+            <TableCell className="text-foreground font-medium">
                 <div className="flex items-center">
                     <BadgeCent className="mr-1 h-4 w-4 text-yellow-400" />
                     {formatCurrency(installment.gps)}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-foreground">
                 {installment.isLate && installment.latePaymentDate ? (
                     <div className="flex items-center text-red-400">
                         <AlertTriangle className="mr-2 h-4 w-4" />
@@ -84,18 +84,18 @@ export function InstallmentRow({
                     </div>
                 ) : (
                     <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
                         {formatSpanishDate(installment.createdAt)}
                     </div>
                 )}
             </TableCell>
-            <TableCell className="hidden xl:table-cell text-blue-200">
+            <TableCell className="hidden xl:table-cell text-foreground">
                 <div className="flex items-center text-sm">
-                    <Clock className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
                     {formatSpanishDate(installment.createdAt)}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200">
+            <TableCell className="text-foreground">
                 <div className="flex items-center whitespace-nowrap">
                     {getIcon(installment.paymentMethod)}
                     {getPaymentMethodLabel(installment.paymentMethod)}
@@ -120,9 +120,9 @@ export function InstallmentRow({
                     </Badge>
                 )}
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-foreground">
                 <div className="flex items-center">
-                    <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <StickyNote className="mr-2 h-4 w-4 text-muted-foreground" />
                     <NoteDisplay
                         notes={installment.notes || ""}
                         maxLength={30}
@@ -130,7 +130,7 @@ export function InstallmentRow({
                     />
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200">
+            <TableCell className="text-foreground">
                 <div className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-blue-400" />
                     {installment.createdBy?.name ?? "—"}

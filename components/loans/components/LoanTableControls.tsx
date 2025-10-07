@@ -32,11 +32,11 @@ export function LoanTableControls({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Buscar por cliente, identificación o modelo..."
-                        className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                        className="pl-9 border-border focus:border-primary"
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
                     />
@@ -49,8 +49,8 @@ export function LoanTableControls({
                         onClick={() => onShowArchivedChange(!showArchived)}
                         className={
                             showArchived
-                                ? "bg-orange-500 hover:bg-orange-600 text-white"
-                                : "border-orange-200 text-orange-600"
+                                ? "bg-amber-500 hover:bg-amber-600 text-white"
+                                : "border-amber-200 text-amber-600"
                         }
                     >
                         {showArchived ? (
@@ -66,7 +66,7 @@ export function LoanTableControls({
                         )}
                     </Button>
                     {showArchived && (
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-800">
                             Archivados
                         </Badge>
                     )}
@@ -81,7 +81,7 @@ export function LoanTableControls({
                         onPageChange(1)
                     }}
                 >
-                    <SelectTrigger className="w-[130px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                    <SelectTrigger className="w-[130px] border-border focus:border-primary">
                         <SelectValue placeholder="Mostrar" />
                     </SelectTrigger>
                     <SelectContent>
@@ -92,7 +92,7 @@ export function LoanTableControls({
                     </SelectContent>
                 </Select>
                 <LoanForm onSaved={onRefresh}>
-                    <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Préstamo
                     </Button>

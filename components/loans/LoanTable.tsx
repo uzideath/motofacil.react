@@ -45,7 +45,7 @@ export function LoanTable() {
   } = useLoanTable()
 
   return (
-    <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+    <Card className="bg-card border-border shadow-md">
       <LoanTableHeader onRefresh={refreshData} onExportCSV={exportToCSV} />
 
       <CardContent className="p-6">
@@ -61,57 +61,57 @@ export function LoanTable() {
             onRefresh={refreshData}
           />
 
-          <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50">
-                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">
+                  <TableRow className="bg-muted hover:bg-muted">
+                    <TableHead className="text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <User className="h-4 w-4" />
                         <span>Cliente</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden md:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="hidden md:table-cell text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <Bike className="h-4 w-4" />
                         <span>Vehículo</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden md:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="hidden md:table-cell text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="h-4 w-4" />
                         <span>Monto Total</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden lg:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="hidden lg:table-cell text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <CalendarDays className="h-4 w-4" />
                         <span>Cuotas</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden xl:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="hidden xl:table-cell text-foreground font-medium">
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5">
                           <CalendarDays className="h-4 w-4" />
                           <span>Fechas</span>
                         </div>
-                        <span className="text-xs font-normal text-gray-500 dark:text-gray-400">Inicio / Fin</span>
+                        <span className="text-xs font-normal text-muted-foreground">Inicio / Fin</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden lg:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="hidden lg:table-cell text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <Wallet className="h-4 w-4" />
                         <span>Deuda Restante</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <Activity className="h-4 w-4" />
                         <span>Estado</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-right text-blue-700 dark:text-blue-300 font-medium">
+                    <TableHead className="text-right text-foreground font-medium">
                       <div className="flex items-center justify-end gap-1.5">
                         <Settings className="h-4 w-4" />
                         <span>Acciones</span>
@@ -124,35 +124,35 @@ export function LoanTable() {
                     Array.from({ length: 4 }).map((_, index) => (
                       <TableRow
                         key={`skeleton-${index}`}
-                        className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                        className="border-border hover:bg-muted/50"
                       >
                         <TableCell>
-                          <Skeleton className="h-5 w-[150px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[150px]" />
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <Skeleton className="h-5 w-[120px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[120px]" />
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[100px]" />
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          <Skeleton className="h-5 w-[80px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[80px]" />
                         </TableCell>
                         <TableCell className="hidden xl:table-cell">
-                          <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[100px]" />
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[100px]" />
                         </TableCell>
                         <TableCell>
-                          <Skeleton className="h-5 w-[80px] bg-blue-100/50 dark:bg-blue-900/20" />
+                          <Skeleton className="h-5 w-[80px]" />
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             {Array.from({ length: 4 }).map((_, i) => (
                               <Skeleton
                                 key={`action-skeleton-${index}-${i}`}
-                                className="h-8 w-8 rounded-md bg-blue-100/50 dark:bg-blue-900/20"
+                                className="h-8 w-8 rounded-md"
                               />
                             ))}
                           </div>
@@ -160,10 +160,10 @@ export function LoanTable() {
                       </TableRow>
                     ))
                   ) : currentItems.length === 0 ? (
-                    <TableRow className="border-blue-100 dark:border-blue-900/30">
-                      <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <TableRow className="border-border">
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         <div className="flex flex-col items-center justify-center gap-2">
-                          <DollarSign className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
+                          <DollarSign className="h-10 w-10 text-muted-foreground/30" />
                           <p className="text-sm">
                             {showArchived
                               ? "No se encontraron préstamos archivados"
@@ -173,7 +173,7 @@ export function LoanTable() {
                             <Button
                               variant="link"
                               onClick={() => setSearchTerm("")}
-                              className="text-blue-500 dark:text-blue-400"
+                              className="text-primary"
                             >
                               Limpiar búsqueda
                             </Button>

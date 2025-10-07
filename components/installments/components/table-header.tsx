@@ -12,96 +12,96 @@ interface TableHeaderProps {
 
 export function InstallmentTableHeader({ sortField, sortDirection, onSort }: TableHeaderProps) {
     const getSortIcon = (field: SortField) => {
-        if (sortField !== field) return <ArrowDownUp className="ml-1 h-4 w-4 text-blue-300/50" />
+        if (sortField !== field) return <ArrowDownUp className="ml-1 h-4 w-4 text-muted-foreground" />
         return sortDirection === "asc" ? (
-            <ArrowDownUp className="ml-1 h-4 w-4 text-blue-300" />
+            <ArrowDownUp className="ml-1 h-4 w-4 text-primary" />
         ) : (
-            <ArrowDownUp className="ml-1 h-4 w-4 text-blue-300 rotate-180" />
+            <ArrowDownUp className="ml-1 h-4 w-4 text-primary rotate-180" />
         )
     }
 
     return (
-        <TableHeader className="bg-dark-blue-800/70 sticky top-0">
-            <TableRow className="border-dark-blue-700 hover:bg-dark-blue-700/50">
-                <TableHead className="text-blue-200 font-medium cursor-pointer" onClick={() => onSort("userName")}>
+        <TableHeader className="bg-muted sticky top-0">
+            <TableRow className="border-border hover:bg-muted">
+                <TableHead className="text-foreground font-medium cursor-pointer" onClick={() => onSort("userName")}>
                     <div className="flex items-center">
-                        <User className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <User className="mr-2 h-4 w-4" />
                         Cliente
                         {getSortIcon("userName")}
                     </div>
                 </TableHead>
                 <TableHead
-                    className="hidden md:table-cell text-blue-200 font-medium cursor-pointer"
+                    className="hidden md:table-cell text-foreground font-medium cursor-pointer"
                     onClick={() => onSort("vehicleModel")}
                 >
                     <div className="flex items-center">
-                        <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Car className="mr-2 h-4 w-4" />
                         Vehículo
                         {getSortIcon("vehicleModel")}
                     </div>
                 </TableHead>
-                <TableHead className="hidden md:table-cell text-blue-200 font-medium">
+                <TableHead className="hidden md:table-cell text-foreground font-medium">
                     <div className="flex items-center">
-                        <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Car className="mr-2 h-4 w-4" />
                         Placa
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium cursor-pointer" onClick={() => onSort("amount")}>
+                <TableHead className="text-foreground font-medium cursor-pointer" onClick={() => onSort("amount")}>
                     <div className="flex items-center">
-                        <DollarSign className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <DollarSign className="mr-2 h-4 w-4" />
                         Monto
                         {getSortIcon("amount")}
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium">
+                <TableHead className="text-foreground font-medium">
                     <div className="flex items-center">
-                        <Navigation className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Navigation className="mr-2 h-4 w-4" />
                         GPS
                     </div>
                 </TableHead>
                 <TableHead
-                    className="hidden md:table-cell text-blue-200 font-medium cursor-pointer"
+                    className="hidden md:table-cell text-foreground font-medium cursor-pointer"
                     onClick={() => onSort("date")}
                 >
                     <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Calendar className="mr-2 h-4 w-4" />
                         Fecha de Pago
                         {getSortIcon("date")}
                     </div>
                 </TableHead>
-                <TableHead className="hidden xl:table-cell text-blue-200 font-medium">
+                <TableHead className="hidden xl:table-cell text-foreground font-medium">
                     <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Calendar className="mr-2 h-4 w-4" />
                         Fecha Creación
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium">
+                <TableHead className="text-foreground font-medium">
                     <div className="flex items-center">
-                        <CreditCard className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <CreditCard className="mr-2 h-4 w-4" />
                         Método
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium text-center">
+                <TableHead className="text-foreground font-medium text-center">
                     <div className="flex items-center justify-center">
-                        <Clock className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Clock className="mr-2 h-4 w-4" />
                         Estado
                     </div>
                 </TableHead>
-                <TableHead className="hidden md:table-cell text-blue-200 font-medium">
+                <TableHead className="hidden md:table-cell text-foreground font-medium">
                     <div className="flex items-center">
-                        <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <StickyNote className="mr-2 h-4 w-4" />
                         Notas
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium">
+                <TableHead className="text-foreground font-medium">
                     <div className="flex items-center">
-                        <User className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <User className="mr-2 h-4 w-4" />
                         Registrado por
                     </div>
                 </TableHead>
-                <TableHead className="text-blue-200 font-medium text-right">
+                <TableHead className="text-foreground font-medium text-right">
                     <div className="flex items-center justify-end">
-                        <FileText className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <FileText className="mr-2 h-4 w-4" />
                         Acciones
                     </div>
                 </TableHead>

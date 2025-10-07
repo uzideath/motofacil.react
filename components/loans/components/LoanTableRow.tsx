@@ -114,27 +114,27 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
         <TableRow
             key={`loan-row-${loan.id}-${index}`}
             className={cn(
-                "border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20",
-                loan.archived && "bg-orange-50/30 dark:bg-orange-950/10",
+                "border-border hover:bg-muted/50",
+                loan.archived && "bg-amber-50/30 dark:bg-amber-950/10",
             )}
         >
             <TableCell>
                 <div className="font-medium flex items-center gap-1.5">
-                    <User className="h-4 w-4 text-blue-500" />
+                    <User className="h-4 w-4 text-primary" />
                     {loan.user.name}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <Hash className="h-3 w-3 text-gray-400" />
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Hash className="h-3 w-3" />
                     {loan.user.identification}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">
                 <div className="flex items-center gap-1.5">
-                    <Bike className="h-4 w-4 text-indigo-500" />
+                    <Bike className="h-4 w-4 text-primary" />
                     {loan.vehicle?.model || loan.motorcycle?.model || "Sin modelo"}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <Tag className="h-3 w-3 text-gray-400" />
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Tag className="h-3 w-3" />
                     {loan.vehicle?.plate || loan.motorcycle?.plate || "Sin placa"}
                 </div>
             </TableCell>
@@ -143,25 +143,25 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <DollarSign className="h-4 w-4" />
                     {formatCurrency(loan.totalAmount)}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <CalendarIcon className="h-3 w-3 text-gray-400" />
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <CalendarIcon className="h-3 w-3" />
                     {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
                 <div className="flex items-center gap-2">
                     <div className="text-sm flex items-center gap-1.5">
-                        <CalendarDays className="h-4 w-4 text-purple-500" />
+                        <CalendarDays className="h-4 w-4 text-primary" />
                         <span className="font-medium">
                             {loan.paidInstallments} / {loan.installments}
                         </span>
                     </div>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1.5">
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-1.5">
                     <div
                         className={cn(
                             "h-full rounded-full",
-                            loan.status === "COMPLETED" ? "bg-green-500" : loan.status === "DEFAULTED" ? "bg-red-500" : "bg-blue-500",
+                            loan.status === "COMPLETED" ? "bg-green-500" : loan.status === "DEFAULTED" ? "bg-red-500" : "bg-primary",
                         )}
                         style={{
                             width: `${(loan.paidInstallments / loan.installments) * 100}%`,
@@ -171,7 +171,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
             </TableCell>
             <TableCell className="hidden xl:table-cell">
                 <div className="space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                    <div className="flex items-center gap-1.5 text-primary">
                         <CalendarIcon className="h-4 w-4" />
                         <span className="text-sm font-medium">
                             {loan.startDate ? new Date(loan.startDate).toLocaleDateString('es-CO', { 
@@ -182,7 +182,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         </span>
                     </div>
                     {loan.endDate && (
-                        <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
                             <CalendarIcon className="h-4 w-4" />
                             <span className="text-sm font-medium">
                                 {new Date(loan.endDate).toLocaleDateString('es-CO', { 
@@ -200,8 +200,8 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <Wallet className="h-4 w-4" />
                     {formatCurrency(loan.debtRemaining)}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <Percent className="h-3 w-3 text-gray-400" />
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Percent className="h-3 w-3" />
                     Interés: {loan.interestRate}%
                 </div>
             </TableCell>

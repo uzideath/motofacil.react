@@ -12,15 +12,15 @@ interface LoanTableHeaderProps {
 
 export function LoanTableHeader({ onRefresh, onExportCSV }: LoanTableHeaderProps) {
     return (
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-sky-500 text-white p-6">
+        <CardHeader className="bg-primary text-primary-foreground p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full shadow-lg">
-                        <DollarSign className="h-6 w-6 text-white" />
+                    <div className="bg-primary-foreground/20 backdrop-blur-sm p-2 rounded-full shadow-lg">
+                        <DollarSign className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div>
                         <CardTitle className="text-xl font-bold">Gestión de arrendamientos</CardTitle>
-                        <CardDescription className="text-blue-100">Administra los arrendamientos y financiamientos</CardDescription>
+                        <CardDescription className="text-primary-foreground/80">Administra los arrendamientos y financiamientos</CardDescription>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -31,7 +31,7 @@ export function LoanTableHeader({ onRefresh, onExportCSV }: LoanTableHeaderProps
                                     variant="ghost"
                                     size="sm"
                                     onClick={onRefresh}
-                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:shadow-md transition-all"
+                                    className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/20 shadow-sm hover:shadow-md transition-all"
                                 >
                                     <RefreshCw className="mr-2 h-4 w-4" />
                                     <span className="hidden sm:inline">Actualizar</span>
@@ -50,7 +50,7 @@ export function LoanTableHeader({ onRefresh, onExportCSV }: LoanTableHeaderProps
                                     variant="ghost"
                                     size="sm"
                                     onClick={onExportCSV}
-                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:shadow-md transition-all"
+                                    className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/20 shadow-sm hover:shadow-md transition-all"
                                 >
                                     <FileSpreadsheet className="mr-2 h-4 w-4" />
                                     <span className="hidden sm:inline">Exportar CSV</span>
@@ -68,7 +68,7 @@ export function LoanTableHeader({ onRefresh, onExportCSV }: LoanTableHeaderProps
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:shadow-md transition-all"
+                                    className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/20 shadow-sm hover:shadow-md transition-all"
                                     disabled
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
@@ -87,7 +87,7 @@ export function LoanTableHeader({ onRefresh, onExportCSV }: LoanTableHeaderProps
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:shadow-md transition-all"
+                                    className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground border border-primary-foreground/20 shadow-sm hover:shadow-md transition-all"
                                     disabled
                                 >
                                     <BarChart3 className="mr-2 h-4 w-4" />
