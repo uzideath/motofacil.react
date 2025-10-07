@@ -7,31 +7,31 @@ export function ProviderTableSkeleton() {
             {Array.from({ length: 4 }).map((_, index) => (
                 <TableRow
                     key={`skeleton-${index}`}
-                    className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                    className="border-border hover:bg-muted/50"
                 >
                     <TableCell>
-                        <Skeleton className="h-5 w-[150px] bg-blue-100/50 dark:bg-blue-900/20" />
+                        <Skeleton className="h-5 w-[150px]" />
                     </TableCell>
                     <TableCell className="text-center">
-                        <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20 mx-auto" />
+                        <Skeleton className="h-5 w-[100px] mx-auto" />
                     </TableCell>
                     <TableCell className="text-center">
-                        <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20 mx-auto" />
+                        <Skeleton className="h-5 w-[100px] mx-auto" />
                     </TableCell>
                     <TableCell className="text-center">
-                        <Skeleton className="h-5 w-[120px] bg-blue-100/50 dark:bg-blue-900/20 mx-auto" />
+                        <Skeleton className="h-5 w-[120px] mx-auto" />
                     </TableCell>
                     <TableCell className="text-center">
-                        <Skeleton className="h-5 w-[80px] bg-blue-100/50 dark:bg-blue-900/20 mx-auto" />
+                        <Skeleton className="h-5 w-[80px] mx-auto" />
                     </TableCell>
                     <TableCell>
-                        <Skeleton className="h-5 w-[120px] bg-blue-100/50 dark:bg-blue-900/20" />
+                        <Skeleton className="h-5 w-[120px]" />
                     </TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                            <Skeleton className="h-8 w-8 rounded-md bg-blue-100/50 dark:bg-blue-900/20" />
-                            <Skeleton className="h-8 w-8 rounded-md bg-blue-100/50 dark:bg-blue-900/20" />
-                            <Skeleton className="h-8 w-8 rounded-md bg-blue-100/50 dark:bg-blue-900/20" />
+                            <Skeleton className="h-8 w-8 rounded-md" />
+                            <Skeleton className="h-8 w-8 rounded-md" />
+                            <Skeleton className="h-8 w-8 rounded-md" />
                         </div>
                     </TableCell>
                 </TableRow>

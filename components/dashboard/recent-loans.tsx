@@ -29,11 +29,11 @@ export function RecentLoans() {
   const getStatusClass = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return "bg-blue-500"
+        return "bg-primary"
       case "COMPLETED":
         return "bg-green-500"
       case "DEFAULTED":
-        return "bg-red-500"
+        return "bg-destructive"
       default:
         return ""
     }

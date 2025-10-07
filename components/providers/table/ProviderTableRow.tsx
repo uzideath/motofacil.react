@@ -53,14 +53,14 @@ export function ProviderTableRow({
         <>
             <TableRow
                 key={`provider-row-${provider.id}-${index}`}
-                className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                className="border-border hover:bg-muted/50"
             >
                 <TableCell>
                     <div className="font-medium flex items-center gap-1.5">
-                        <Building className="h-4 w-4 text-blue-500" />
+                        <Building className="h-4 w-4 text-primary" />
                         <Badge
                             variant="outline"
-                            className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                            className="bg-primary/10 border-primary/30 text-primary"
                         >
                             {provider.name}
                         </Badge>
@@ -70,7 +70,7 @@ export function ProviderTableRow({
                 <TableCell className="text-center">
                     {stats ? (
                         <div className="flex flex-col items-center gap-1">
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                            <Badge variant="secondary" className="bg-primary/20 text-primary">
                                 {stats.totalVehicles} total
                             </Badge>
                             <div className="text-xs text-muted-foreground">
@@ -139,8 +139,8 @@ export function ProviderTableRow({
                 </TableCell>
 
                 <TableCell>
-                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                        <Calendar className="h-4 w-4 text-purple-500" />
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Calendar className="h-4 w-4 text-primary" />
                         <span>{format(new Date(provider.createdAt), "dd/MM/yyyy", { locale: es })}</span>
                     </div>
                 </TableCell>
@@ -154,7 +154,7 @@ export function ProviderTableRow({
                                         variant="outline"
                                         size="icon"
                                         onClick={() => onViewDetails(provider.id)}
-                                        className="border-purple-200 bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 dark:hover:text-purple-300"
+                                        className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                                     >
                                         <Eye className="h-4 w-4" />
                                         <span className="sr-only">Ver detalles</span>
@@ -179,7 +179,7 @@ export function ProviderTableRow({
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                                                className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                                             >
                                                 <Edit className="h-4 w-4" />
                                                 <span className="sr-only">Editar</span>
@@ -199,7 +199,7 @@ export function ProviderTableRow({
                                         variant="outline"
                                         size="icon"
                                         onClick={() => onDelete(provider.id)}
-                                        className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:hover:text-red-300"
+                                        className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Eliminar</span>

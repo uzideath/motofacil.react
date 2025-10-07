@@ -7,11 +7,11 @@ export function VehicleTableSkeleton() {
             {Array.from({ length: 4 }).map((_, index) => (
                 <TableRow
                     key={`skeleton-${index}`}
-                    className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                    className="border-border hover:bg-muted/50"
                 >
                     {Array.from({ length: 10 }).map((_, i) => (
                         <TableCell key={`skeleton-cell-${index}-${i}`}>
-                            <Skeleton className="h-5 w-full bg-blue-100/50 dark:bg-blue-900/20" />
+                            <Skeleton className="h-5 w-full" />
                         </TableCell>
                     ))}
                 </TableRow>

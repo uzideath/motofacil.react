@@ -28,14 +28,14 @@ export function VehicleTableRow({
     return (
         <TableRow
             key={`moto-row-${moto.id}-${index}`}
-            className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+            className="border-border hover:bg-muted/50"
         >
             <TableCell className="font-medium">{moto.brand}</TableCell>
             <TableCell>{moto.model}</TableCell>
             <TableCell>
                 <Badge
                     variant="outline"
-                    className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                    className="bg-primary/10 text-primary border-primary/30"
                 >
                     {moto.plate}
                 </Badge>
@@ -47,7 +47,7 @@ export function VehicleTableRow({
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="cursor-default">
-                                <span className="bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded border border-blue-100 dark:border-blue-900/30">
+                                <span className="bg-muted px-2 py-1 rounded border border-border">
                                     {moto.engine}
                                 </span>
                             </TooltipTrigger>
@@ -65,7 +65,7 @@ export function VehicleTableRow({
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="cursor-default">
-                                <span className="bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded border border-blue-100 dark:border-blue-900/30">
+                                <span className="bg-muted px-2 py-1 rounded border border-border">
                                     {moto.chassis}
                                 </span>
                             </TooltipTrigger>
@@ -84,18 +84,18 @@ export function VehicleTableRow({
                         {moto.gps}
                     </Badge>
                 ) : (
-                    <Badge variant="outline" className="text-gray-500 dark:text-gray-400">
+                    <Badge variant="outline" className="text-muted-foreground">
                         No asignado
                     </Badge>
                 )}
             </TableCell>
             <TableCell>
                 {moto.provider ? (
-                    <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50">
+                    <Badge className="bg-primary/20 text-primary hover:bg-primary/30">
                         {getProviderLabel(moto.provider.name)}
                     </Badge>
                 ) : (
-                    <Badge variant="outline" className="text-gray-500 dark:text-gray-400">
+                    <Badge variant="outline" className="text-muted-foreground">
                         No asignado
                     </Badge>
                 )}
@@ -107,7 +107,7 @@ export function VehicleTableRow({
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                                className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                             >
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Editar</span>
@@ -121,7 +121,7 @@ export function VehicleTableRow({
                                     variant="outline"
                                     size="icon"
                                     onClick={() => onDelete(moto.id)}
-                                    className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:hover:text-red-300"
+                                    className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Eliminar</span>

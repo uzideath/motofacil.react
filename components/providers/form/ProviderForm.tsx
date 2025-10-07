@@ -43,29 +43,29 @@ export function ProviderForm({ children, providerId, providerData, onCreated, cr
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900">
+            <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-card">
                 <div className="relative">
                     <div className="absolute top-4 right-4 z-10">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleClose}
-                            className="rounded-full h-8 w-8 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all"
+                            className="rounded-full h-8 w-8 bg-primary-foreground/10 backdrop-blur-sm hover:bg-primary-foreground/20 transition-all"
                         >
                             <X className="h-4 w-4" />
                             <span className="sr-only">Cerrar</span>
                         </Button>
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-600 to-sky-500 p-6 flex items-center gap-4">
-                        <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
-                            <Building className="h-8 w-8 text-white" />
+                    <div className="bg-primary text-primary-foreground p-6 flex items-center gap-4">
+                        <div className="bg-primary-foreground/20 backdrop-blur-sm p-3 rounded-full">
+                            <Building className="h-8 w-8 text-primary-foreground" />
                         </div>
                         <div>
-                            <DialogTitle className="text-xl font-bold text-white">
+                            <DialogTitle className="text-xl font-bold">
                                 {isEditing ? "Editar Proveedor" : "Nuevo Proveedor"}
                             </DialogTitle>
-                            <p className="text-blue-100 text-sm">
+                            <p className="text-primary-foreground/80 text-sm">
                                 {isEditing ? "Actualiza los datos del proveedor" : "Ingresa los datos del nuevo proveedor"}
                             </p>
                         </div>
@@ -80,13 +80,13 @@ export function ProviderForm({ children, providerId, providerData, onCreated, cr
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
-                                                <Building className="h-4 w-4 text-blue-500" />
+                                                <Building className="h-4 w-4 text-primary" />
                                                 Nombre del Proveedor
                                             </FormLabel>
                                             <Input
                                                 placeholder="Nombre del proveedor"
                                                 {...field}
-                                                className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                                                className="border-border focus:border-primary"
                                             />
                                             <FormDescription className="text-xs">Ingrese el nombre del proveedor</FormDescription>
                                             <FormMessage />
@@ -99,14 +99,14 @@ export function ProviderForm({ children, providerId, providerData, onCreated, cr
                                         type="button"
                                         variant="outline"
                                         onClick={handleClose}
-                                        className="border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/30 bg-transparent"
+                                        className="border-border hover:bg-muted bg-transparent"
                                     >
                                         Cancelar
                                     </Button>
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-md hover:shadow-lg transition-all"
+                                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all"
                                     >
                                         {loading ? (
                                             <>

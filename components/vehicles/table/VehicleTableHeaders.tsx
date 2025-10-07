@@ -1,19 +1,70 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tag, Bike, Hash, Palette, Gauge, Cog, Frame, MapPin, Building2, Settings } from "lucide-react"
 
 export function VehicleTableHeaders() {
     return (
         <TableHeader>
-            <TableRow className="bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50">
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Marca</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Modelo</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Placa</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Color</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Cilindraje</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Motor</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Chasis</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">GPS</TableHead>
-                <TableHead className="text-blue-700 dark:text-blue-300 font-medium">Proveedor</TableHead>
-                <TableHead className="text-right text-blue-700 dark:text-blue-300 font-medium">Acciones</TableHead>
+            <TableRow className="bg-muted hover:bg-muted">
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
+                        <span>Marca</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Bike className="h-4 w-4" />
+                        <span>Modelo</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Hash className="h-4 w-4" />
+                        <span>Placa</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4" />
+                        <span>Color</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Gauge className="h-4 w-4" />
+                        <span>Cilindraje</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Cog className="h-4 w-4" />
+                        <span>Motor</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Frame className="h-4 w-4" />
+                        <span>Chasis</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>GPS</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-foreground font-medium">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>Proveedor</span>
+                    </div>
+                </TableHead>
+                <TableHead className="text-right text-foreground font-medium">
+                    <div className="flex items-center justify-end gap-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Acciones</span>
+                    </div>
+                </TableHead>
             </TableRow>
         </TableHeader>
     )

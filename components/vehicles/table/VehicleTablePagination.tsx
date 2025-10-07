@@ -31,7 +31,7 @@ export function VehicleTablePagination({
 }: VehicleTablePaginationProps) {
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
+            <div className="text-sm text-muted-foreground order-2 sm:order-1">
                 Mostrando {totalItems > 0 ? startIndex : 0}-{endIndex} de {totalItems} vehículos
             </div>
             <Pagination className="order-1 sm:order-2">

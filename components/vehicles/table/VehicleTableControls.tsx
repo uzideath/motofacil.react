@@ -45,17 +45,17 @@ export function VehicleTableControls({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-500/70" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Buscar por marca, modelo, placa, motor o chasis..."
-                        className="pl-9 border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
+                        className="pl-9 border-border focus:border-primary"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-blue-500/70" />
+                    <Filter className="h-4 w-4 text-muted-foreground" />
                     <Select
                         value={providerFilter}
                         onValueChange={(value) => {
@@ -63,7 +63,7 @@ export function VehicleTableControls({
                             setCurrentPage(1)
                         }}
                     >
-                        <SelectTrigger className="w-[180px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                        <SelectTrigger className="w-[180px] border-border focus:border-primary">
                             <SelectValue placeholder="Todos los proveedores" />
                         </SelectTrigger>
                         <SelectContent>
@@ -85,7 +85,7 @@ export function VehicleTableControls({
                         setCurrentPage(1)
                     }}
                 >
-                    <SelectTrigger className="w-[130px] border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                    <SelectTrigger className="w-[130px] border-border focus:border-primary">
                         <SelectValue placeholder="Mostrar" />
                     </SelectTrigger>
                     <SelectContent>
@@ -96,7 +96,7 @@ export function VehicleTableControls({
                     </SelectContent>
                 </Select>
                 <VehicleForm onCreated={onVehicleCreated}>
-                    <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />
                         Nueva vehículo
                     </Button>

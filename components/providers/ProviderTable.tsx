@@ -77,7 +77,7 @@ export function ProviderTable() {
 
     return (
         <div className="space-y-6">
-            <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+            <Card className="bg-card border-border shadow-md">
                 <ProviderTableHeader 
                     onRefresh={() => {
                         refreshProviders()

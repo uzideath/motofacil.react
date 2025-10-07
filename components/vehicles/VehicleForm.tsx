@@ -41,7 +41,7 @@ export function VehicleForm({ children, vehicleId, vehicleData, onCreated }: Pro
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-[1200px] p-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-[1200px] p-0 overflow-hidden bg-card max-h-[90vh] overflow-y-auto">
         <VehicleDialogHeader isEditing={isEditing} onClose={handleClose} />
 
         <div className="p-6">
