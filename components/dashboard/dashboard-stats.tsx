@@ -219,7 +219,7 @@ export function DashboardStats() {
                   <h3 className={cn("text-xl font-bold mt-1", stats.defaultRate > 5 ? "text-destructive" : "text-green-500")}>
                     {stats.defaultRate}%
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">arrendamientos incumplidos</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Arrendamientos incumplidos</p>
                 </>
               )}
             </div>

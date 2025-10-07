@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { TransactionList } from "./components/transaction-list"
 import { ProviderMismatchDialog } from "./components/helpers/provider-mismatch"
+import { DateMismatchDialog } from "./components/helpers/date-mismatch"
 import { TransactionFilters } from "./components/helpers/TransactionFilters"
 
 import type { SelectedTransaction } from "./constants/types"
@@ -39,6 +40,9 @@ export function TransactionTable({ token, onSelect, filterByDate }: TransactionT
     showProviderMismatchDialog,
     currentProviderName,
     attemptedProviderName,
+    showDateMismatchDialog,
+    currentDate,
+    attemptedDate,
     fetchTransactions,
     handleSearchChange,
     handleTypeFilterChange,
@@ -51,6 +55,7 @@ export function TransactionTable({ token, onSelect, filterByDate }: TransactionT
     clearAllSelections,
     handlePageChange,
     setShowProviderMismatchDialog,
+    setShowDateMismatchDialog,
   } = useTransactions({
     token,
     onSelect,
@@ -69,7 +74,7 @@ export function TransactionTable({ token, onSelect, filterByDate }: TransactionT
   }
 
   return (
-    <Card className="shadow-md border-slate-200 dark:border-slate-800">
+    <Card className="shadow-md bg-card border-border">
       <TransactionHeader
         refreshing={refreshing}
         onRefresh={fetchTransactions}
@@ -142,6 +147,14 @@ export function TransactionTable({ token, onSelect, filterByDate }: TransactionT
         onOpenChange={setShowProviderMismatchDialog}
         currentProviderName={currentProviderName}
         attemptedProviderName={attemptedProviderName}
+      />
+
+      {/* Date Mismatch Dialog */}
+      <DateMismatchDialog
+        open={showDateMismatchDialog}
+        onOpenChange={setShowDateMismatchDialog}
+        currentDate={currentDate}
+        attemptedDate={attemptedDate}
       />
     </Card>
   )

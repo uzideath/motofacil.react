@@ -40,11 +40,11 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
 }) => {
     if (loading) {
         return (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
+            <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                 <div className="overflow-x-auto">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-                            <TableRow className="hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <TableHeader className="bg-muted/50">
+                            <TableRow className="hover:bg-muted">
                                 <TableHead className="w-[80px]">ID</TableHead>
                                 <TableHead className="w-[100px]">
                                     <div className="flex items-center">
@@ -84,7 +84,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 </TableHead>
                                 <TableHead className="text-right">
                                     <div className="flex items-center justify-end">
-                                        <Wallet className="h-4 w-4 mr-2 text-blue-500" />
+                                        <Wallet className="h-4 w-4 mr-2 text-primary" />
                                         Balance
                                     </div>
                                 </TableHead>
@@ -94,7 +94,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                         </TableHeader>
                         <TableBody>
                             {Array.from({ length: 5 }).map((_, index) => (
-                                <TableRow key={index} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                                <TableRow key={index} className="hover:bg-muted/50">
                                     {Array.from({ length: 10 }).map((__, i) => (
                                         <TableCell key={i}>
                                             <Skeleton className="h-5 w-full" />
@@ -111,11 +111,11 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
 
     if (data.length === 0) {
         return (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
+            <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                 <div className="overflow-x-auto">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-                            <TableRow className="hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                        <TableHeader className="bg-muted/50">
+                            <TableRow className="hover:bg-muted">
                                 <TableHead className="w-[80px]">ID</TableHead>
                                 <TableHead className="w-[100px]">
                                     <div className="flex items-center">
@@ -155,7 +155,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 </TableHead>
                                 <TableHead className="text-right">
                                     <div className="flex items-center justify-end">
-                                        <Wallet className="h-4 w-4 mr-2 text-blue-500" />
+                                        <Wallet className="h-4 w-4 mr-2 text-primary" />
                                         Balance
                                     </div>
                                 </TableHead>
@@ -181,11 +181,11 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
     }
 
     return (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950 shadow-sm">
+        <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">
             <div className="overflow-x-auto">
                 <Table>
-                    <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-                        <TableRow className="hover:bg-slate-100 dark:hover:bg-slate-800/50">
+                    <TableHeader className="bg-muted/50">
+                        <TableRow className="hover:bg-muted">
                             <TableHead className="w-[80px]">ID</TableHead>
                             <TableHead className="w-[100px]">
                                 <div className="flex items-center">
@@ -225,7 +225,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                             </TableHead>
                             <TableHead className="text-right">
                                 <div className="flex items-center justify-end">
-                                    <Wallet className="h-4 w-4 mr-2 text-blue-500" />
+                                    <Wallet className="h-4 w-4 mr-2 text-primary" />
                                     Balance
                                 </div>
                             </TableHead>
@@ -235,14 +235,14 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                     </TableHeader>
                     <TableBody>
                         {data.map((r) => (
-                            <TableRow key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                            <TableRow key={r.id} className="hover:bg-muted/50">
                                 <TableCell className="font-medium font-mono text-xs">
-                                    <div className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded w-fit">{r.id.substring(0, 8)}</div>
+                                    <div className="bg-muted px-2 py-1 rounded w-fit">{r.id.substring(0, 8)}</div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full">
-                                            <Calendar className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                                        <div className="bg-muted p-1.5 rounded-full">
+                                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                                         </div>
                                         <span>{r.date}</span>
                                     </div>
@@ -250,8 +250,8 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 <TableCell>{r.time}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-full">
-                                            <User className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                                        <div className="bg-muted p-1.5 rounded-full">
+                                            <User className="h-3.5 w-3.5 text-muted-foreground" />
                                         </div>
                                         <span>{r.user}</span>
                                     </div>
@@ -259,16 +259,16 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 <TableCell>
                                     <ProviderBadge provider={r.provider!} />
                                 </TableCell>
-                                <TableCell className="text-right font-medium text-green-600 dark:text-green-400">
+                                <TableCell className="text-right font-medium text-green-500">
                                     {formatCurrency(r.totalIncome)}
                                 </TableCell>
-                                <TableCell className="text-right font-medium text-red-600 dark:text-red-400">
+                                <TableCell className="text-right font-medium text-red-500">
                                     {formatCurrency(r.totalExpense)}
                                 </TableCell>
                                 <TableCell
                                     className={cn(
                                         "text-right font-medium",
-                                        r.balance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400",
+                                        r.balance >= 0 ? "text-primary" : "text-amber-500",
                                     )}
                                 >
                                     {formatCurrency(r.balance)}

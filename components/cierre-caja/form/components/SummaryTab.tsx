@@ -16,10 +16,10 @@ interface SummaryTabProps {
 
 export const SummaryTab: React.FC<SummaryTabProps> = ({ calculations, incomes, expenses, currentProvider }) => {
     return (
-        <Card className="border shadow-sm">
-            <CardHeader className="pb-3 border-b">
+        <Card className="bg-card border-border shadow-sm">
+            <CardHeader className="pb-3 border-b border-border">
                 <CardTitle className="text-xl flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
+                    <TrendingUp className="h-5 w-5 text-primary" />
                     Resumen del Cierre
                 </CardTitle>
                 <CardDescription>Información detallada sobre las transacciones seleccionadas</CardDescription>
@@ -77,19 +77,19 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ calculations, incomes, e
                 <div className="space-y-4 mt-6">
                     <h3 className="text-sm font-medium text-muted-foreground">Información del Proveedor</h3>
                     {currentProvider ? (
-                        <div className="flex justify-between items-center p-3 border rounded-md bg-slate-50/20">
+                        <div className="flex justify-between items-center p-3 border border-border rounded-md bg-muted/50">
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">Proveedor</span>
                             </div>
                             <ProviderBadge provider={currentProvider} />
                         </div>
                     ) : (
-                        <div className="flex justify-between items-center p-3 border rounded-md bg-amber-50/20">
+                        <div className="flex justify-between items-center p-3 border border-border rounded-md bg-muted/50">
                             <div className="flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-amber-500" />
                                 <span className="font-medium">Proveedor</span>
                             </div>
-                            <span className="text-amber-600 text-sm">No seleccionado</span>
+                            <span className="text-amber-500 text-sm">No seleccionado</span>
                         </div>
                     )}
                 </div>

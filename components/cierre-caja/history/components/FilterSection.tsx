@@ -23,20 +23,20 @@ export const FiltersSection: React.FC<FiltersSectionProps> = ({ filters, onFilte
         filters.searchTerm || filters.month !== "all" || filters.providerFilter !== "all" || filters.statusFilter !== "all"
 
     return (
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-muted p-4 rounded-lg border border-border">
             <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
                     placeholder="Buscar por ID, usuario o proveedor..."
-                    className="pl-9 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                    className="pl-9 bg-card border-border"
                     value={filters.searchTerm}
                     onChange={(e) => onFilterChange("searchTerm", e.target.value)}
                 />
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                 <Select value={filters.month} onValueChange={(value) => onFilterChange("month", value)}>
-                    <SelectTrigger className="w-full md:w-[150px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectTrigger className="w-full md:w-[150px] bg-card border-border">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <SelectValue placeholder="Filtrar por mes" />
@@ -61,7 +61,7 @@ export const FiltersSection: React.FC<FiltersSectionProps> = ({ filters, onFilte
                     onValueChange={(value) => onFilterChange("providerFilter", value)}
                     disabled={providersLoading}
                 >
-                    <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectTrigger className="w-full md:w-[180px] bg-card border-border">
                         <div className="flex items-center gap-2">
                             <Bike className="h-4 w-4 text-muted-foreground" />
                             {providersLoading ? (
@@ -91,7 +91,7 @@ export const FiltersSection: React.FC<FiltersSectionProps> = ({ filters, onFilte
                 </Select>
 
                 <Select value={filters.statusFilter} onValueChange={(value) => onFilterChange("statusFilter", value)}>
-                    <SelectTrigger className="w-full md:w-[150px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectTrigger className="w-full md:w-[150px] bg-card border-border">
                         <div className="flex items-center gap-2">
                             <Filter className="h-4 w-4 text-muted-foreground" />
                             <SelectValue placeholder="Filtrar por estado" />

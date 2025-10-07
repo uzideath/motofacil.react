@@ -56,8 +56,12 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
 
     // Auto-fill form when transactions change
     useEffect(() => {
+        console.log('💰 useCashRegisterForm - selectedTransactions changed:', selectedTransactions);
+        console.log('💰 useCashRegisterForm - incomes:', incomes);
+        
         if (incomes.length > 0) {
             const provider = getProviderDetailsFromTransactions(selectedTransactions);
+            console.log('💰 useCashRegisterForm - extracted provider:', provider);
             setCurrentProvider(provider);
 
             const { cash, transfers, cards } = calculateAutoFillValues(incomes)
@@ -71,6 +75,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 error: false,
             }))
         } else {
+            console.log('💰 useCashRegisterForm - no incomes, clearing provider');
             setCurrentProvider(undefined)
         }
     }, [incomes, selectedTransactions])

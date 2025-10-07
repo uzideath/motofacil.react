@@ -38,7 +38,7 @@ export function CashRegisterHistory() {
     const totalPages = Math.ceil(filteredRegisters.length / itemsPerPageNumber)
 
     return (
-        <Card className="shadow-md border-slate-200 dark:border-slate-800">
+        <Card className="shadow-md bg-card border-border">
             <CardHeader className="pb-3">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>

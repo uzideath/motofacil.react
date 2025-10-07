@@ -18,9 +18,11 @@ import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 
 export default function CierreCajaPage() {
+    // Single shared state for transaction selections across all tabs
     const [selectedTransactions, setSelectedTransactions] = useState<SelectedTransaction[]>([])
     const [token, setToken] = useState<string>("")
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+    const [activeTab, setActiveTab] = useState<string>("summary")
 
     useEffect(() => {
         const localToken = localStorage.getItem("token")
@@ -30,83 +32,61 @@ export default function CierreCajaPage() {
     }, [])
 
     return (
-        <div className="flex-1 w-full">
-            <div className="gradient-bg text-white p-8">
+        <div className="flex-1 w-full h-screen flex flex-col overflow-hidden">
+            <div className="bg-primary text-primary-foreground px-6 py-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Cierre de Caja Diario</h1>
-                        <p className="text-white/80 mt-1">Gestión de ingresos y cierre diario</p>
+                        <h1 className="text-2xl font-bold">Cierre de Caja Diario</h1>
+                        <p className="text-primary-foreground/80 text-sm">Gestión de ingresos y cierre diario</p>
                     </div>
                 </div>
             </div>
 
-            <div className="p-6">
-                <Tabs defaultValue="summary" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-3">
+            <div className="flex-1 overflow-auto p-4">
+                <Tabs 
+                    defaultValue="summary" 
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="h-full flex flex-col space-y-3"
+                >
+                    <TabsList className="grid w-full grid-cols-2 shrink-0">
                         <TabsTrigger value="summary">Resumen del Día</TabsTrigger>
-                        <TabsTrigger value="transactions">Transacciones</TabsTrigger>
                         <TabsTrigger value="register">Cierre de Caja</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="summary" className="space-y-6">
+                    <TabsContent value="summary" className="flex-1 space-y-4 overflow-auto mt-0">
                         <DailySummary />
 
-                        <Card className="card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Historial de Cierres</CardTitle>
+                        <Card className="bg-card border-border">
+                            <CardHeader className="py-3">
+                                <CardTitle className="text-lg">Historial de Cierres</CardTitle>
                                 <CardDescription>Visualice todos los cierres realizados previamente</CardDescription>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="py-3">
                                 <CashRegisterHistory />
                             </CardContent>
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="transactions" className="space-y-6">
-                        <Card className="card-hover-effect">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle>Transacciones del Día</CardTitle>
-                                    <CardDescription>Detalle de todos los ingresos y egresos del día</CardDescription>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <Button variant="outline" size="sm">
-                                        <Printer className="mr-2 h-4 w-4" />
-                                        Imprimir
-                                    </Button>
-                                    <Button variant="outline" size="sm">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Exportar
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <TransactionTable
-                                    token={token}
-                                    onSelect={(selected) => setSelectedTransactions(selected)}
-                                />
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="register" className="space-y-6">
-                        <Card className="card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Cierre de Caja</CardTitle>
+                    <TabsContent value="register" className="flex-1 overflow-auto mt-0">
+                        <Card className="bg-card border-border h-full flex flex-col">
+                            <CardHeader className="py-3 shrink-0">
+                                <CardTitle className="text-lg">Cierre de Caja</CardTitle>
                                 <CardDescription>Registre el cierre de caja del día</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent className="flex-1 overflow-auto space-y-4 py-3">
                                 {/* Date Selector */}
-                                <div className="bg-slate-50 dark:bg-slate-900 border rounded-lg p-4">
+                                <div className="bg-muted border-border border rounded-lg p-3">
                                     <div className="space-y-2">
                                         <Label className="text-sm font-medium">Fecha del Cierre</Label>
-                                        <p className="text-xs text-muted-foreground mb-3">
+                                        <p className="text-xs text-muted-foreground mb-2">
                                             Seleccione la fecha a la que pertenecen las transacciones de este cierre
                                         </p>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
+                                                    size="sm"
                                                     className={cn(
                                                         "w-full justify-start text-left font-normal",
                                                         !selectedDate && "text-muted-foreground"
@@ -131,7 +111,7 @@ export default function CierreCajaPage() {
 
                                 {/* Transactions for Selected Date */}
                                 <div>
-                                    <h3 className="text-lg font-semibold mb-3">
+                                    <h3 className="text-base font-semibold mb-2">
                                         Transacciones disponibles para {format(selectedDate, "PPP", { locale: es })}
                                     </h3>
                                     <TransactionTable

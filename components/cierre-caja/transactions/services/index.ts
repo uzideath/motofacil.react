@@ -18,12 +18,19 @@ export const fetchAvailableTransactions = async (token: string, filterByDate?: D
             // Format date as YYYY-MM-DD
             const dateStr = filterByDate.toISOString().split('T')[0]
             params.specificDate = dateStr
+            console.log('📅 Service - Sending specificDate to API:', dateStr);
+        } else {
+            console.log('📅 Service - No date filter, fetching all transactions');
         }
+
+        console.log('🌐 Service - API request params:', params);
 
         const response = await HttpService.get<TransactionResponse>(API_ENDPOINTS.AVAILABLE_PAYMENTS, {
             headers: { Authorization: token ? `Bearer ${token}` : "" },
             params,
         })
+
+        console.log('✅ Service - API Response:', response.data);
 
         const incomes = mapInstallmentsToTransactions(response.data.installments)
         const expenses = mapExpensesToTransactions(response.data.expenses)

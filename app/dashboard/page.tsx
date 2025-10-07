@@ -121,7 +121,7 @@ function DashboardContent() {
                     <TabsContent value="overview" className="mt-3">
                         <Card>
                             <CardHeader className="p-3">
-                                <CardTitle className="text-sm">Resumen de arrendamientos</CardTitle>
+                                <CardTitle className="text-sm">Resumen de Arrendamientos</CardTitle>
                                 <CardDescription className="text-xs">Últimos 30 días</CardDescription>
                             </CardHeader>
                             <CardContent className="p-3 pt-0">
@@ -133,7 +133,7 @@ function DashboardContent() {
                     <TabsContent value="recent" className="mt-3">
                         <Card>
                             <CardHeader className="p-3">
-                                <CardTitle className="text-sm">arrendamientos Recientes</CardTitle>
+                                <CardTitle className="text-sm">Arrendamientos Recientes</CardTitle>
                                 <CardDescription className="text-xs">Últimos realizados</CardDescription>
                             </CardHeader>
                             <CardContent className="p-3 pt-0">

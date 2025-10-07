@@ -29,13 +29,13 @@ export function TransactionSelectionSummary({
     const allFilteredSelected = selectedCount === totalFilteredItems && totalFilteredItems > 0
 
     return (
-        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-muted border-border">
             <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <CheckSquare className="h-5 w-5 text-blue-600" />
-                            <span className="font-medium text-blue-900 dark:text-blue-100">
+                            <CheckSquare className="h-5 w-5 text-primary" />
+                            <span className="font-medium text-foreground">
                                 {selectedCount} transacción{selectedCount !== 1 ? "es" : ""} seleccionada
                                 {selectedCount !== 1 ? "s" : ""}
                             </span>
@@ -44,18 +44,18 @@ export function TransactionSelectionSummary({
                         <div className="flex items-center gap-3 text-sm">
                             <Badge
                                 variant="secondary"
-                                className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                                className="bg-green-500/10 text-green-500 border-green-500/20"
                             >
                                 Ingresos: {formatCurrency(selectedSummary.totalIncome)}
                             </Badge>
-                            <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300">
+                            <Badge variant="secondary" className="bg-red-500/10 text-red-500 border-red-500/20">
                                 Egresos: {formatCurrency(selectedSummary.totalExpense)}
                             </Badge>
                             <Badge
                                 variant="secondary"
                                 className={`${selectedSummary.netAmount >= 0
-                                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
-                                        : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300"
+                                        ? "bg-primary/10 text-primary border-primary/20"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
                                     }`}
                             >
                                 Neto: {formatCurrency(selectedSummary.netAmount)}
@@ -68,7 +68,7 @@ export function TransactionSelectionSummary({
                             variant="outline"
                             size="sm"
                             onClick={() => onSelectAllFiltered(!allFilteredSelected)}
-                            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/40"
+                            className="text-primary border-border hover:bg-muted"
                         >
                             {allFilteredSelected ? (
                                 <>
@@ -87,7 +87,7 @@ export function TransactionSelectionSummary({
                             variant="outline"
                             size="sm"
                             onClick={onClearAll}
-                            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/40 bg-transparent"
+                            className="text-destructive border-border hover:bg-muted bg-transparent"
                         >
                             <X className="mr-2 h-4 w-4" />
                             Limpiar selección

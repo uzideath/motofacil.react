@@ -32,7 +32,7 @@ export function TransactionListHeader({
 
     return (
         <TableHeader>
-            <TableRow className="bg-slate-50 dark:bg-slate-900/50">
+            <TableRow className="bg-muted/50">
                 <TableHead className="w-12">
                     <Checkbox
                         checked={indeterminate ? "indeterminate" : selectedAll}
