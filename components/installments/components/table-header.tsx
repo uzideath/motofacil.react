@@ -1,7 +1,7 @@
 "use client"
 
 import { TableHeader, TableRow, TableHead } from "@/components/ui/table"
-import { ArrowDownUp, User, BikeIcon as Motorcycle, DollarSign, Calendar, CreditCard, Clock, FileText, BikeIcon, StickyNote } from 'lucide-react'
+import { ArrowDownUp, User, Car, DollarSign, Calendar, CreditCard, Clock, FileText, StickyNote, Navigation } from 'lucide-react'
 import { SortField } from "../utils/types"
 
 interface TableHeaderProps {
@@ -32,17 +32,17 @@ export function InstallmentTableHeader({ sortField, sortDirection, onSort }: Tab
                 </TableHead>
                 <TableHead
                     className="hidden md:table-cell text-blue-200 font-medium cursor-pointer"
-                    onClick={() => onSort("motorcycleModel")}
+                    onClick={() => onSort("vehicleModel")}
                 >
                     <div className="flex items-center">
-                        <Motorcycle className="mr-2 h-4 w-4 text-blue-300/70" />
-                        Motocicleta
-                        {getSortIcon("motorcycleModel")}
+                        <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                        Vehículo
+                        {getSortIcon("vehicleModel")}
                     </div>
                 </TableHead>
                 <TableHead className="hidden md:table-cell text-blue-200 font-medium">
                     <div className="flex items-center">
-                        <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Car className="mr-2 h-4 w-4 text-blue-300/70" />
                         Placa
                     </div>
                 </TableHead>
@@ -55,7 +55,7 @@ export function InstallmentTableHeader({ sortField, sortDirection, onSort }: Tab
                 </TableHead>
                 <TableHead className="text-blue-200 font-medium">
                     <div className="flex items-center">
-                        <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
+                        <Navigation className="mr-2 h-4 w-4 text-blue-300/70" />
                         GPS
                     </div>
                 </TableHead>

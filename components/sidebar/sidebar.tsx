@@ -138,13 +138,13 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     pathname={pathname}
                     hasAccess={(path) => hasAccess(path, user?.roles || [])}
                 />
-                <NavSecondary
+                {/* <NavSecondary
                     items={secondaryItems}
                     pathname={pathname}
                     hasAccess={(path) => hasAccess(path, user?.roles || [])}
                     className="mt-auto"
                     title="Utilidades"
-                />
+                /> */}
                 {user && hasAccess(adminItem.path, user.roles) && (
                     <NavSecondary
                         items={[adminItem]}

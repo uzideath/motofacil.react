@@ -4,7 +4,7 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import { User, BikeIcon as Motorcycle, BikeIcon, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
+import { User, Car, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
 import { CreditCard, FileText } from 'lucide-react'
 import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
@@ -54,14 +54,14 @@ export function InstallmentRow({
             </TableCell>
             <TableCell className="hidden md:table-cell text-blue-200">
                 <div className="flex items-center">
-                    <Motorcycle className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.loan.motorcycle.model}
+                    <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                    {installment.loan.vehicle?.model || installment.loan.motorcycle?.model || "—"}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell text-blue-200">
                 <div className="flex items-center">
-                    <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.loan.motorcycle.plate || "—"}
+                    <Car className="mr-2 h-4 w-4 text-blue-300/70" />
+                    {installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "—"}
                 </div>
             </TableCell>
             <TableCell className="text-blue-200 font-medium">

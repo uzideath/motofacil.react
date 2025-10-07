@@ -90,7 +90,7 @@ export function useTableState({
                 const bName = b.loan?.user?.name?.toLowerCase() || ""
                 return sortDirection === "asc" ? aName.localeCompare(bName) : bName.localeCompare(aName)
             })
-        } else if (sortField === "motorcycleModel") {
+        } else if (sortField === "vehicleModel") {
             sorted.sort((a, b) => {
                 const aModel = a.loan?.vehicle?.model?.toLowerCase() || a.loan?.motorcycle?.model?.toLowerCase() || ""
                 const bModel = b.loan?.vehicle?.model?.toLowerCase() || b.loan?.motorcycle?.model?.toLowerCase() || ""

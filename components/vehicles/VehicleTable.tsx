@@ -77,7 +77,7 @@ export function VehicleTable() {
                 <TableBody>
                   {loading ? (
                     <VehicleTableSkeleton />
-                  ) : vehicles.length === 0 ? (
+                  ) : !vehicles || vehicles.length === 0 ? (
                     <VehicleTableEmptyState hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
                   ) : (
                     vehicles.map((vehicle: Vehicle, index: number) => (
@@ -97,15 +97,17 @@ export function VehicleTable() {
             </div>
           </div>
 
-          <VehicleTablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            onPageChange={setCurrentPage}
-            getPageNumbers={getPageNumbers}
-          />
+          {!loading && vehicles && vehicles.length > 0 && (
+            <VehicleTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              onPageChange={setCurrentPage}
+              getPageNumbers={getPageNumbers}
+            />
+          )}
         </div>
       </CardContent>
 

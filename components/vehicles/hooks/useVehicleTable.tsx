@@ -138,6 +138,15 @@ export function useVehicleTable() {
     }
 
     const exportToCSV = () => {
+        if (!vehicles || vehicles.length === 0) {
+            toast({
+                variant: "destructive",
+                title: "No hay datos para exportar",
+                description: "No hay vehículos disponibles para exportar",
+            })
+            return
+        }
+        
         const headers = ["Tipo", "Marca", "Modelo", "Placa", "Precio", "Color", "Cilindraje", "GPS", "Motor", "Chasis", "Proveedor"]
         const csvRows = [
             headers.join(","),
@@ -153,7 +162,7 @@ export function useVehicleTable() {
                     vehicle.gps || "",
                     vehicle.engine || "",
                     vehicle.chassis || "",
-                    getProviderLabel(vehicle.provider.name),
+                    getProviderLabel(vehicle.provider?.name || ""),
                 ].join(","),
             ),
         ]
@@ -195,7 +204,7 @@ export function useVehicleTable() {
     const uniqueVehicleTypes = Object.values(VehicleType)
 
     const startIndex = (currentPage - 1) * itemsPerPage + 1
-    const endIndex = Math.min(startIndex + vehicles.length - 1, totalItems)
+    const endIndex = Math.min(startIndex + (vehicles?.length || 0) - 1, totalItems)
 
     const getPageNumbers = () => {
         const pages: (number | string)[] = []

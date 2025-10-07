@@ -44,7 +44,8 @@ type InstallmentFormValues = z.infer<typeof installmentSchema>
 
 export type EnrichedLoan = BaseLoan & {
     user: { name: string; identification?: string }
-    motorcycle: { model: string; plate?: string }
+    vehicle: { model: string; plate?: string }
+    motorcycle?: { model: string; plate?: string } // Legacy support
     payments: Installment[]
     monthlyPayment: number
     financedAmount: number
@@ -119,7 +120,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 const tempLoan = {
                     id: installment.loanId,
                     user: { name: "Cliente cargando..." },
-                    motorcycle: { model: "Cargando...", plate: "" },
+                    vehicle: { model: "Cargando...", plate: "" },
                     debtRemaining: 0,
                     interestRate: 0,
                     interestType: "FIXED",
@@ -131,7 +132,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                     monthlyPayment: 0,
                     userId: "",
                     contractNumber: "",
-                    motorcycleId: "",
+                    vehicleId: "",
                     totalAmount: 0,
                     downPayment: 0,
                     startDate: new Date(),
@@ -258,8 +259,11 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 return {
                     ...loan,
                     userName: loan.user?.name ?? "Sin nombre",
-                    motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
-                    motorcyclePlate: loan.motorcycle?.plate ?? "Sin placa",
+                    vehicleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                    vehiclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
+                    // Keep legacy fields for backwards compatibility
+                    motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                    motorcyclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
                     monthlyPayment,
                     financedAmount,
                     totalCapitalPaid: loan.totalPaid,
