@@ -256,6 +256,46 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }
 
+    // Helper function to add business days (excluding Sundays)
+    const addBusinessDaysToDate = (startDate: Date, daysToAdd: number): Date => {
+        let currentDate = new Date(startDate)
+        let addedDays = 0
+
+        while (addedDays < daysToAdd) {
+            currentDate.setDate(currentDate.getDate() + 1)
+            // If it's not Sunday (0 = Sunday), count it
+            if (currentDate.getDay() !== 0) {
+                addedDays++
+            }
+        }
+
+        return currentDate
+    }
+
+    // Calculate end date helper function
+    const calculateEndDateFromStart = (startDateStr: string, paymentFreq: string, termMonths: number): string => {
+        const start = new Date(startDateStr)
+        let calculatedEndDate: Date
+
+        if (paymentFreq === "DAILY") {
+            const businessDays = termMonths * 30
+            calculatedEndDate = addBusinessDaysToDate(start, businessDays)
+        } else if (paymentFreq === "WEEKLY") {
+            const weeks = termMonths * 4
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeks * 7))
+        } else if (paymentFreq === "BIWEEKLY") {
+            const biweeks = termMonths * 2
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setDate(calculatedEndDate.getDate() + (biweeks * 14))
+        } else {
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setMonth(calculatedEndDate.getMonth() + termMonths)
+        }
+
+        return calculatedEndDate.toISOString().split('T')[0]
+    }
+
     const watchedValues = useWatch({
         control: form.control,
         name: [
@@ -271,27 +311,6 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             "gpsAmount",
         ],
     })
-
-    // Watch for date changes to auto-calculate loan term and installments
-    useEffect(() => {
-        if (isMounted.current) {
-            const startDate = form.getValues("startDate")
-            const endDate = form.getValues("endDate")
-            const paymentFrequency = form.getValues("paymentFrequency")
-            
-            if (startDate && endDate) {
-                const calculatedMonths = calculateMonthsFromDates(startDate, endDate)
-                const calculatedInstallments = calculateInstallmentsFromDates(startDate, endDate, paymentFrequency)
-                
-                if (calculatedMonths > 0) {
-                    form.setValue("loanTermMonths", calculatedMonths, { shouldValidate: true })
-                }
-                
-                // The installments will be calculated automatically when submitting
-                // but we need to ensure the loan summary reflects the correct number
-            }
-        }
-    }, [form.watch("startDate"), form.watch("endDate"), form.watch("paymentFrequency")])
 
     useEffect(() => {
         if (isOpen && isMounted.current) {
@@ -422,12 +441,22 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 .find((c) => c.startsWith("authToken="))
                 ?.split("=")[1]
 
+            // Calculate end date if not provided
+            let endDateToUse = values.endDate
+            if (values.startDate && !endDateToUse) {
+                endDateToUse = calculateEndDateFromStart(
+                    values.startDate,
+                    values.paymentFrequency,
+                    values.loanTermMonths
+                )
+            }
+
             // Calculate installments based on dates if available, otherwise use loanTermMonths
             let totalInstallments: number
-            if (values.startDate && values.endDate) {
+            if (values.startDate && endDateToUse) {
                 totalInstallments = calculateInstallmentsFromDates(
                     values.startDate,
-                    values.endDate,
+                    endDateToUse,
                     values.paymentFrequency
                 )
             } else {
@@ -448,8 +477,8 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             if (values.startDate) {
                 submissionValues.startDate = new Date(values.startDate).toISOString()
             }
-            if (values.endDate) {
-                submissionValues.endDate = new Date(values.endDate).toISOString()
+            if (endDateToUse) {
+                submissionValues.endDate = new Date(endDateToUse).toISOString()
             }
 
             // Remove fields that are not part of the API

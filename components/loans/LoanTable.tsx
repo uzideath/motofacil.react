@@ -58,6 +58,7 @@ export function LoanTable() {
             onPageChange={setCurrentPage}
             showArchived={showArchived}
             onShowArchivedChange={setShowArchived}
+            onRefresh={refreshData}
           />
 
           <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">

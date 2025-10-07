@@ -85,7 +85,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Finance items
     const financeItems = [
-        { path: "/prestamos", label: "Arrendamientos", icon: HandCoins },
+        { path: "/arrendamientos", label: "Arrendamientos", icon: HandCoins },
         { path: "/cuotas", label: "Cuotas", icon: BadgeDollarSign },
         { path: "/egresos", label: "Egresos", icon: FileDown },
         { path: "/cierre-caja", label: "Cierre de Caja", icon: LogOut },

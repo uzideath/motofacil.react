@@ -52,7 +52,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                         name="endDate"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Fecha de Finalización</FormLabel>
+                                <FormLabel>Fecha de Finalización (Opcional)</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -63,7 +63,10 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                         />
                                     </div>
                                 </FormControl>
-                                <FormDescription className="text-xs">Fecha estimada de finalización</FormDescription>
+                                <FormDescription className="text-xs">
+                                    Si no se proporciona, se calculará automáticamente
+                                    {formValues.paymentFrequency === "DAILY" && " (excluye domingos)"}
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -119,13 +122,57 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                     </SelectContent>
                                 </Select>
                                 <FormDescription className="text-xs">
-                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días"}
+                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días (lunes a sábado)"}
                                     {formValues.paymentFrequency === "WEEKLY" && "Pagos una vez por semana"}
                                     {formValues.paymentFrequency === "BIWEEKLY" && "Pagos cada dos semanas"}
                                     {formValues.paymentFrequency === "MONTHLY" && "Pagos una vez al mes"}
                                     {formValues.loanTermMonths > 0 && formValues.paymentFrequency && (
                                         <span className="block mt-1 font-medium text-primary">
                                             {(() => {
+                                                // If dates are provided, calculate from dates
+                                                if (formValues.startDate && formValues.endDate) {
+                                                    const calculateInstallmentsFromDates = (startDate: string, endDate: string, frequency: string): number => {
+                                                        const start = new Date(startDate)
+                                                        const end = new Date(endDate)
+                                                        
+                                                        if (start >= end) return 0
+                                                        
+                                                        if (frequency === "DAILY") {
+                                                            let businessDays = 0
+                                                            const currentDate = new Date(start)
+                                                            
+                                                            while (currentDate <= end) {
+                                                                if (currentDate.getDay() !== 0) {
+                                                                    businessDays++
+                                                                }
+                                                                currentDate.setDate(currentDate.getDate() + 1)
+                                                            }
+                                                            
+                                                            return businessDays
+                                                        } else {
+                                                            const diffTime = Math.abs(end.getTime() - start.getTime())
+                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                                                            
+                                                            switch (frequency) {
+                                                                case "WEEKLY": return Math.ceil(diffDays / 7)
+                                                                case "BIWEEKLY": return Math.ceil(diffDays / 14)
+                                                                case "MONTHLY":
+                                                                    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
+                                                                    return Math.max(1, months)
+                                                                default: return 0
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    const installments = calculateInstallmentsFromDates(
+                                                        formValues.startDate, 
+                                                        formValues.endDate, 
+                                                        formValues.paymentFrequency
+                                                    )
+                                                    return `${installments} cuotas (calculado desde fechas)`
+                                                }
+                                                
+                                                // Otherwise use month-based calculation
                                                 const getInstallments = (months: number, freq: string) => {
                                                     switch (freq) {
                                                         case "DAILY": return months * 30

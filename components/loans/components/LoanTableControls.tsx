@@ -15,6 +15,7 @@ interface LoanTableControlsProps {
     onPageChange: (page: number) => void
     showArchived: boolean
     onShowArchivedChange: (value: boolean) => void
+    onRefresh?: () => void
 }
 
 export function LoanTableControls({
@@ -25,6 +26,7 @@ export function LoanTableControls({
     onPageChange,
     showArchived,
     onShowArchivedChange,
+    onRefresh,
 }: LoanTableControlsProps) {
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -89,7 +91,7 @@ export function LoanTableControls({
                         <SelectItem value="50">50 por página</SelectItem>
                     </SelectContent>
                 </Select>
-                <LoanForm>
+                <LoanForm onSaved={onRefresh}>
                     <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Préstamo
