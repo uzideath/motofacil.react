@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card"
 import { CalendarHeader } from "./components/CalendarHeader"
 import { CalendarGrid } from "./components/CalendarGrid"
 import { CalendarLegend } from "./components/CalendarLegend"
+import { CalendarStats } from "./components/CalendarStats"
 import { PaymentDetailsDialog } from "./components/PaymentDetailsDialog"
 import { useCalendarPayments } from "./hooks/useCalendarPayments"
 
@@ -16,14 +17,15 @@ export function CalendarPayments() {
     loading,
     selectedPayment,
     dialogOpen,
-    searchTerm,
-    setSearchTerm,
+    totalPayments,
+    totalAmount,
     setSelectedLoan,
-    setCurrentDate,
     handlePreviousMonth,
     handleNextMonth,
     handleToday,
     handleDayClick,
+    handleRefresh,
+    handleExport,
     setDialogOpen,
   } = useCalendarPayments()
 
@@ -34,13 +36,20 @@ export function CalendarPayments() {
         selectedLoan={selectedLoan}
         loans={loans}
         loading={loading}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
         onLoanSelect={setSelectedLoan}
         onPreviousMonth={handlePreviousMonth}
         onNextMonth={handleNextMonth}
         onToday={handleToday}
+        onRefresh={handleRefresh}
+        onExport={handleExport}
+        totalPayments={totalPayments}
+        totalAmount={totalAmount}
       />
+
+      {/* Statistics Cards */}
+      {selectedLoan && payments.length > 0 && (
+        <CalendarStats payments={payments} currentMonth={currentDate} />
+      )}
 
       <Card className="p-6">
         {!selectedLoan ? (

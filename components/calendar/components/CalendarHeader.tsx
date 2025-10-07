@@ -1,17 +1,36 @@
 "use client"
 
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Search } from "lucide-react"
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar as CalendarIcon, 
+  Check,
+  ChevronsUpDown,
+  Download,
+  Filter,
+  RefreshCw,
+  BarChart3,
+} from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/utils"
 
 type Loan = {
   id: string
@@ -32,12 +51,14 @@ interface CalendarHeaderProps {
   selectedLoan: string | null
   loans: Loan[]
   loading: boolean
-  searchTerm: string
-  onSearchChange: (value: string) => void
   onLoanSelect: (loanId: string | null) => void
   onPreviousMonth: () => void
   onNextMonth: () => void
   onToday: () => void
+  onExport?: () => void
+  onRefresh?: () => void
+  totalPayments?: number
+  totalAmount?: number
 }
 
 export function CalendarHeader({
@@ -45,13 +66,17 @@ export function CalendarHeader({
   selectedLoan,
   loans,
   loading,
-  searchTerm,
-  onSearchChange,
   onLoanSelect,
   onPreviousMonth,
   onNextMonth,
   onToday,
+  onExport,
+  onRefresh,
+  totalPayments = 0,
+  totalAmount = 0,
 }: CalendarHeaderProps) {
+  const [open, setOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
   const monthNames = [
     "Enero",
     "Febrero",
@@ -67,47 +92,162 @@ export function CalendarHeader({
     "Diciembre",
   ]
 
+  const selectedLoanData = loans.find((l) => l.id === selectedLoan)
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const filteredLoans = loans.filter((loan) => {
+    if (!searchValue) return true
+    const search = searchValue.toLowerCase()
+    return (
+      loan.vehicle.plate.toLowerCase().includes(search) ||
+      loan.vehicle.model.toLowerCase().includes(search) ||
+      loan.vehicle.brand.toLowerCase().includes(search) ||
+      loan.user.name.toLowerCase().includes(search)
+    )
+  })
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
+        {/* Top Action Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">Filtrar por Préstamo</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {onRefresh && (
+              <Button variant="outline" size="sm" onClick={onRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Actualizar
+              </Button>
+            )}
+            {onExport && selectedLoan && (
+              <Button variant="outline" size="sm" onClick={onExport}>
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            )}
+          </div>
+        </div>
+
         {/* Search and Filter Section */}
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar por placa, modelo, marca, cliente o identificación..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="lg:w-80">
-            <Select
-              value={selectedLoan || "all"}
-              onValueChange={(value) => onLoanSelect(value === "all" ? null : value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar préstamo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los préstamos</SelectItem>
-                {loans.map((loan) => (
-                  <SelectItem key={loan.id} value={loan.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{loan.vehicle.plate}</span>
-                      <span className="text-muted-foreground">-</span>
-                      <span className="text-sm">{loan.vehicle.brand} {loan.vehicle.model}</span>
-                      <span className="text-muted-foreground">-</span>
-                      <span className="text-sm text-muted-foreground">{loan.user.name}</span>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {selectedLoanData ? (
+                    <div className="flex items-center gap-2 truncate">
+                      <Badge variant="secondary" className="font-mono">
+                        {selectedLoanData.vehicle.plate}
+                      </Badge>
+                      <span className="truncate">
+                        {selectedLoanData.vehicle.brand} {selectedLoanData.vehicle.model}
+                      </span>
                     </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  ) : (
+                    <span className="text-muted-foreground">Buscar préstamo por placa...</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[600px] p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Buscar por placa, modelo, marca o cliente..." 
+                    value={searchValue}
+                    onValueChange={setSearchValue}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No se encontraron préstamos</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="all"
+                        onSelect={() => {
+                          onLoanSelect(null)
+                          setOpen(false)
+                          setSearchValue("")
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            !selectedLoan ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span className="font-medium">Limpiar selección</span>
+                      </CommandItem>
+                      {filteredLoans.map((loan) => (
+                        <CommandItem
+                          key={loan.id}
+                          value={loan.id}
+                          onSelect={(currentValue) => {
+                            onLoanSelect(currentValue === selectedLoan ? null : currentValue)
+                            setOpen(false)
+                            setSearchValue("")
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedLoan === loan.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <div className="flex items-center gap-2 flex-1">
+                            <Badge variant="outline" className="font-mono font-semibold">
+                              {loan.vehicle.plate}
+                            </Badge>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {loan.vehicle.brand} {loan.vehicle.model}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {loan.user.name} - {loan.user.identification}
+                              </span>
+                            </div>
+                            {loan.contractNumber && (
+                              <Badge variant="secondary" className="ml-auto text-xs">
+                                {loan.contractNumber}
+                              </Badge>
+                            )}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
+
+          {/* Statistics */}
+          {selectedLoan && totalPayments > 0 && (
+            <div className="flex items-center gap-4 px-4 py-2 bg-muted/50 rounded-lg">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Pagos</p>
+                <p className="text-lg font-bold">{totalPayments}</p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-bold">{formatCurrency(totalAmount)}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Month Navigation */}

@@ -193,6 +193,156 @@ export function useCalendarPayments() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (selectedLoan) {
+      setLoading(true)
+      // Trigger re-fetch by updating a refresh key or call fetchPayments directly
+      const token = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("authToken="))
+        ?.split("=")[1]
+
+      try {
+        const response = await HttpService.get<any>(`/api/v1/installments?loanId=${selectedLoan}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        })
+
+        const installments = response.data?.data || response.data || []
+        const mappedPayments: Payment[] = installments.map((payment: any) => ({
+          id: payment.id,
+          loanId: payment.loanId,
+          amount: payment.amount,
+          gps: payment.gps || 0,
+          paymentDate: payment.paymentDate,
+          isLate: payment.isLate || false,
+          latePaymentDate: payment.latePaymentDate,
+          notes: payment.notes,
+          paymentMethod: payment.paymentMethod || "CASH",
+          loan: {
+            id: payment.loan?.id ?? selectedLoan,
+            user: {
+              name: payment.loan?.user?.name ?? "Sin nombre",
+              identification: payment.loan?.user?.identification ?? "",
+              phone: payment.loan?.user?.phone ?? "",
+            },
+            vehicle: {
+              model: payment.loan?.vehicle?.model ?? "Sin modelo",
+              plate: payment.loan?.vehicle?.plate ?? "Sin placa",
+              brand: payment.loan?.vehicle?.brand ?? "Sin marca",
+            },
+            contractNumber: payment.loan?.contractNumber,
+          },
+        }))
+
+        setPayments(mappedPayments)
+        toast({
+          title: "Actualizado",
+          description: "Los pagos se han actualizado correctamente",
+        })
+      } catch (error) {
+        console.error("Error al actualizar pagos:", error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No se pudieron actualizar los pagos",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  const handleExport = () => {
+    if (!selectedLoan || payments.length === 0) return
+
+    const selectedLoanData = loans.find((l) => l.id === selectedLoan)
+    if (!selectedLoanData) return
+
+    const headers = [
+      "Fecha",
+      "Monto",
+      "GPS",
+      "Total",
+      "Método de Pago",
+      "Estado",
+      "Notas",
+    ]
+
+    const formatCurrency = (value: number) => {
+      return `$${value.toLocaleString("es-CO", { minimumFractionDigits: 0 })}`
+    }
+
+    const getPaymentMethodText = (method: string) => {
+      const methods: Record<string, string> = {
+        CASH: "Efectivo",
+        NEQUI: "Nequi",
+        DAVIPLATA: "Daviplata",
+        BANCOLOMBIA: "Bancolombia",
+        TRANSFER: "Transferencia",
+        OTHER: "Otro",
+      }
+      return methods[method] || method
+    }
+
+    const escapeCSV = (value: string | number | null | undefined): string => {
+      if (value === null || value === undefined) return ""
+      const stringValue = String(value)
+      if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    const csvRows = [
+      `Calendario de Pagos - ${selectedLoanData.vehicle.plate}`,
+      `Vehículo: ${selectedLoanData.vehicle.brand} ${selectedLoanData.vehicle.model}`,
+      `Cliente: ${selectedLoanData.user.name}`,
+      "",
+      headers.join(","),
+      ...payments
+        .sort((a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime())
+        .map((payment) => {
+          const paymentDate = new Date(payment.paymentDate).toLocaleDateString("es-CO")
+          const total = payment.amount + payment.gps
+          return [
+            escapeCSV(paymentDate),
+            escapeCSV(formatCurrency(payment.amount)),
+            escapeCSV(formatCurrency(payment.gps)),
+            escapeCSV(formatCurrency(total)),
+            escapeCSV(getPaymentMethodText(payment.paymentMethod)),
+            escapeCSV(payment.isLate ? "Tardío" : "A tiempo"),
+            escapeCSV(payment.notes || ""),
+          ].join(",")
+        }),
+      "",
+      `Total de Pagos,${payments.length}`,
+      `Monto Total,${formatCurrency(payments.reduce((sum, p) => sum + p.amount + p.gps, 0))}`,
+      "",
+      `Generado el,${new Date().toLocaleString("es-CO")}`,
+    ]
+
+    const csvContent = "\uFEFF" + csvRows.join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    const timestamp = new Date().toISOString().split("T")[0]
+    link.setAttribute("href", url)
+    link.setAttribute("download", `calendario-pagos-${selectedLoanData.vehicle.plate}-${timestamp}.csv`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${payments.length} pagos al archivo CSV`,
+    })
+  }
+
+  const totalAmount = payments.reduce((sum, payment) => sum + payment.amount + payment.gps, 0)
+
   const filteredLoans = loans.filter((loan) => {
     if (!searchTerm) return true
     const search = searchTerm.toLowerCase()
@@ -214,6 +364,8 @@ export function useCalendarPayments() {
     selectedPayment,
     dialogOpen,
     searchTerm,
+    totalPayments: payments.length,
+    totalAmount,
     setSearchTerm,
     setSelectedLoan,
     setCurrentDate,
@@ -221,6 +373,8 @@ export function useCalendarPayments() {
     handleNextMonth,
     handleToday,
     handleDayClick,
+    handleRefresh,
+    handleExport,
     setDialogOpen,
   }
 }
