@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calculator, Calendar, Clock, Percent, Navigation } from "lucide-react"
+import { Calculator, Calendar, Clock, Percent, Navigation, CalendarDays } from "lucide-react"
 import type { Control } from "react-hook-form"
 
 interface LoanFormTermsCardProps {
@@ -28,6 +28,48 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                         control={control}
+                        name="startDate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Inicio</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            type="date"
+                                            className="pl-9"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormDescription className="text-xs">Fecha de inicio del préstamo</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
+                        name="endDate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Finalización</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            type="date"
+                                            className="pl-9"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormDescription className="text-xs">Fecha estimada de finalización</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
                         name="loanTermMonths"
                         render={({ field }) => (
                             <FormItem>
@@ -43,10 +85,15 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                                 const value = parseFormattedNumber(e.target.value)
                                                 field.onChange(value)
                                             }}
+                                            readOnly={!!(formValues.startDate && formValues.endDate)}
                                         />
                                     </div>
                                 </FormControl>
-                                <FormDescription className="text-xs">Duración total del préstamo en meses</FormDescription>
+                                <FormDescription className="text-xs">
+                                    {formValues.startDate && formValues.endDate 
+                                        ? "Calculado automáticamente desde las fechas" 
+                                        : "Duración total del préstamo en meses"}
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -76,6 +123,22 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                     {formValues.paymentFrequency === "WEEKLY" && "Pagos una vez por semana"}
                                     {formValues.paymentFrequency === "BIWEEKLY" && "Pagos cada dos semanas"}
                                     {formValues.paymentFrequency === "MONTHLY" && "Pagos una vez al mes"}
+                                    {formValues.loanTermMonths > 0 && formValues.paymentFrequency && (
+                                        <span className="block mt-1 font-medium text-primary">
+                                            {(() => {
+                                                const getInstallments = (months: number, freq: string) => {
+                                                    switch (freq) {
+                                                        case "DAILY": return months * 30
+                                                        case "WEEKLY": return months * 4
+                                                        case "BIWEEKLY": return months * 2
+                                                        case "MONTHLY": return months
+                                                        default: return months
+                                                    }
+                                                }
+                                                return `≈ ${getInstallments(formValues.loanTermMonths, formValues.paymentFrequency)} cuotas totales`
+                                            })()}
+                                        </span>
+                                    )}
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>

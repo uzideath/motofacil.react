@@ -37,7 +37,9 @@ export function useLoanTable() {
             const mappedLoans: Loan[] = response.data.map((loan) => ({
                 ...loan,
                 userName: loan.user?.name ?? "Sin nombre",
-                motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
+                vehicleModel: loan.vehicle?.model ?? "Sin modelo",
+                // Backwards compatibility
+                motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
                 archived: loan.archived ?? false, // Default to false if not provided
             }))
             setLoans(mappedLoans)
@@ -168,11 +170,11 @@ export function useLoanTable() {
                     customerAddress: loan.user.address || "Dirección no disponible",
                     customerCity: loan.user.city || "Ciudad no disponible",
                     customerPhone: loan.user.phone || "Teléfono no disponible",
-                    plate: loan.motorcycle.plate || "Placa no disponible",
-                    brand: loan.motorcycle.brand || "Marca no disponible",
-                    engine: loan.motorcycle.engine,
-                    model: loan.motorcycle.model || "Modelo no disponible",
-                    chassis: loan.motorcycle.chassis,
+                    plate: loan.vehicle?.plate || loan.motorcycle?.plate || "Placa no disponible",
+                    brand: loan.vehicle?.brand || loan.motorcycle?.brand || "Marca no disponible",
+                    engine: loan.vehicle?.engine || loan.motorcycle?.engine,
+                    model: loan.vehicle?.model || loan.motorcycle?.model || "Modelo no disponible",
+                    chassis: loan.vehicle?.chassis || loan.motorcycle?.chassis,
                     date: new Date().toISOString(),
                 },
                 {
@@ -215,11 +217,11 @@ export function useLoanTable() {
         if (loan.archived !== showArchived) return false
 
         // Filter by search term
-        const userMatch = loan.user.name?.toLowerCase().includes(searchTerm.toLowerCase())
-        const motoMatch = loan.motorcycle.model?.toLowerCase().includes(searchTerm.toLowerCase())
-        const idMatch = loan.user.identification?.toLowerCase().includes(searchTerm.toLowerCase())
-        const plateMatch = loan.motorcycle.plate?.toLowerCase().includes(searchTerm.toLowerCase())
-        return userMatch || motoMatch || idMatch || plateMatch
+        const userMatch = loan.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        const vehicleMatch = loan.vehicle?.model?.toLowerCase().includes(searchTerm.toLowerCase())
+        const idMatch = loan.user?.identification?.toLowerCase().includes(searchTerm.toLowerCase())
+        const plateMatch = loan.vehicle?.plate?.toLowerCase().includes(searchTerm.toLowerCase())
+        return userMatch || vehicleMatch || idMatch || plateMatch
     })
 
     const totalItems = filteredLoans.length
@@ -251,13 +253,15 @@ export function useLoanTable() {
         const headers = [
             "Cliente",
             "Identificación",
-            "Motocicleta",
+            "Vehículo",
             "Monto Total",
             "Cuota Inicial",
             "Cuotas",
             "Cuotas Pagadas",
             "Deuda Restante",
             "Frecuencia",
+            "Fecha Inicio",
+            "Fecha Fin",
             "Estado",
             "Archivado",
         ]
@@ -267,13 +271,15 @@ export function useLoanTable() {
                 [
                     loan.user.name,
                     loan.user.identification,
-                    loan.motorcycle.model,
+                    loan.vehicle?.model || loan.motorcycle?.model || "Sin modelo",
                     loan.totalAmount,
                     loan.downPayment,
                     loan.installments,
                     loan.paidInstallments,
                     loan.debtRemaining,
                     getPaymentFrequencyText(loan.paymentFrequency || "DAILY"),
+                    loan.startDate ? new Date(loan.startDate).toLocaleDateString('es-CO') : "No establecida",
+                    loan.endDate ? new Date(loan.endDate).toLocaleDateString('es-CO') : "No establecida",
                     loan.status,
                     loan.archived ? "Sí" : "No",
                 ].join(","),

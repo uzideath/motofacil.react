@@ -74,7 +74,7 @@ export function LoanTable() {
                     <TableHead className="hidden md:table-cell text-blue-700 dark:text-blue-300 font-medium">
                       <div className="flex items-center gap-1.5">
                         <Bike className="h-4 w-4" />
-                        <span>Motocicleta</span>
+                        <span>Vehículo</span>
                       </div>
                     </TableHead>
                     <TableHead className="hidden md:table-cell text-blue-700 dark:text-blue-300 font-medium">
@@ -87,6 +87,12 @@ export function LoanTable() {
                       <div className="flex items-center gap-1.5">
                         <CalendarDays className="h-4 w-4" />
                         <span>Cuotas</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="hidden xl:table-cell text-blue-700 dark:text-blue-300 font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <CalendarDays className="h-4 w-4" />
+                        <span>Fecha Inicio</span>
                       </div>
                     </TableHead>
                     <TableHead className="hidden lg:table-cell text-blue-700 dark:text-blue-300 font-medium">
@@ -127,6 +133,9 @@ export function LoanTable() {
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           <Skeleton className="h-5 w-[80px] bg-blue-100/50 dark:bg-blue-900/20" />
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20" />
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           <Skeleton className="h-5 w-[100px] bg-blue-100/50 dark:bg-blue-900/20" />

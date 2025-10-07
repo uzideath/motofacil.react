@@ -175,7 +175,7 @@ export function LoanDetails({
               </InstallmentForm>
             </div>
 
-            {/* Información del cliente y motocicleta */}
+            {/* Información del cliente y vehículo */}
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="card-hover-effect">
                 <CardHeader className="pb-2">
@@ -189,32 +189,49 @@ export function LoanDetails({
                     <Avatar className="h-12 w-12 border border-dark-blue-700 bg-dark-blue-800/50">
                       <AvatarImage
                         src={`/abstract-geometric-shapes.png?height=48&width=48&query=${loan.id}`}
-                        alt={loan.id}
+                        alt={loan.user.name}
                       />
                       <AvatarFallback className="bg-dark-blue-800/80 text-blue-200">
-                        {/* {loan.userName
+                        {loan.user.name
                           .split(" ")
+                          .slice(0, 2)
                           .map((n) => n[0])
                           .join("")
-                          .toUpperCase()} */}
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-medium text-white">
-                        {loan.user.name} {loan.user.refName}
-                      </h3>
+                      <h3 className="font-medium text-white">{loan.user.name}</h3>
                       <p className="text-sm text-blue-200/70">Cliente</p>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
-                      <span className="text-sm text-blue-200/80">ID Cliente</span>
-                      <span className="text-sm font-medium text-white">#{loan.user.identification || "001"}</span>
+                      <span className="text-sm text-blue-200/80">Identificación</span>
+                      <span className="text-sm font-medium text-white">{loan.user.identification || "N/A"}</span>
                     </div>
+                    {loan.user.refName && (
+                      <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
+                        <span className="text-sm text-blue-200/80">Referencia</span>
+                        <span className="text-sm font-medium text-white">{loan.user.refName}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Teléfono</span>
-                      <span className="text-sm font-medium text-white">{loan.user.phone || "none"}</span>
+                      <span className="text-sm font-medium text-white">{loan.user.phone || "N/A"}</span>
                     </div>
+                    {loan.user.address && (
+                      <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
+                        <span className="text-sm text-blue-200/80">Dirección</span>
+                        <span className="text-sm font-medium text-white">{loan.user.address}</span>
+                      </div>
+                    )}
+                    {loan.user.city && (
+                      <div className="flex justify-between py-2">
+                        <span className="text-sm text-blue-200/80">Ciudad</span>
+                        <span className="text-sm font-medium text-white">{loan.user.city}</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -223,7 +240,7 @@ export function LoanDetails({
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center">
                     <Bike className="mr-2 h-5 w-5 text-blue-400" />
-                    Información de la Motocicleta
+                    Información del Vehículo
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -233,24 +250,47 @@ export function LoanDetails({
                     </div>
                     <div>
                       <h3 className="font-medium text-white">
-                        {loan.motorcycle.brand} {loan.motorcycle.model}
+                        {loan.vehicle?.brand || loan.motorcycle?.brand || "N/A"}{" "}
+                        {loan.vehicle?.model || loan.motorcycle?.model || "N/A"}
                       </h3>
-                      <p className="text-sm text-blue-200/70">Motocicleta</p>
+                      <p className="text-sm text-blue-200/70">Vehículo</p>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Marca</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcycle.brand}</span>
+                      <span className="text-sm font-medium text-white">
+                        {loan.vehicle?.brand || loan.motorcycle?.brand || "N/A"}
+                      </span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Modelo</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcycle.model}</span>
+                      <span className="text-sm font-medium text-white">
+                        {loan.vehicle?.model || loan.motorcycle?.model || "N/A"}
+                      </span>
                     </div>
-                    <div className="flex justify-between py-2">
+                    <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
                       <span className="text-sm text-blue-200/80">Placa</span>
-                      <span className="text-sm font-medium text-white">{loan.motorcycle.plate}</span>
+                      <span className="text-sm font-medium text-white">
+                        {loan.vehicle?.plate || loan.motorcycle?.plate || "N/A"}
+                      </span>
                     </div>
+                    {(loan.vehicle?.engine || loan.motorcycle?.engine) && (
+                      <div className="flex justify-between py-2 border-b border-dark-blue-800/50">
+                        <span className="text-sm text-blue-200/80">Motor</span>
+                        <span className="text-sm font-medium text-white">
+                          {loan.vehicle?.engine || loan.motorcycle?.engine}
+                        </span>
+                      </div>
+                    )}
+                    {(loan.vehicle?.chassis || loan.motorcycle?.chassis) && (
+                      <div className="flex justify-between py-2">
+                        <span className="text-sm text-blue-200/80">Chasis</span>
+                        <span className="text-sm font-medium text-white">
+                          {loan.vehicle?.chassis || loan.motorcycle?.chassis}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -270,13 +310,18 @@ export function LoanDetails({
                           <CreditCard className="h-6 w-6 text-blue-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-blue-200/80">ID del Préstamo</p>
-                          <p className="text-lg font-bold text-white">{loan.id}</p>
+                          <p className="text-sm font-medium text-blue-200/80">Estado del Préstamo</p>
+                          <Badge className={`${getStatusColor(loan.status)} text-white px-3 py-1 text-sm mt-1`}>
+                            {getStatusText(loan.status)}
+                          </Badge>
                         </div>
                       </div>
-                      <Badge className={`${getStatusColor(loan.status)} text-white px-3 py-1 text-sm`}>
-                        {getStatusText(loan.status)}
-                      </Badge>
+                      {loan.contractNumber && (
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-blue-200/80">Contrato No.</p>
+                          <p className="text-lg font-bold text-white">{loan.contractNumber}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -285,16 +330,17 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">Precio Total</p>
                     <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Pago inicial: {formatCurrency(loan.downPayment)}</span>
-                      {/* <span>Financiado: {formatCurrency(loan.downPayment)}</span> */}
+                      <span>Pago inicial: {formatCurrency(loan.downPayment || 0)}</span>
                     </div>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Total con Interés</p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.totalAmount + interests)}</p>
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(loan.totalAmount + (interests * loan.installments || 0))}
+                    </p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Tasa: {loan.interestRate}%</span>
+                      <span>Tasa: {loan.interestRate || 0}%</span>
                     </div>
                   </div>
 
@@ -302,35 +348,49 @@ export function LoanDetails({
                     <p className="text-sm font-medium text-blue-200/80">
                       Cuota {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
                     </p>
-                    <p className="text-xl font-bold text-white">{formatCurrency(loan.installmentPaymentAmmount)}</p>
+                    <p className="text-xl font-bold text-white">{formatCurrency(loan.installmentPaymentAmmount || 0)}</p>
                     <div className="flex justify-between text-xs text-blue-200/60 mt-1">
                       <span>Tipo: {getInterestTypeText(loan.interestType || "FIXED")}</span>
-                      <span>Cuotas: {loan.installments}</span>
                     </div>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-200/80">Progreso</p>
-                    <p className="text-xl font-bold text-white">
-                      {loan.paidInstallments} / {loan.installments}
-                    </p>
-                    <div className="mt-2">
-                      <Progress value={(loan.paidInstallments / loan.installments) * 100} className="h-2" />
+                    <p className="text-sm font-medium text-blue-200/80">Total de Cuotas</p>
+                    <p className="text-xl font-bold text-white">{loan.installments || 0}</p>
+                    <div className="flex justify-between text-xs text-blue-200/60 mt-1">
+                      <span>{getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Resumen de pagos */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <DollarSign className="h-4 w-4 text-blue-400 mr-1" />
+                      <p className="text-sm font-medium text-blue-200/80">Progreso de Pagos</p>
+                    </div>
+                    <p className="text-xl font-bold text-white">
+                      {loan.paidInstallments || 0} / {loan.installments || 0}
+                    </p>
+                    <div className="mt-2">
+                      <Progress 
+                        value={loan.installments ? ((loan.paidInstallments || 0) / loan.installments) * 100 : 0} 
+                        className="h-2" 
+                      />
+                    </div>
+                  </div>
+
                   <div className="glass-card p-4 rounded-lg">
                     <div className="flex items-center mb-2">
                       <DollarSign className="h-4 w-4 text-green-400 mr-1" />
                       <p className="text-sm font-medium text-blue-200/80">Total Pagado</p>
                     </div>
-                    <p className="text-xl font-bold text-green-400">{formatCurrency(loan.totalPaid)}</p>
-                    <div className="flex justify-between text-xs text-blue-200/60 mt-1">
-                      <span>Capital: {formatCurrency(loan.totalPaid)}</span>
-                      {/* <span>Interés: {formatCurrency(loan.totalInterestPaid)}</span> */}
+                    <p className="text-xl font-bold text-green-400">{formatCurrency(loan.totalPaid || 0)}</p>
+                    <div className="text-xs text-blue-200/60 mt-1">
+                      <span>
+                        {loan.installments ? ((((loan.paidInstallments || 0) / loan.installments) * 100).toFixed(1)) : 0}% completado
+                      </span>
                     </div>
                   </div>
 
@@ -339,43 +399,50 @@ export function LoanDetails({
                       <DollarSign className="h-4 w-4 text-amber-400 mr-1" />
                       <p className="text-sm font-medium text-blue-200/80">Deuda Restante</p>
                     </div>
-                    <p className="text-xl font-bold text-amber-400">{formatCurrency(loan.debtRemaining)}</p>
-                    <p className="text-xs text-blue-200/60 mt-1">
-                      {/* {((loan.debtRemaining / loan.totalWithInterest) * 100).toFixed(0)}% pendiente */}
-                    </p>
+                    <p className="text-xl font-bold text-amber-400">{formatCurrency(loan.debtRemaining || 0)}</p>
+                    <div className="text-xs text-blue-200/60 mt-1">
+                      <span>{loan.remainingInstallments || 0} cuotas pendientes</span>
+                    </div>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
                     <div className="flex items-center mb-2">
                       <Percent className="h-4 w-4 text-blue-400 mr-1" />
-                      <p className="text-sm font-medium text-blue-200/80">Interés Pagado</p>
+                      <p className="text-sm font-medium text-blue-200/80">Interés Generado</p>
                     </div>
                     <p className="text-xl font-bold text-blue-400">
-                      {formatCurrency(interests * loan.paidInstallments)}
+                      {formatCurrency((interests || 0) * (loan.paidInstallments || 0))}
                     </p>
-
-                    {/* <p className="text-xs text-blue-200/60 mt-1">
-                      {((loan.totalInterestPaid / (loan.totalWithInterest - loan.financedAmount)) * 100).toFixed(0)}%
-                      del interés total
-                    </p> */}
+                    <div className="text-xs text-blue-200/60 mt-1">
+                      <span>{loan.interestRate || 0}% por cuota</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Fechas */}
+                {/* Fechas y GPS */}
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha de Inicio</p>
                     <p className="text-base font-medium text-white">
-                      {loan.startDate ? formatDate(loan.startDate.split("T")[0]) : ""}
+                      {loan.startDate ? formatDate(loan.startDate.split("T")[0]) : "No establecida"}
                     </p>
                   </div>
 
                   <div className="glass-card p-4 rounded-lg">
                     <p className="text-sm font-medium text-blue-200/80">Fecha Estimada de Finalización</p>
                     <p className="text-base font-medium text-white">
-                      {loan.endDate ? formatDate(loan.endDate.split("T")[0]) : ""}
+                      {loan.endDate ? formatDate(loan.endDate.split("T")[0]) : "No establecida"}
                     </p>
                   </div>
+
+                  {loan.gpsInstallmentPayment > 0 && (
+                    <div className="glass-card p-4 rounded-lg">
+                      <p className="text-sm font-medium text-blue-200/80">Pago GPS por Cuota</p>
+                      <p className="text-base font-medium text-white">
+                        {formatCurrency(loan.gpsInstallmentPayment || 0)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
