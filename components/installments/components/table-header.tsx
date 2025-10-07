@@ -65,8 +65,14 @@ export function InstallmentTableHeader({ sortField, sortDirection, onSort }: Tab
                 >
                     <div className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
-                        Fecha
+                        Fecha de Pago
                         {getSortIcon("date")}
+                    </div>
+                </TableHead>
+                <TableHead className="hidden xl:table-cell text-blue-200 font-medium">
+                    <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                        Fecha Creación
                     </div>
                 </TableHead>
                 <TableHead className="text-blue-200 font-medium">

@@ -4,7 +4,7 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import { User, Car, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
+import { User, Car, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote, Clock } from 'lucide-react'
 import { CreditCard, FileText } from 'lucide-react'
 import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
@@ -77,9 +77,22 @@ export function InstallmentRow({
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell text-blue-200">
-                <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {formatSpanishDate(installment.paymentDate)}
+                {installment.isLate && installment.latePaymentDate ? (
+                    <div className="flex items-center text-red-400">
+                        <AlertTriangle className="mr-2 h-4 w-4" />
+                        Pagado: {formatSpanishDate(installment.latePaymentDate)}
+                    </div>
+                ) : (
+                    <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                        {formatSpanishDate(installment.createdAt)}
+                    </div>
+                )}
+            </TableCell>
+            <TableCell className="hidden xl:table-cell text-blue-200">
+                <div className="flex items-center text-sm">
+                    <Clock className="mr-2 h-4 w-4 text-blue-300/70" />
+                    {formatSpanishDate(installment.createdAt)}
                 </div>
             </TableCell>
             <TableCell className="text-blue-200">
