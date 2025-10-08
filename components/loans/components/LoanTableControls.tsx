@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Archive, ArchiveRestore } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Search, Plus, Archive, ArchiveRestore, RefreshCw, FileSpreadsheet, Sparkles } from "lucide-react"
 import { LoanForm } from "../LoanForm"
 
 interface LoanTableControlsProps {
@@ -16,6 +17,7 @@ interface LoanTableControlsProps {
     showArchived: boolean
     onShowArchivedChange: (value: boolean) => void
     onRefresh?: () => void
+    onExportCSV?: () => void
 }
 
 export function LoanTableControls({
@@ -27,6 +29,7 @@ export function LoanTableControls({
     showArchived,
     onShowArchivedChange,
     onRefresh,
+    onExportCSV,
 }: LoanTableControlsProps) {
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -74,23 +77,60 @@ export function LoanTableControls({
             </div>
 
             <div className="flex gap-2 w-full sm:w-auto">
-                <Select
-                    value={itemsPerPage.toString()}
-                    onValueChange={(value) => {
-                        onItemsPerPageChange(Number(value))
-                        onPageChange(1)
-                    }}
-                >
-                    <SelectTrigger className="w-[130px] border-border focus:border-primary">
-                        <SelectValue placeholder="Mostrar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="5">5 por página</SelectItem>
-                        <SelectItem value="10">10 por página</SelectItem>
-                        <SelectItem value="20">20 por página</SelectItem>
-                        <SelectItem value="50">50 por página</SelectItem>
-                    </SelectContent>
-                </Select>
+                {onRefresh && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onRefresh}
+                        className="border-border hover:bg-muted"
+                    >
+                        <RefreshCw className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Actualizar</span>
+                    </Button>
+                )}
+                {onExportCSV && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onExportCSV}
+                        className="border-border hover:bg-muted"
+                    >
+                        <FileSpreadsheet className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Exportar</span>
+                    </Button>
+                )}
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="relative">
+                                <Select
+                                    value={itemsPerPage.toString()}
+                                    onValueChange={(value) => {
+                                        onItemsPerPageChange(Number(value))
+                                        onPageChange(1)
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[150px] border-border focus:border-primary">
+                                        <div className="flex items-center gap-1.5">
+                                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                            <SelectValue placeholder="Mostrar" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5 por página</SelectItem>
+                                        <SelectItem value="8">8 por página</SelectItem>
+                                        <SelectItem value="10">10 por página</SelectItem>
+                                        <SelectItem value="15">15 por página</SelectItem>
+                                        <SelectItem value="20">20 por página</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Ajustado automáticamente según el tamaño de pantalla</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                 <LoanForm onSaved={onRefresh}>
                     <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
                         <Plus className="mr-2 h-4 w-4" />

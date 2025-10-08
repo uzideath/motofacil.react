@@ -1,18 +1,21 @@
-import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
 import { LoanTable } from "@/components/loans/LoanTable"
-import { LoanForm } from "@/components/loans/LoanForm"
-import { MobileSidebar } from "@/components/mobile-sidebar"
+import { PageHeader } from "@/components/PageHeader"
+import { DollarSign, TrendingUp } from "lucide-react"
 
 export default function LoansPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <MobileSidebar />
-        </div>
+    <div className="flex-1 w-full overflow-hidden flex flex-col">
+      <PageHeader
+        icon={DollarSign}
+        title="Arrendamientos"
+        subtitle="Administra los arrendamientos y financiamientos"
+        badgeIcon={TrendingUp}
+        badgeLabel="Activo"
+        badgeColor="green"
+      />
+      <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-background via-background to-muted/20">
+        <LoanTable />
       </div>
-      <LoanTable />
     </div>
   )
 }

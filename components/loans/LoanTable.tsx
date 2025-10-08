@@ -3,11 +3,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent } from "@/components/ui/card"
 import { DollarSign, User, Bike, CalendarDays, Wallet, Activity, Settings } from "lucide-react"
 import { LoanTableControls } from "./components/LoanTableControls"
 import { LoanTableDialogs } from "./components/LoanTableDialogs"
-import { LoanTableHeader } from "./components/LoanTableHeader"
 import { LoanTablePagination } from "./components/LoanTablePagination"
 import { LoanTableRow } from "./components/LoanTableRow"
 import { useLoanTable } from "./hooks/useLoanTable"
@@ -45,25 +43,22 @@ export function LoanTable() {
   } = useLoanTable()
 
   return (
-    <Card className="bg-card border-border shadow-md">
-      <LoanTableHeader onRefresh={refreshData} onExportCSV={exportToCSV} />
+    <div className="h-full flex flex-col space-y-4">
+      <LoanTableControls
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        onPageChange={setCurrentPage}
+        showArchived={showArchived}
+        onShowArchivedChange={setShowArchived}
+        onRefresh={refreshData}
+        onExportCSV={exportToCSV}
+      />
 
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          <LoanTableControls
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-            onPageChange={setCurrentPage}
-            showArchived={showArchived}
-            onShowArchivedChange={setShowArchived}
-            onRefresh={refreshData}
-          />
-
-          <div className="rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
+      <div className="flex-1 rounded-lg border border-border overflow-hidden shadow-sm">
+        <div className="h-full overflow-auto">
+          <Table>
                 <TableHeader>
                   <TableRow className="bg-muted hover:bg-muted">
                     <TableHead className="text-foreground font-medium">
@@ -198,16 +193,14 @@ export function LoanTable() {
             </div>
           </div>
 
-          <LoanTablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </CardContent>
+      <LoanTablePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        onPageChange={setCurrentPage}
+      />
 
       <LoanTableDialogs
         printingContract={printingContract}
@@ -220,6 +213,6 @@ export function LoanTable() {
         onConfirmDelete={confirmDelete}
         onConfirmArchive={confirmArchive}
       />
-    </Card>
+    </div>
   )
 }

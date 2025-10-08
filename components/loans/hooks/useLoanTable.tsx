@@ -22,6 +22,25 @@ export function useLoanTable() {
 
     const { toast } = useToast()
 
+    // Auto-adjust items per page based on screen height
+    useEffect(() => {
+        const calculateItemsPerPage = () => {
+            const height = window.innerHeight
+            // Estimate: ~60px for header, ~200px for controls/pagination, ~65px per row
+            const availableHeight = height - 350
+            const rowHeight = 65
+            const calculatedItems = Math.floor(availableHeight / rowHeight)
+            // Min 5, max 20 items
+            const items = Math.max(5, Math.min(20, calculatedItems))
+            setItemsPerPage(items)
+        }
+
+        calculateItemsPerPage()
+        window.addEventListener('resize', calculateItemsPerPage)
+        
+        return () => window.removeEventListener('resize', calculateItemsPerPage)
+    }, [])
+
     const fetchLoans = async () => {
         try {
             setLoading(true)
