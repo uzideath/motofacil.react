@@ -14,6 +14,7 @@ import { LoanReportTable } from "./loan-report-table"
 import { PaymentReportTable } from "./payment-report-table"
 import { ClientReportTable } from "./client-report-table"
 import { MotorcycleReportTable } from "./motorcycle-report-table"
+import { MissingInstallmentsReportTable } from "./missing-installments-report-table"
 import { ReportSummary } from "./report-summary"
 import { ReportCharts } from "./report-charts"
 import { useReports, type ReportFilters } from "@/hooks/useReports"
@@ -21,6 +22,7 @@ import type { DateRange } from "react-day-picker"
 
 export default function ReportsDashboard() {
   const [activeTab, setActiveTab] = useState("prestamos")
+  const [clientSubTab, setClientSubTab] = useState<"general" | "missing">("general")
   const [filterStatus, setFilterStatus] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
@@ -32,10 +34,12 @@ export default function ReportsDashboard() {
     paymentReport,
     clientReport,
     vehicleReport,
+    missingInstallmentsReport,
     fetchLoanReport,
     fetchPaymentReport,
     fetchClientReport,
     fetchVehicleReport,
+    fetchMissingInstallmentsReport,
     fetchAllReports,
     exportReport,
   } = useReports()
@@ -72,7 +76,11 @@ export default function ReportsDashboard() {
         fetchPaymentReport(filters)
         break
       case "clientes":
-        fetchClientReport(filters)
+        if (clientSubTab === "missing") {
+          fetchMissingInstallmentsReport(filters)
+        } else {
+          fetchClientReport(filters)
+        }
         break
       case "motocicletas":
         fetchVehicleReport(filters)
@@ -98,6 +106,7 @@ export default function ReportsDashboard() {
     payments: paymentReport || { total: 0, onTime: 0, late: 0, totalCollected: 0, pendingCollection: 0, items: [] },
     clients: clientReport || { total: 0, active: 0, inactive: 0, withDefaultedLoans: 0, items: [] },
     motorcycles: vehicleReport || { total: 0, financed: 0, available: 0, totalValue: 0, items: [] },
+    missingInstallments: missingInstallmentsReport || { totalClients: 0, totalMissedPayments: 0, totalMissedAmount: 0, criticalClients: 0, items: [] },
   }
 
   // Format currency consistently (fixes hydration issue)
@@ -270,22 +279,47 @@ export default function ReportsDashboard() {
                 )}
                 {activeTab === "clientes" && (
                   <>
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
-                      <div className="text-lg font-bold">{reportData.clients.total}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase">Activos</div>
-                      <div className="text-lg font-bold text-green-500">{reportData.clients.active}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase">Inactivos</div>
-                      <div className="text-lg font-bold text-gray-500">{reportData.clients.inactive}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-muted-foreground uppercase">En Mora</div>
-                      <div className="text-lg font-bold text-red-500">{reportData.clients.withDefaultedLoans}</div>
-                    </div>
+                    {clientSubTab === "general" ? (
+                      <>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                          <div className="text-lg font-bold">{reportData.clients.total}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Activos</div>
+                          <div className="text-lg font-bold text-green-500">{reportData.clients.active}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Inactivos</div>
+                          <div className="text-lg font-bold text-gray-500">{reportData.clients.inactive}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">En Mora</div>
+                          <div className="text-lg font-bold text-red-500">{reportData.clients.withDefaultedLoans}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Clientes</div>
+                          <div className="text-lg font-bold text-amber-600">{reportData.missingInstallments.totalClients}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Cuotas</div>
+                          <div className="text-lg font-bold text-red-600">{reportData.missingInstallments.totalMissedPayments}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Monto</div>
+                          <div className="text-sm font-semibold text-red-600">
+                            {formatCompactCurrency(reportData.missingInstallments.totalMissedAmount)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-muted-foreground uppercase">Críticos</div>
+                          <div className="text-lg font-bold text-red-600">{reportData.missingInstallments.criticalClients}</div>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
                 {activeTab === "motocicletas" && (
@@ -372,7 +406,34 @@ export default function ReportsDashboard() {
                   </CardContent>
                 </Card>
               ) : (
-                <ClientReportTable data={reportData?.clients.items || []} />
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      variant={clientSubTab === "general" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setClientSubTab("general")}
+                    >
+                      Clientes General
+                    </Button>
+                    <Button
+                      variant={clientSubTab === "missing" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setClientSubTab("missing")
+                        if (!missingInstallmentsReport) {
+                          fetchMissingInstallmentsReport(getFilters())
+                        }
+                      }}
+                    >
+                      Cuotas Pendientes
+                    </Button>
+                  </div>
+                  {clientSubTab === "general" ? (
+                    <ClientReportTable data={reportData?.clients.items || []} />
+                  ) : (
+                    <MissingInstallmentsReportTable data={reportData?.missingInstallments.items || []} />
+                  )}
+                </div>
               )}
             </TabsContent>
 

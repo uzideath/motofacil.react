@@ -12,6 +12,7 @@ import {
   type PaymentReportSummary,
   type ClientReportSummary,
   type VehicleReportSummary,
+  type MissingInstallmentReportSummary,
 } from "@/lib/services/reports.service"
 
 export interface ReportFilters {
@@ -28,6 +29,7 @@ export function useReports() {
   const [paymentReport, setPaymentReport] = useState<PaymentReportSummary | null>(null)
   const [clientReport, setClientReport] = useState<ClientReportSummary | null>(null)
   const [vehicleReport, setVehicleReport] = useState<VehicleReportSummary | null>(null)
+  const [missingInstallmentsReport, setMissingInstallmentsReport] = useState<MissingInstallmentReportSummary | null>(null)
 
   // Fetch Loan Report
   const fetchLoanReport = useCallback(async (filters: ReportFilters = {}) => {
@@ -139,6 +141,24 @@ export function useReports() {
     }
   }, [toast])
 
+  // Fetch Missing Installments Report
+  const fetchMissingInstallmentsReport = useCallback(async (filters: ReportFilters = {}) => {
+    try {
+      setLoading(true)
+      const data = await reportsService.getMissingInstallmentsReport(filters)
+      setMissingInstallmentsReport(data)
+    } catch (error: any) {
+      console.error("Error fetching missing installments report:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar reporte",
+        description: error.response?.data?.message || "No se pudo cargar el reporte de cuotas pendientes",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [toast])
+
   // Fetch all reports
   const fetchAllReports = useCallback(async (filters: ReportFilters = {}) => {
     await Promise.all([
@@ -146,8 +166,9 @@ export function useReports() {
       fetchPaymentReport(filters),
       fetchClientReport(filters),
       fetchVehicleReport(filters),
+      fetchMissingInstallmentsReport(filters),
     ])
-  }, [fetchLoanReport, fetchPaymentReport, fetchClientReport, fetchVehicleReport])
+  }, [fetchLoanReport, fetchPaymentReport, fetchClientReport, fetchVehicleReport, fetchMissingInstallmentsReport])
 
   return {
     loading,
@@ -155,10 +176,12 @@ export function useReports() {
     paymentReport,
     clientReport,
     vehicleReport,
+    missingInstallmentsReport,
     fetchLoanReport,
     fetchPaymentReport,
     fetchClientReport,
     fetchVehicleReport,
+    fetchMissingInstallmentsReport,
     fetchAllReports,
     exportReport,
   }
