@@ -9,7 +9,6 @@ import { useProviderTable } from "./hooks/useProviderTable"
 import { ProviderDeleteDialog } from "./ProviderDeleteDialog"
 import { ProviderTableControls } from "./table/ProviderTableControls"
 import { ProviderTableEmptyState } from "./table/ProviderTableEmptyState"
-import { ProviderTableHeader } from "./table/ProviderTableHeader"
 import { ProviderTableHeaders } from "./table/ProviderTableHeaders"
 import { ProviderTablePagination } from "./table/ProviderTablePagination"
 import { ProviderTableRow } from "./table/ProviderTableRow"
@@ -76,18 +75,10 @@ export function ProviderTable() {
     }
 
     return (
-        <div className="space-y-6">
-            <Card className="bg-card border-border shadow-md">
-                <ProviderTableHeader 
-                    onRefresh={() => {
-                        refreshProviders()
-                        loadProviderStats()
-                    }} 
-                    onExport={exportToCSV} 
-                />
-
-                <CardContent className="p-6">
-                    <div className="space-y-6">
+        <div className="space-y-6 h-full flex flex-col">
+            <Card className="bg-card border-border shadow-md flex-1 flex flex-col overflow-hidden">
+                <CardContent className="p-6 flex-1 flex flex-col overflow-hidden">
+                    <div className="space-y-6 h-full flex flex-col">
                         <ProviderTableControls
                             searchTerm={searchTerm}
                             setSearchTerm={setSearchTerm}
@@ -97,10 +88,15 @@ export function ProviderTable() {
                             onProviderCreated={handleProviderCreated}
                             createProvider={createProvider}
                             updateProvider={updateProvider}
+                            onRefresh={() => {
+                                refreshProviders()
+                                loadProviderStats()
+                            }}
+                            onExport={exportToCSV}
                         />
 
-                        <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
-                            <div className="overflow-x-auto">
+                        <div className="flex-1 rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+                            <div className="overflow-auto h-full">
                                 <Table>
                                     <ProviderTableHeaders />
                                     <TableBody>

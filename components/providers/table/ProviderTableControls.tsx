@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Plus } from "lucide-react"
+import { Search, Plus, RefreshCw, FileSpreadsheet } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { Provider } from "@/lib/types"
 import { ProviderForm } from "../form/ProviderForm"
 
@@ -16,6 +17,8 @@ interface ProviderTableControlsProps {
     onProviderCreated: (provider?: Provider) => void
     createProvider: (name: string) => Promise<Provider>
     updateProvider: (id: string, name: string) => Promise<Provider>
+    onRefresh: () => void
+    onExport: () => void
 }
 
 export function ProviderTableControls({
@@ -27,6 +30,8 @@ export function ProviderTableControls({
     onProviderCreated,
     createProvider,
     updateProvider,
+    onRefresh,
+    onExport,
 }: ProviderTableControlsProps) {
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -41,6 +46,40 @@ export function ProviderTableControls({
                 />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={onRefresh}
+                                className="border-border hover:bg-accent"
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Actualizar datos</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={onExport}
+                                className="border-border hover:bg-accent"
+                            >
+                                <FileSpreadsheet className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Exportar a CSV</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                 <Select
                     value={itemsPerPage.toString()}
                     onValueChange={(value) => {
