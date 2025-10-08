@@ -264,25 +264,50 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 headers: { Authorization: token ? `Bearer ${token}` : "" },
             })
             const rawData = res.data
-            const mappedLoans: EnrichedLoan[] = rawData.map((loan) => {
-                const financedAmount = loan.totalAmount - loan.downPayment
-                // Use the installmentPaymentAmmount directly - it's already the correct amount per installment
-                const monthlyPayment = loan.installmentPaymentAmmount || 0
-                return {
-                    ...loan,
-                    userName: loan.user?.name ?? "Sin nombre",
-                    vehicleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
-                    vehiclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
-                    // Keep legacy fields for backwards compatibility
-                    motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
-                    motorcyclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
-                    monthlyPayment,
-                    financedAmount,
-                    totalCapitalPaid: loan.totalPaid || 0,
-                    nextInstallmentNumber: (loan.paidInstallments || 0) + 1,
-                    payments: loan.payments || [],
-                }
-            })
+            
+            // Debug: Log all loans and their archived status
+            console.log('📦 All loans from API:', rawData.map(loan => ({
+                id: loan.id,
+                contractNumber: loan.contractNumber,
+                userName: loan.user?.name,
+                plate: loan.vehicle?.plate,
+                archived: loan.archived,
+                status: loan.status
+            })))
+            
+            const mappedLoans: EnrichedLoan[] = rawData
+                .filter((loan) => {
+                    const shouldInclude = !loan.archived && loan.status !== "ARCHIVED"
+                    console.log(`🔍 Loan ${loan.contractNumber} (${loan.user?.name}): archived=${loan.archived}, status=${loan.status}, include=${shouldInclude}`)
+                    return shouldInclude
+                })
+                .map((loan) => {
+                    const financedAmount = loan.totalAmount - loan.downPayment
+                    // Use the installmentPaymentAmmount directly - it's already the correct amount per installment
+                    const monthlyPayment = loan.installmentPaymentAmmount || 0
+                    return {
+                        ...loan,
+                        userName: loan.user?.name ?? "Sin nombre",
+                        vehicleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                        vehiclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
+                        // Keep legacy fields for backwards compatibility
+                        motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                        motorcyclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
+                        monthlyPayment,
+                        financedAmount,
+                        totalCapitalPaid: loan.totalPaid || 0,
+                        nextInstallmentNumber: (loan.paidInstallments || 0) + 1,
+                        payments: loan.payments || [],
+                    }
+                })
+            
+            console.log(`✅ Filtered loans count: ${mappedLoans.length}`, mappedLoans.map(l => ({
+                contractNumber: l.contractNumber,
+                userName: l.user?.name,
+                archived: l.archived,
+                status: l.status
+            })))
+            
             setLoans(mappedLoans)
             if (loanId) {
                 const loan = mappedLoans.find((l) => l.id === loanId)
