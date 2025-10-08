@@ -44,7 +44,8 @@ type InstallmentFormValues = z.infer<typeof installmentSchema>
 
 export type EnrichedLoan = BaseLoan & {
     user: { name: string; identification?: string }
-    motorcycle: { model: string; plate?: string }
+    vehicle: { model: string; plate?: string }
+    motorcycle?: { model: string; plate?: string } // Legacy support
     payments: Installment[]
     monthlyPayment: number
     financedAmount: number
@@ -119,7 +120,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 const tempLoan = {
                     id: installment.loanId,
                     user: { name: "Cliente cargando..." },
-                    motorcycle: { model: "Cargando...", plate: "" },
+                    vehicle: { model: "Cargando...", plate: "" },
                     debtRemaining: 0,
                     interestRate: 0,
                     interestType: "FIXED",
@@ -131,7 +132,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                     monthlyPayment: 0,
                     userId: "",
                     contractNumber: "",
-                    motorcycleId: "",
+                    vehicleId: "",
                     totalAmount: 0,
                     downPayment: 0,
                     startDate: new Date(),
@@ -184,45 +185,57 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
     const calculatePaymentBreakdown = (loan: EnrichedLoan, paymentAmount: number, gpsAmount: number) => {
         const paymentAmountNum = Number(paymentAmount) || 0
         const gpsAmountNum = Number(gpsAmount) || 0
-        const monthlyRate = loan.interestRate / 100 / 12
-        const remainingPrincipal = loan.debtRemaining
+        const interestRate = Number(loan.interestRate) || 0
+        const installments = Number(loan.installments) || 1
+        const financedAmount = Number(loan.financedAmount) || 0
+        const remainingPrincipal = Number(loan.debtRemaining) || 0
+        
+        const monthlyRate = interestRate / 100 / 12
+        
         const interestAmount =
             loan.interestType === "FIXED"
                 ? Math.min(
                     paymentAmountNum,
-                    (loan.financedAmount * (loan.interestRate / 100) * (loan.installments / 12)) / loan.installments,
+                    (financedAmount * (interestRate / 100) * (installments / 12)) / installments,
                 )
                 : Math.min(paymentAmountNum, remainingPrincipal * monthlyRate)
 
-        const principalAmount = paymentAmountNum - interestAmount
+        const principalAmount = Math.max(0, paymentAmountNum - interestAmount)
         const totalAmount = paymentAmountNum + gpsAmountNum
 
         setPaymentBreakdown({ principalAmount, interestAmount, totalAmount })
 
         // Calculate last installment info
         if (loan.payments && loan.payments.length > 0) {
-            // Sort payments by date to get the most recent one
+            // Sort payments by the actual payment date to get the most recent one
             const sortedPayments = [...loan.payments].sort(
                 (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
             )
             const lastPayment = sortedPayments[0]
-            const lastPaymentDate = new Date(lastPayment.paymentDate)
+            
+            // For late payments, calculate days since the DUE date (latePaymentDate)
+            // For on-time payments, calculate days since the payment date
+            const relevantDate = lastPayment.isLate && lastPayment.latePaymentDate 
+                ? new Date(lastPayment.latePaymentDate)  // Due date (how late it was)
+                : new Date(lastPayment.paymentDate)      // Payment date (on-time)
+            
             const today = new Date()
 
             // Set time to start of day for accurate day comparison
             const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-            const lastPaymentStart = new Date(
-                lastPaymentDate.getFullYear(),
-                lastPaymentDate.getMonth(),
-                lastPaymentDate.getDate(),
+            const relevantDateStart = new Date(
+                relevantDate.getFullYear(),
+                relevantDate.getMonth(),
+                relevantDate.getDate(),
             )
 
+            // Calculate days since the relevant date
             const daysSinceLastPayment = Math.floor(
-                (todayStart.getTime() - lastPaymentStart.getTime()) / (1000 * 60 * 60 * 24),
+                (todayStart.getTime() - relevantDateStart.getTime()) / (1000 * 60 * 60 * 24),
             )
 
             setLastInstallmentInfo({
-                lastPaymentDate,
+                lastPaymentDate: relevantDate,
                 daysSinceLastPayment,
             })
         } else {
@@ -253,17 +266,20 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             const rawData = res.data
             const mappedLoans: EnrichedLoan[] = rawData.map((loan) => {
                 const financedAmount = loan.totalAmount - loan.downPayment
-                const monthlyPayment =
-                    loan.paymentFrequency === "MONTHLY" ? loan.installmentPaymentAmmount : loan.installmentPaymentAmmount * 30
+                // Use the installmentPaymentAmmount directly - it's already the correct amount per installment
+                const monthlyPayment = loan.installmentPaymentAmmount || 0
                 return {
                     ...loan,
                     userName: loan.user?.name ?? "Sin nombre",
-                    motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
-                    motorcyclePlate: loan.motorcycle?.plate ?? "Sin placa",
+                    vehicleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                    vehiclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
+                    // Keep legacy fields for backwards compatibility
+                    motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
+                    motorcyclePlate: loan.vehicle?.plate ?? loan.motorcycle?.plate ?? "Sin placa",
                     monthlyPayment,
                     financedAmount,
-                    totalCapitalPaid: loan.totalPaid,
-                    nextInstallmentNumber: loan.paidInstallments + 1,
+                    totalCapitalPaid: loan.totalPaid || 0,
+                    nextInstallmentNumber: (loan.paidInstallments || 0) + 1,
                     payments: loan.payments || [],
                 }
             })
@@ -273,8 +289,12 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 if (loan) {
                     setSelectedLoan(loan)
                     form.setValue("loanId", loanId)
-                    form.setValue("amount", loan.monthlyPayment)
-                    calculatePaymentBreakdown(loan, loan.monthlyPayment, 0)
+                    // Use the actual loan's payment amount
+                    const paymentAmount = loan.monthlyPayment || loan.installmentPaymentAmmount || 0
+                    const gpsAmount = loan.gpsInstallmentPayment || 0
+                    form.setValue("amount", paymentAmount)
+                    form.setValue("gps", gpsAmount)
+                    calculatePaymentBreakdown(loan, paymentAmount, gpsAmount)
                 }
             }
             setLoadingData(false)
@@ -292,9 +312,11 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         const loan = loans.find((l) => l.id === loanId)
         if (loan) {
             setSelectedLoan(loan)
-            form.setValue("amount", 32000)
-            form.setValue("gps", 2000)
-            calculatePaymentBreakdown(loan, 32000, 2000)
+            // Use the actual loan's payment amount
+            form.setValue("amount", loan.monthlyPayment || loan.installmentPaymentAmmount || 0)
+            // Use the actual GPS amount from the loan
+            form.setValue("gps", loan.gpsInstallmentPayment || 0)
+            calculatePaymentBreakdown(loan, loan.monthlyPayment || loan.installmentPaymentAmmount || 0, loan.gpsInstallmentPayment || 0)
         } else {
             setSelectedLoan(null)
             setPaymentBreakdown(null)

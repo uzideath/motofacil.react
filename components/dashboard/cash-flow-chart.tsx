@@ -2,42 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-
-const data = [
-  {
-    name: "Ene",
-    ingresos: 25000000,
-    egresos: 18000000,
-  },
-  {
-    name: "Feb",
-    ingresos: 28000000,
-    egresos: 19500000,
-  },
-  {
-    name: "Mar",
-    ingresos: 32000000,
-    egresos: 22000000,
-  },
-  {
-    name: "Abr",
-    ingresos: 30000000,
-    egresos: 21000000,
-  },
-  {
-    name: "May",
-    ingresos: 35000000,
-    egresos: 23500000,
-  },
-  {
-    name: "Jun",
-    ingresos: 38000000,
-    egresos: 25000000,
-  },
-]
+import { useDashboardContext } from "./dashboard-provider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function CashFlowChart() {
   const [isMounted, setIsMounted] = useState(false)
+  const { data, loading } = useDashboardContext()
+  const cashFlowData = data?.cashFlow || []
 
   useEffect(() => {
     setIsMounted(true)
@@ -53,13 +24,31 @@ export function CashFlowChart() {
   }
 
   if (!isMounted) {
-    return <div className="h-[300px] flex items-center justify-center">Cargando gráfico...</div>
+    return (
+      <div className="h-[300px] space-y-3">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    )
+  }
+
+  if (loading || cashFlowData.length === 0) {
+    return (
+      <div className="h-[300px] space-y-3">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    )
   }
 
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={cashFlowData}>
           <defs>
             <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />

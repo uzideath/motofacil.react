@@ -4,7 +4,7 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 
-import { User, BikeIcon as Motorcycle, BikeIcon, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote } from 'lucide-react'
+import { User, Car, DollarSign, BadgeCent, Calendar, AlertTriangle, CheckCircle2, StickyNote, Clock } from 'lucide-react'
 import { CreditCard, FileText } from 'lucide-react'
 import { getPaymentMethodIcon, formatSpanishDate, getPaymentMethodLabel } from "../utils/format"
 import { ActionsMenu } from "./actions"
@@ -45,44 +45,63 @@ export function InstallmentRow({
     }
 
     return (
-        <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/30 transition-colors duration-150">
-            <TableCell className="font-medium text-white">
+        <TableRow className="border-border hover:bg-muted/50 transition-colors duration-150">
+            <TableCell className="font-medium text-foreground">
                 <div className="flex items-center">
-                    <User className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <User className="mr-2 h-4 w-4 text-muted-foreground" />
                     {installment.loan.user.name}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-muted-foreground">
                 <div className="flex items-center">
-                    <Motorcycle className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.loan.motorcycle.model}
+                    <Car className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {installment.loan.vehicle?.model || installment.loan.motorcycle?.model || "—"}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-muted-foreground">
                 <div className="flex items-center">
-                    <BikeIcon className="mr-2 h-4 w-4 text-blue-300/70" />
-                    {installment.loan.motorcycle.plate || "—"}
+                    <Car className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "—"}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200 font-medium">
+            <TableCell className="text-foreground font-medium">
                 <div className="flex items-center">
                     <DollarSign className="mr-1 h-4 w-4 text-green-400" />
                     {formatCurrency(installment.amount)}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200 font-medium">
+            <TableCell className="text-foreground font-medium">
                 <div className="flex items-center">
                     <BadgeCent className="mr-1 h-4 w-4 text-yellow-400" />
                     {formatCurrency(installment.gps)}
                 </div>
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-foreground">
                 <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
                     {formatSpanishDate(installment.paymentDate)}
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200">
+            <TableCell className="hidden lg:table-cell text-foreground">
+                {installment.isLate && installment.latePaymentDate ? (
+                    <div className="flex items-center text-red-400">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.latePaymentDate)}
+                    </div>
+                ) : (
+                    <div className="flex items-center text-muted-foreground">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.paymentDate)}
+                    </div>
+                )}
+            </TableCell>
+            <TableCell className="hidden xl:table-cell text-foreground">
+                <div className="flex items-center text-sm">
+                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {formatSpanishDate(installment.createdAt)}
+                </div>
+            </TableCell>
+            <TableCell className="text-foreground">
                 <div className="flex items-center whitespace-nowrap">
                     {getIcon(installment.paymentMethod)}
                     {getPaymentMethodLabel(installment.paymentMethod)}
@@ -107,9 +126,9 @@ export function InstallmentRow({
                     </Badge>
                 )}
             </TableCell>
-            <TableCell className="hidden md:table-cell text-blue-200">
+            <TableCell className="hidden md:table-cell text-foreground">
                 <div className="flex items-center">
-                    <StickyNote className="mr-2 h-4 w-4 text-blue-300/70" />
+                    <StickyNote className="mr-2 h-4 w-4 text-muted-foreground" />
                     <NoteDisplay
                         notes={installment.notes || ""}
                         maxLength={30}
@@ -117,7 +136,7 @@ export function InstallmentRow({
                     />
                 </div>
             </TableCell>
-            <TableCell className="text-blue-200">
+            <TableCell className="text-foreground">
                 <div className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-blue-400" />
                     {installment.createdBy?.name ?? "—"}

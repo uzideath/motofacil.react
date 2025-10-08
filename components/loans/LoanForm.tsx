@@ -26,13 +26,13 @@ export function LoanForm({ children, loanId, loanData, onSaved }: LoanFormProps)
     loading,
     loadingData,
     availableUsers,
-    availableMotorcycles,
+    availableVehicles,
     loanSummary,
     form,
     formValues,
     handleOpenDialog,
     handleCloseDialog,
-    handleMotorcycleChange,
+    handleVehicleChange,
     onSubmit,
     formatCurrency,
     formatNumber,
@@ -55,7 +55,7 @@ export function LoanForm({ children, loanId, loanData, onSaved }: LoanFormProps)
                 Complete el formulario para {loanId ? "actualizar el" : "crear un nuevo"} préstamo.
                 {!loanId && (
                   <span className="block text-sm text-muted-foreground mt-1">
-                    Solo se muestran clientes y motocicletas disponibles (no asignados a préstamos activos).
+                    Solo se muestran clientes y vehículos disponibles (no asignados a préstamos activos).
                   </span>
                 )}
               </DialogDescription>
@@ -73,8 +73,8 @@ export function LoanForm({ children, loanId, loanData, onSaved }: LoanFormProps)
                   <LoanFormClientVehicleCard
                     control={form.control}
                     availableUsers={availableUsers}
-                    availableMotorcycles={availableMotorcycles}
-                    onMotorcycleChange={handleMotorcycleChange}
+                    availableVehicles={availableVehicles}
+                    onVehicleChange={handleVehicleChange}
                     formatCurrency={formatCurrency}
                   />
 

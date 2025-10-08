@@ -123,14 +123,14 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
         }
       case "motocicletas":
         return {
-          title: "Resumen de Motocicletas",
-          description: "Estadísticas generales de motocicletas",
+          title: "Resumen de Vehículos",
+          description: "Estadísticas generales de vehículos",
           stats: [
             {
-              title: "Total de Motocicletas",
+              title: "Total de Vehículos",
               value: data.motorcycles.total,
               icon: <MotorcycleIcon className="h-4 w-4 text-blue-500" />,
-              description: `${data.motorcycles.financed} financiadas, ${data.motorcycles.available} disponibles`,
+              description: `${data.motorcycles.financed} financiados, ${data.motorcycles.available} disponibles`,
             },
             {
               title: "Valor Total",
@@ -139,13 +139,13 @@ export function ReportSummary({ data, activeTab }: ReportSummaryProps) {
               description: `Promedio: ${formatCurrency(data.motorcycles.totalValue / data.motorcycles.total)}`,
             },
             {
-              title: "Motocicletas Financiadas",
+              title: "Vehículos Financiados",
               value: data.motorcycles.financed,
               icon: <ArrowUpIcon className="h-4 w-4 text-emerald-500" />,
               description: `${((data.motorcycles.financed / data.motorcycles.total) * 100).toFixed(1)}% del total`,
             },
             {
-              title: "Motocicletas Disponibles",
+              title: "Vehículos Disponibles",
               value: data.motorcycles.available,
               icon: <MotorcycleIcon className="h-4 w-4 text-amber-500" />,
               description: `${((data.motorcycles.available / data.motorcycles.total) * 100).toFixed(1)}% del total`,

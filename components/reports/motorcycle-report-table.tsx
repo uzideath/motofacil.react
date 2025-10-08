@@ -38,12 +38,16 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
   }
 
   // Formatear fecha
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) {
+      return 'N/A'
+    }
     return new Intl.DateTimeFormat("es-CO", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    }).format(date)
+    }).format(dateObj)
   }
 
   // Filtrar y ordenar datos
@@ -82,8 +86,8 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Reporte de Motocicletas</CardTitle>
-            <CardDescription>Listado detallado de motocicletas y su estado</CardDescription>
+            <CardTitle>Reporte de Vehículos</CardTitle>
+            <CardDescription>Listado detallado de vehículos y su estado</CardDescription>
           </div>
           <Button variant="outline" size="sm" className="flex items-center gap-1">
             <DownloadIcon className="h-4 w-4" />
@@ -95,7 +99,7 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
             <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Buscar motocicletas..."
+              placeholder="Buscar vehículos..."
               className="pl-8"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -226,7 +230,7 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-4">
-                    No se encontraron motocicletas
+                    No se encontraron vehículos
                   </TableCell>
                 </TableRow>
               )}
@@ -239,7 +243,7 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
               Mostrando {(page - 1) * itemsPerPage + 1} a {Math.min(page * itemsPerPage, filteredData.length)} de{" "}
-              {filteredData.length} motocicletas
+              {filteredData.length} vehículos
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>

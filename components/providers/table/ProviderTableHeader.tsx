@@ -20,15 +20,15 @@ interface ProviderTableHeaderProps {
 
 export function ProviderTableHeader({ onRefresh, onExport }: ProviderTableHeaderProps) {
     return (
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-sky-500 text-white p-6">
+        <CardHeader className="bg-primary text-primary-foreground p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
-                        <Building className="h-6 w-6 text-white" />
+                    <div className="bg-primary-foreground/20 backdrop-blur-sm p-2 rounded-full">
+                        <Building className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div>
                         <CardTitle className="text-xl font-bold">Gestión de Proveedores</CardTitle>
-                        <CardDescription className="text-blue-100">Administra los proveedores del sistema</CardDescription>
+                        <CardDescription className="text-primary-foreground/80">Administra los proveedores del sistema</CardDescription>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -39,7 +39,7 @@ export function ProviderTableHeader({ onRefresh, onExport }: ProviderTableHeader
                                     variant="ghost"
                                     size="icon"
                                     onClick={onRefresh}
-                                    className="bg-white/10 hover:bg-white/20 text-white"
+                                    className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground"
                                 >
                                     <RefreshCw className="h-4 w-4" />
                                 </Button>
@@ -51,7 +51,7 @@ export function ProviderTableHeader({ onRefresh, onExport }: ProviderTableHeader
                     </TooltipProvider>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="bg-white/10 hover:bg-white/20 text-white">
+                            <Button variant="ghost" size="icon" className="bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground">
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>

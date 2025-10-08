@@ -19,53 +19,53 @@ export function UserTableRow({ user, index, onEdit, onDelete }: UserTableRowProp
     return (
         <TableRow
             key={`user-row-${user.id}-${index}`}
-            className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+            className="hover:bg-muted/50"
         >
             <TableCell>
                 <div className="font-medium flex items-center gap-1.5">
-                    <User className="h-4 w-4 text-blue-500" />
+                    <User className="h-4 w-4 text-primary" />
                     {user.name}
                 </div>
-                <div className="md:hidden text-xs text-gray-500 flex items-center gap-1 mt-1">
-                    <Hash className="h-3 w-3 text-gray-400" />
+                <div className="md:hidden text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Hash className="h-3 w-3" />
                     {user.identification}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">
                 <Badge
                     variant="outline"
-                    className="font-mono text-xs bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                    className="font-mono text-xs"
                 >
                     {user.identification}
                 </Badge>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                    <MapPin className="h-4 w-4 text-indigo-500" />
+                <div className="flex items-center gap-1.5 text-foreground">
+                    <MapPin className="h-4 w-4 text-primary" />
                     {user.idIssuedAt || "—"}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">
                 <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <Calendar className="h-4 w-4 text-primary" />
                     <span className="font-medium">{user.age}</span>
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                    <Phone className="h-4 w-4 text-green-500" />
+                <div className="flex items-center gap-1.5 text-foreground">
+                    <Phone className="h-4 w-4 text-primary" />
                     {user.phone}
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300 truncate max-w-[200px]">
-                    <Home className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-foreground truncate max-w-[200px]">
+                    <Home className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="truncate">{user.address}</span>
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
-                <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300 truncate max-w-[150px]">
-                    <MapPin className="h-4 w-4 text-teal-500 flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-foreground truncate max-w-[150px]">
+                    <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="truncate">{user.city || "—"}</span>
                 </div>
             </TableCell>
@@ -79,7 +79,7 @@ export function UserTableRow({ user, index, onEdit, onDelete }: UserTableRowProp
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            className="border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                                            className="bg-primary/10 text-primary hover:bg-primary/20"
                                         >
                                             <Edit className="h-4 w-4" />
                                             <span className="sr-only">Editar</span>
@@ -99,7 +99,7 @@ export function UserTableRow({ user, index, onEdit, onDelete }: UserTableRowProp
                                     variant="outline"
                                     size="icon"
                                     onClick={() => onDelete(user.id)}
-                                    className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:hover:text-red-300"
+                                    className="bg-destructive/10 text-destructive hover:bg-destructive/20"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                     <span className="sr-only">Eliminar</span>

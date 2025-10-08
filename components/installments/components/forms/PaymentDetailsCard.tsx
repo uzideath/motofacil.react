@@ -105,7 +105,7 @@ export function PaymentDetailsCard({ control, isLate }: PaymentDetailsCardProps)
                     name="paymentDate"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Fecha de pago</FormLabel>
+                            <FormLabel>Fecha de la cuota</FormLabel>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <FormControl>
@@ -160,7 +160,7 @@ export function PaymentDetailsCard({ control, isLate }: PaymentDetailsCardProps)
                         name="latePaymentDate"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Fecha de pago atrasado</FormLabel>
+                                <FormLabel>Fecha a la que pertenece esta cuota</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
@@ -184,7 +184,7 @@ export function PaymentDetailsCard({ control, isLate }: PaymentDetailsCardProps)
                                         />
                                     </PopoverContent>
                                 </Popover>
-                                <FormDescription>Fecha en que se realizó el pago atrasado</FormDescription>
+                                <FormDescription>Fecha de vencimiento original de esta cuota</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

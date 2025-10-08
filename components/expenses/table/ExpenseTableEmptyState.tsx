@@ -11,13 +11,13 @@ interface ExpenseTableEmptyStateProps {
 
 export function ExpenseTableEmptyState({ hasActiveFilters, onClearFilters }: ExpenseTableEmptyStateProps) {
     return (
-        <TableRow className="border-blue-100 dark:border-blue-900/30">
-            <TableCell colSpan={10} className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <TableRow className="border-border">
+            <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                 <div className="flex flex-col items-center justify-center gap-2">
-                    <Receipt className="h-10 w-10 text-blue-300/50 dark:text-blue-700/30" />
+                    <Receipt className="h-10 w-10 text-muted-foreground" />
                     <p className="text-sm">No se encontraron egresos con los criterios de búsqueda.</p>
                     {hasActiveFilters && (
-                        <Button variant="link" onClick={onClearFilters} className="text-blue-500 dark:text-blue-400">
+                        <Button variant="link" onClick={onClearFilters} className="text-primary">
                             Limpiar filtros
                         </Button>
                     )}

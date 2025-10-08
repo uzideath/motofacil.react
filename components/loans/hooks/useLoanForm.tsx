@@ -6,13 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
-import { Loan, Motorcycle, User } from "@/lib/types"
+import { Loan, Vehicle, User } from "@/lib/types"
 
 const loanSchema = z.object({
     userId: z.string().min(1, { message: "Por favor, selecciona un cliente." }),
-    motorcycleId: z.string().min(1, { message: "Por favor, selecciona una motocicleta." }),
+    vehicleId: z.string().min(1, { message: "Por favor, selecciona un vehículo." }),
     totalAmount: z.coerce.number().min(1, { message: "El precio total debe ser mayor a cero." }),
     downPayment: z.coerce.number().min(0, { message: "El pago inicial no puede ser negativo." }),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     loanTermMonths: z.coerce.number().min(1, { message: "El plazo del préstamo debe ser al menos 1 mes." }),
     interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
     interestType: z.enum(["FIXED", "COMPOUND"]),
@@ -42,6 +44,59 @@ const getInstallmentsFromMonths = (months: number, frequency: string): number =>
         default:
             return months
     }
+}
+
+const calculateInstallmentsFromDates = (startDate: string, endDate: string, frequency: string): number => {
+    if (!startDate || !endDate) return 0
+    
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    
+    if (start >= end) return 0
+    
+    const diffTime = Math.abs(end.getTime() - start.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    switch (frequency) {
+        case "DAILY":
+            // Count business days (Monday-Saturday, excluding Sundays)
+            let businessDays = 0
+            const currentDate = new Date(start)
+            
+            while (currentDate <= end) {
+                // If it's not Sunday (0 = Sunday), count it
+                if (currentDate.getDay() !== 0) {
+                    businessDays++
+                }
+                currentDate.setDate(currentDate.getDate() + 1)
+            }
+            
+            return Math.max(1, businessDays)
+        case "WEEKLY":
+            return Math.ceil(diffDays / 7)
+        case "BIWEEKLY":
+            return Math.ceil(diffDays / 14)
+        case "MONTHLY":
+            const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
+            return Math.max(1, months)
+        default:
+            return 0
+    }
+}
+
+const calculateMonthsFromDates = (startDate: string, endDate: string): number => {
+    if (!startDate || !endDate) return 0
+    
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    
+    if (start >= end) return 0
+    
+    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
+    const dayDiff = end.getDate() - start.getDate()
+    
+    // Add fraction of month if there are extra days
+    return Math.max(1, Math.round(months + (dayDiff / 30)))
 }
 
 const getFrequencyText = (frequency: string): string => {
@@ -86,9 +141,9 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [users, setUsers] = useState<User[]>([])
-    const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([])
+    const [vehicles, setVehicles] = useState<Vehicle[]>([])
     const [availableUsers, setAvailableUsers] = useState<User[]>([])
-    const [availableMotorcycles, setAvailableMotorcycles] = useState<Motorcycle[]>([])
+    const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([])
     const [loadingData, setLoadingData] = useState(false)
     const [loanSummary, setLoanSummary] = useState<any>(null)
     const { toast } = useToast()
@@ -100,9 +155,11 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         resolver: zodResolver(loanSchema),
         defaultValues: {
             userId: "",
-            motorcycleId: "",
+            vehicleId: "",
             totalAmount: 4000000,
             downPayment: 0,
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: "",
             loanTermMonths: 18,
             interestRate: 12,
             interestType: "FIXED",
@@ -141,7 +198,17 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             let paymentAmount: number
             let totalPaymentWithGps: number
 
-            const totalInstallments = getInstallmentsFromMonths(loanTermMonths, values.paymentFrequency)
+            // Calculate installments based on dates if available, otherwise use loanTermMonths
+            let totalInstallments: number
+            if (values.startDate && values.endDate) {
+                totalInstallments = calculateInstallmentsFromDates(
+                    values.startDate,
+                    values.endDate,
+                    values.paymentFrequency
+                )
+            } else {
+                totalInstallments = getInstallmentsFromMonths(loanTermMonths, values.paymentFrequency)
+            }
 
             if (values.interestType === "FIXED") {
                 const interestAmount = financedAmount * (interestRate / 100) * (loanTermMonths / 12)
@@ -189,11 +256,53 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }
 
+    // Helper function to add business days (excluding Sundays)
+    const addBusinessDaysToDate = (startDate: Date, daysToAdd: number): Date => {
+        let currentDate = new Date(startDate)
+        let addedDays = 0
+
+        while (addedDays < daysToAdd) {
+            currentDate.setDate(currentDate.getDate() + 1)
+            // If it's not Sunday (0 = Sunday), count it
+            if (currentDate.getDay() !== 0) {
+                addedDays++
+            }
+        }
+
+        return currentDate
+    }
+
+    // Calculate end date helper function
+    const calculateEndDateFromStart = (startDateStr: string, paymentFreq: string, termMonths: number): string => {
+        const start = new Date(startDateStr)
+        let calculatedEndDate: Date
+
+        if (paymentFreq === "DAILY") {
+            const businessDays = termMonths * 30
+            calculatedEndDate = addBusinessDaysToDate(start, businessDays)
+        } else if (paymentFreq === "WEEKLY") {
+            const weeks = termMonths * 4
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeks * 7))
+        } else if (paymentFreq === "BIWEEKLY") {
+            const biweeks = termMonths * 2
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setDate(calculatedEndDate.getDate() + (biweeks * 14))
+        } else {
+            calculatedEndDate = new Date(start)
+            calculatedEndDate.setMonth(calculatedEndDate.getMonth() + termMonths)
+        }
+
+        return calculatedEndDate.toISOString().split('T')[0]
+    }
+
     const watchedValues = useWatch({
         control: form.control,
         name: [
             "totalAmount",
             "downPayment",
+            "startDate",
+            "endDate",
             "loanTermMonths",
             "interestRate",
             "interestType",
@@ -210,7 +319,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }, [watchedValues, isOpen])
 
-    const filterAvailableOptions = async (allUsers: User[], allMotorcycles: Motorcycle[]) => {
+    const filterAvailableOptions = async (allUsers: User[], allVehicles: Vehicle[]) => {
         try {
             const token = document.cookie
                 .split("; ")
@@ -226,27 +335,27 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 (loan) => !loan.archived && loan.status !== "COMPLETED" && loan.status !== "DEFAULTED",
             )
 
-            // Get IDs of users and motorcycles that are already assigned to active loans
+            // Get IDs of users and vehicles that are already assigned to active loans
             const assignedUserIds = new Set(activeLoans.map((loan) => loan.userId))
-            const assignedMotorcycleIds = new Set(activeLoans.map((loan) => loan.motorcycleId))
+            const assignedVehicleIds = new Set(activeLoans.map((loan) => loan.vehicleId))
 
-            // If we're editing a loan, allow the current user and motorcycle to be available
+            // If we're editing a loan, allow the current user and vehicle to be available
             if (loanData) {
                 assignedUserIds.delete(loanData.userId)
-                assignedMotorcycleIds.delete(loanData.motorcycleId)
+                assignedVehicleIds.delete(loanData.vehicleId)
             }
 
-            // Filter out assigned users and motorcycles
+            // Filter out assigned users and vehicles
             const filteredUsers = allUsers.filter((user) => !assignedUserIds.has(user.id))
-            const filteredMotorcycles = allMotorcycles.filter((motorcycle) => !assignedMotorcycleIds.has(motorcycle.id))
+            const filteredVehicles = allVehicles.filter((vehicle) => !assignedVehicleIds.has(vehicle.id))
 
             setAvailableUsers(filteredUsers)
-            setAvailableMotorcycles(filteredMotorcycles)
+            setAvailableVehicles(filteredVehicles)
         } catch (error) {
             console.error("Error filtering available options:", error)
             // Fallback to showing all options if filtering fails
             setAvailableUsers(allUsers)
-            setAvailableMotorcycles(allMotorcycles)
+            setAvailableVehicles(allVehicles)
         }
     }
 
@@ -259,18 +368,21 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 .find((c) => c.startsWith("authToken="))
                 ?.split("=")[1]
 
-            const [userRes, motoRes] = await Promise.all([
+            const [userRes, vehicleRes] = await Promise.all([
                 HttpService.get<User[]>("/api/v1/users", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
-                HttpService.get<Motorcycle[]>("/api/v1/motorcycles", {
+                HttpService.get<{ data: Vehicle[]; pagination: any }>("/api/v1/vehicles", {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                 }),
             ])
 
-            setUsers(userRes.data)
-            setMotorcycles(motoRes.data)
+            const users = userRes.data
+            const vehicles = vehicleRes.data.data || []
+
+            setUsers(users)
+            setVehicles(vehicles)
 
             // Filter available options based on existing loans
-            await filterAvailableOptions(userRes.data, motoRes.data)
+            await filterAvailableOptions(users, vehicles)
 
             if (loanData) {
                 // Convert installments back to months if needed
@@ -295,9 +407,11 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
 
                 form.reset({
                     userId: loanData.userId,
-                    motorcycleId: loanData.motorcycleId,
+                    vehicleId: loanData.vehicleId,
                     totalAmount: loanData.totalAmount,
                     downPayment: loanData.downPayment ?? 0,
+                    startDate: loanData.startDate ? new Date(loanData.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                    endDate: loanData.endDate ? new Date(loanData.endDate).toISOString().split('T')[0] : "",
                     loanTermMonths: loanTermMonths,
                     interestRate: loanData.interestRate ?? 12,
                     interestType: loanData.interestType ?? "FIXED",
@@ -314,8 +428,8 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }
 
-    const handleMotorcycleChange = (motorcycleId: string) => {
-        const selected = motorcycles.find((m) => m.id === motorcycleId)
+    const handleVehicleChange = (vehicleId: string) => {
+        const selected = vehicles.find((v) => v.id === vehicleId)
         if (selected) form.setValue("totalAmount", selected.price || 0)
     }
 
@@ -327,9 +441,29 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 .find((c) => c.startsWith("authToken="))
                 ?.split("=")[1]
 
-            const totalInstallments = getInstallmentsFromMonths(values.loanTermMonths, values.paymentFrequency)
+            // Calculate end date if not provided
+            let endDateToUse = values.endDate
+            if (values.startDate && !endDateToUse) {
+                endDateToUse = calculateEndDateFromStart(
+                    values.startDate,
+                    values.paymentFrequency,
+                    values.loanTermMonths
+                )
+            }
 
-            const submissionValues = {
+            // Calculate installments based on dates if available, otherwise use loanTermMonths
+            let totalInstallments: number
+            if (values.startDate && endDateToUse) {
+                totalInstallments = calculateInstallmentsFromDates(
+                    values.startDate,
+                    endDateToUse,
+                    values.paymentFrequency
+                )
+            } else {
+                totalInstallments = getInstallmentsFromMonths(values.loanTermMonths, values.paymentFrequency)
+            }
+
+            const submissionValues: any = {
                 ...values,
                 totalAmount: Number(values.totalAmount) || 0,
                 downPayment: Number(values.downPayment) || 0,
@@ -339,9 +473,17 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 gpsInstallmentPayment: Number(values.gpsAmount) || 0,
             }
 
+            // Add dates if provided
+            if (values.startDate) {
+                submissionValues.startDate = new Date(values.startDate).toISOString()
+            }
+            if (endDateToUse) {
+                submissionValues.endDate = new Date(endDateToUse).toISOString()
+            }
+
             // Remove fields that are not part of the API
-            delete (submissionValues as any).loanTermMonths
-            delete (submissionValues as any).gpsAmount
+            delete submissionValues.loanTermMonths
+            delete submissionValues.gpsAmount
 
             let response
             if (loanId) {
@@ -381,7 +523,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         loading,
         loadingData,
         availableUsers,
-        availableMotorcycles,
+        availableVehicles,
         loanSummary,
         form,
         formValues,
@@ -389,7 +531,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         // Actions
         handleOpenDialog,
         handleCloseDialog,
-        handleMotorcycleChange,
+        handleVehicleChange,
         onSubmit,
 
         // Utilities

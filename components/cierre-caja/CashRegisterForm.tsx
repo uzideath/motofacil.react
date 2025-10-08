@@ -19,7 +19,7 @@ import { useCashRegisterForm } from "./form/hooks/useCashRegisterForm"
 import { CashRegisterFormProps } from "./form/types"
 
 
-export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFormProps) {
+export function CashRegisterForm({ token, selectedTransactions, closingDate }: CashRegisterFormProps) {
     const [activeTab, setActiveTab] = useState("summary")
 
     const {
@@ -35,7 +35,7 @@ export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFo
         handleSubmit,
         resetForm,
         setShowSuccessDialog,
-    } = useCashRegisterForm(selectedTransactions)
+    } = useCashRegisterForm(selectedTransactions, closingDate)
 
     return (
         <>
@@ -53,10 +53,10 @@ export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFo
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Panel izquierdo - Formulario */}
-                    <Card className="border shadow-sm lg:col-span-1">
-                        <CardHeader className="pb-3 border-b">
+                    <Card className="bg-card border-border shadow-sm lg:col-span-1">
+                        <CardHeader className="pb-3 border-b border-border">
                             <CardTitle className="flex items-center gap-2 text-xl">
-                                <Receipt className="h-5 w-5" />
+                                <Receipt className="h-5 w-5 text-primary" />
                                 Registro de Valores
                             </CardTitle>
                             <CardDescription>Ingrese los montos recibidos por cada método de pago</CardDescription>
@@ -66,10 +66,10 @@ export function CashRegisterForm({ token, selectedTransactions }: CashRegisterFo
                             <FormInputs formState={formState} isReadOnly={isReadOnly} onInputChange={handleInputChange} />
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">
-                            <Button type="submit" disabled={!isFormValid} className="w-full shadow-sm transition-all">
+                            <Button type="submit" disabled={!isFormValid} className="w-full shadow-sm transition-all bg-primary hover:bg-primary/90">
                                 {formState.submitting ? (
                                     <div className="flex items-center gap-2">
-                                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
                                         <span>Procesando...</span>
                                     </div>
                                 ) : (

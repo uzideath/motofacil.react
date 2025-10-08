@@ -26,16 +26,26 @@ type User = {
     updatedAt: string
 }
 
-type Motorcycle = {
+export enum VehicleType {
+    MOTORCYCLE = "MOTORCYCLE",
+    CAR = "CAR",
+    TRUCK = "TRUCK",
+    VAN = "VAN",
+    ATV = "ATV",
+    OTHER = "OTHER",
+}
+
+type Vehicle = {
     id: string
     providerId: string
     provider: Provider
+    vehicleType: VehicleType
     brand: string
     model: string
     plate: string
     price?: number
-    engine: string
-    chassis: string
+    engine?: string
+    chassis?: string
     color: string | null
     cc: number | null
     gps: number | null
@@ -43,11 +53,14 @@ type Motorcycle = {
     updatedAt: string
 }
 
+// Legacy type alias for backwards compatibility
+type Motorcycle = Vehicle
+
 export type Loan = {
     id: string
     userId: string
     contractNumber: string | null
-    motorcycleId: string
+    vehicleId: string
     totalAmount: number
     downPayment: number
     installments: number
@@ -68,7 +81,10 @@ export type Loan = {
     status: LoanStatus
     payments: Installment[]
     user: User
-    motorcycle: Motorcycle
+    vehicle: Vehicle
+    // Legacy property for backwards compatibility
+    motorcycleId?: string
+    motorcycle?: Vehicle
 }
 
 
@@ -125,10 +141,81 @@ type Expense = {
 type Provider = {
     id: string
     name: string
-    motorcylces: Motorcycle[]
+    vehicles: Vehicle[]
+    motorcylces?: Motorcycle[] // Legacy property for backwards compatibility
     cashRegisters: Closing[]
     createdAt: string
     updatedAt: string
+}
+
+export interface ProviderStats {
+    id: string
+    name: string
+    totalVehicles: number
+    activeLoans: number
+    completedLoans: number
+    totalRevenue: number
+    pendingPayments: number
+    totalCashRegisters: number
+    lastCashRegisterDate: string | null
+    totalExpenses: number
+    vehiclesByStatus: {
+        AVAILABLE: number
+        RENTED: number
+        MAINTENANCE: number
+        SOLD: number
+    }
+    recentActivity: {
+        lastLoan: string | null
+        lastPayment: string | null
+        lastExpense: string | null
+    }
+    financialSummary: {
+        totalIncome: number
+        totalExpenses: number
+        netProfit: number
+    }
+}
+
+export interface ProviderDetails {
+    provider: {
+        id: string
+        name: string
+        createdAt: string
+        updatedAt: string
+    }
+    stats: ProviderStats
+    recentVehicles: Array<{
+        id: string
+        brand: string
+        model: string
+        year: number
+        plate: string
+        status: string
+        purchasePrice: number
+        createdAt: string
+    }>
+    recentLoans: Array<{
+        id: string
+        loanAmount: number
+        status: string
+        startDate: string
+        vehicle: {
+            brand: string
+            model: string
+            plate: string
+        }
+        user: {
+            name: string
+        }
+    }>
+    recentExpenses: Array<{
+        id: string
+        description: string
+        amount: number
+        category: string
+        date: string
+    }>
 }
 
 export interface Closing {
@@ -236,6 +323,7 @@ export type {
     Installment,
     User,
     Provider,
+    Vehicle,
     Motorcycle,
     Expense,
     SummaryData

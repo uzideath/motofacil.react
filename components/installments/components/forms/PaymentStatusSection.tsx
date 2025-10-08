@@ -99,7 +99,7 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                             )}
                         </div>
                         <div className="text-right">
-                            <p className="text-sm font-medium text-muted-foreground">Días transcurridos:</p>
+                            <p className="text-sm font-medium text-muted-foreground">Días desde última cuota:</p>
                             <p className="text-2xl font-bold">{lastInstallmentInfo?.daysSinceLastPayment ?? 0}</p>
                         </div>
                     </div>

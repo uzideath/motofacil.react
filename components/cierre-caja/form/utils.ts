@@ -3,8 +3,24 @@ import { ChartData, FormCalculations, FormState, SelectedTransaction } from "./t
 
 
 export const getProviderDetailsFromTransactions = (transactions: SelectedTransaction[]): Provider | undefined => {
-    const incomesWithProvider = transactions.filter((t) => t.type === "income" && t.provider);
-    return incomesWithProvider.length > 0 ? incomesWithProvider[0].provider : undefined;
+    console.log('🔍 getProviderDetailsFromTransactions - All transactions:', transactions);
+    
+    const incomesWithProvider = transactions.filter((t) => {
+        const hasProvider = t.type === "income" && t.provider;
+        console.log(`Transaction ${t.id}:`, {
+            type: t.type,
+            hasProvider: !!t.provider,
+            provider: t.provider
+        });
+        return hasProvider;
+    });
+    
+    console.log('📊 Incomes with provider:', incomesWithProvider);
+    
+    const selectedProvider = incomesWithProvider.length > 0 ? incomesWithProvider[0].provider : undefined;
+    console.log('✅ Selected provider:', selectedProvider);
+    
+    return selectedProvider;
 }
 
 export const calculateFormValues = (formState: FormState): FormCalculations => {

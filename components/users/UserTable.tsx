@@ -38,7 +38,7 @@ export function UserTable() {
   } = useUserTable()
 
   return (
-    <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+    <Card className="bg-card border-border shadow-md">
       <UserTableHeader onRefresh={refreshData} onExport={exportToCSV} />
 
       <CardContent className="p-6">
@@ -52,7 +52,7 @@ export function UserTable() {
             onUserCreated={handleUserCreated}
           />
 
-          <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
                 <UserTableHeaders />

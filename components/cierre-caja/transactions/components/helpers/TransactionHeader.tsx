@@ -41,7 +41,7 @@ export function TransactionHeader({
                     <CardDescription>
                         Gestiona y visualiza todas las transacciones del sistema
                         {selectedCount > 0 && (
-                            <span className="block text-blue-600 dark:text-blue-400 mt-1">
+                            <span className="block text-primary mt-1">
                                 {selectedCount} transacciones seleccionadas para exportar
                             </span>
                         )}

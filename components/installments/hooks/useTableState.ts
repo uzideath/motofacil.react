@@ -1,19 +1,53 @@
 "use client"
 
 import { Installment } from "@/lib/types"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import type { DateRange } from "react-day-picker"
 import { SortField, SortDirection } from "../utils/types"
 
-export function useTableState(installments: Installment[]) {
+interface UseTableStateProps {
+    installments: Installment[]
+    totalItems: number
+    totalPages: number
+    currentPage: number
+    setCurrentPage: (page: number) => void
+    onFiltersChange: (filters: {
+        dateRange?: DateRange
+        paymentMethod?: string | null
+        isLate?: boolean | null
+        searchTerm?: string
+        page?: number
+        limit?: number
+    }) => void
+}
+
+export function useTableState({ 
+    installments, 
+    totalItems, 
+    totalPages,
+    currentPage: serverPage,
+    setCurrentPage: setServerPage,
+    onFiltersChange 
+}: UseTableStateProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [sortField, setSortField] = useState<SortField>("date")
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
     const [paymentFilter, setPaymentFilter] = useState<string | null>(null)
     const [statusFilter, setStatusFilter] = useState<boolean | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage, setItemsPerPage] = useState(10)
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+
+    // Trigger backend fetch when filters change
+    useEffect(() => {
+        onFiltersChange({
+            dateRange,
+            paymentMethod: paymentFilter,
+            isLate: statusFilter,
+            searchTerm,
+            page: serverPage,
+            limit: itemsPerPage,
+        })
+    }, [dateRange, paymentFilter, statusFilter, searchTerm, serverPage, itemsPerPage])
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -26,74 +60,64 @@ export function useTableState(installments: Installment[]) {
 
     const resetFilters = () => {
         setSearchTerm("")
-        setSortField(null)
-        setSortDirection("asc")
+        setSortField("date")
+        setSortDirection("desc")
         setPaymentFilter(null)
         setStatusFilter(null)
         setDateRange(undefined)
-        setCurrentPage(1)
+        setServerPage(1)
     }
 
-    const hasActiveFilters = !!(searchTerm || paymentFilter !== null || statusFilter !== null || sortField || dateRange)
+    const hasActiveFilters = !!(searchTerm || paymentFilter !== null || statusFilter !== null || dateRange)
 
-    const filteredInstallments = useMemo(() => {
-        return installments
-            .filter(
-                (i) =>
-                    (i.loan?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        i.loan?.motorcycle?.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (i.loan?.motorcycle?.plate && i.loan.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-                    (paymentFilter === null || i.paymentMethod === paymentFilter) &&
-                    (statusFilter === null || i.isLate === statusFilter),
+    // Client-side sorting of the current page results
+    const sortedInstallments = useMemo(() => {
+        const sorted = [...installments]
+        
+        if (sortField === "amount") {
+            sorted.sort((a, b) => 
+                sortDirection === "asc" ? a.amount - b.amount : b.amount - a.amount
             )
-            .sort((a, b) => {
-                if (!sortField) return 0
-
-                if (sortField === "amount") {
-                    return sortDirection === "asc" ? a.amount - b.amount : b.amount - a.amount
-                }
-
-                if (sortField === "date") {
-                    return sortDirection === "asc"
-                        ? new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
-                        : new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
-                }
-
-                if (sortField === "userName") {
-                    const aName = a.loan?.user?.name?.toLowerCase() || ""
-                    const bName = b.loan?.user?.name?.toLowerCase() || ""
-                    return sortDirection === "asc" ? aName.localeCompare(bName) : bName.localeCompare(aName)
-                }
-
-                if (sortField === "motorcycleModel") {
-                    const aModel = a.loan?.motorcycle?.model?.toLowerCase() || ""
-                    const bModel = b.loan?.motorcycle?.model?.toLowerCase() || ""
-                    return sortDirection === "asc" ? aModel.localeCompare(bModel) : bModel.localeCompare(aModel)
-                }
-
-                return 0
+        } else if (sortField === "date") {
+            sorted.sort((a, b) => 
+                sortDirection === "asc"
+                    ? new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime()
+                    : new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+            )
+        } else if (sortField === "userName") {
+            sorted.sort((a, b) => {
+                const aName = a.loan?.user?.name?.toLowerCase() || ""
+                const bName = b.loan?.user?.name?.toLowerCase() || ""
+                return sortDirection === "asc" ? aName.localeCompare(bName) : bName.localeCompare(aName)
             })
-    }, [installments, searchTerm, paymentFilter, statusFilter, sortField, sortDirection])
-
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const totalPages = Math.ceil(filteredInstallments.length / itemsPerPage)
-    const paginatedInstallments = filteredInstallments.slice(indexOfFirstItem, indexOfLastItem)
+        } else if (sortField === "vehicleModel") {
+            sorted.sort((a, b) => {
+                const aModel = a.loan?.vehicle?.model?.toLowerCase() || a.loan?.motorcycle?.model?.toLowerCase() || ""
+                const bModel = b.loan?.vehicle?.model?.toLowerCase() || b.loan?.motorcycle?.model?.toLowerCase() || ""
+                return sortDirection === "asc" ? aModel.localeCompare(bModel) : bModel.localeCompare(aModel)
+            })
+        }
+        
+        return sorted
+    }, [installments, sortField, sortDirection])
 
     const handlePageChange = (page: number) => {
-        setCurrentPage(page)
+        setServerPage(page)
     }
 
     const handleItemsPerPageChange = (value: number) => {
         setItemsPerPage(value)
-        setCurrentPage(1)
+        setServerPage(1)
     }
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         setDateRange(range)
-        setCurrentPage(1)
+        setServerPage(1)
     }
+
+    // Calculate display indices
+    const indexOfFirstItem = (serverPage - 1) * itemsPerPage + 1
+    const indexOfLastItem = Math.min(indexOfFirstItem + installments.length - 1, totalItems)
 
     return {
         searchTerm,
@@ -104,11 +128,11 @@ export function useTableState(installments: Installment[]) {
         setPaymentFilter,
         statusFilter,
         setStatusFilter,
-        currentPage,
+        currentPage: serverPage,
         itemsPerPage,
         dateRange,
-        filteredInstallments,
-        paginatedInstallments,
+        filteredInstallments: sortedInstallments,
+        paginatedInstallments: sortedInstallments,
         totalPages,
         indexOfFirstItem,
         indexOfLastItem,

@@ -21,14 +21,19 @@ import { SummaryCards } from "./history/components/SummaryCard"
 import { useCashRegisterData } from "./history/hooks/useCashRegisterData"
 import { useCashRegisterFilters } from "./history/hooks/useCashRegisterFilter"
 import { usePrintPdf } from "./history/hooks/usePrintPDF"
+import { useExport } from "./history/hooks/useExport"
 import { filterRegisters, calculateSummaryStats } from "./history/utils"
 import { CashRegisterDisplay } from "@/lib/types"
+import { useToast } from "@/hooks/useToast"
 
 export function CashRegisterHistory() {
     const [selectedRegister, setSelectedRegister] = useState<CashRegisterDisplay | null>(null)
     const { registers, loading, refreshing, refetch } = useCashRegisterData()
     const { filters, pagination, updateFilter, updatePagination, resetFilters } = useCashRegisterFilters()
     const { handlePrint, isGenerating } = usePrintPdf()
+    const { exportToCSV, exportToPDF, isExporting } = useExport()
+    const { toast } = useToast()
+    
     const filteredRegisters = filterRegisters(registers, filters)
     const summaryStats = calculateSummaryStats(filteredRegisters)
     const itemsPerPageNumber = Number.parseInt(pagination.itemsPerPage)
@@ -37,8 +42,40 @@ export function CashRegisterHistory() {
     const currentItems = filteredRegisters.slice(indexOfFirstItem, indexOfLastItem)
     const totalPages = Math.ceil(filteredRegisters.length / itemsPerPageNumber)
 
+    const handleExportCSV = () => {
+        try {
+            exportToCSV(filteredRegisters)
+            toast({
+                title: "Exportación exitosa",
+                description: `Se exportaron ${filteredRegisters.length} registros a CSV.`,
+            })
+        } catch (error) {
+            toast({
+                title: "Error al exportar",
+                description: "No se pudo exportar a CSV. Intente nuevamente.",
+                variant: "destructive",
+            })
+        }
+    }
+
+    const handleExportPDF = () => {
+        try {
+            exportToPDF(filteredRegisters)
+            toast({
+                title: "Exportación exitosa",
+                description: `Se exportaron ${filteredRegisters.length} registros a PDF.`,
+            })
+        } catch (error) {
+            toast({
+                title: "Error al exportar",
+                description: "No se pudo exportar a PDF. Intente nuevamente.",
+                variant: "destructive",
+            })
+        }
+    }
+
     return (
-        <Card className="shadow-md border-slate-200 dark:border-slate-800">
+        <Card className="shadow-md bg-card border-border">
             <CardHeader className="pb-3">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -46,7 +83,9 @@ export function CashRegisterHistory() {
                             <Wallet className="h-5 w-5 text-primary" />
                             Historial de Cierres de Caja
                         </CardTitle>
-                        <CardDescription>Consulta y gestiona todos los cierres de caja realizados</CardDescription>
+                        <CardDescription>
+                            Consulta todos los cierres registrados. "Fecha Cierre" indica el día de las transacciones, "Registrado" muestra cuándo se creó el cierre.
+                        </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={refetch} disabled={refreshing} className="h-9 gap-1.5">
@@ -55,7 +94,7 @@ export function CashRegisterHistory() {
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-9">
+                                <Button variant="outline" size="sm" className="h-9" disabled={isExporting || filteredRegisters.length === 0}>
                                     <Download className="h-4 w-4 mr-1.5" />
                                     Exportar
                                 </Button>
@@ -63,11 +102,11 @@ export function CashRegisterHistory() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportCSV}>
                                     <FileSpreadsheet className="h-4 w-4 mr-2" />
-                                    Exportar a Excel
+                                    Exportar a Excel (CSV)
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportPDF}>
                                     <FilePdf className="h-4 w-4 mr-2" />
                                     Exportar a PDF
                                 </DropdownMenuItem>

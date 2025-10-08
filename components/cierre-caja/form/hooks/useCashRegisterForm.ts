@@ -25,7 +25,7 @@ const initialFormState: FormState = {
     errorMessage: "",
 }
 
-export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[]) => {
+export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[], closingDate?: Date) => {
     const [formState, setFormState] = useState<FormState>(initialFormState)
     const [currentProvider, setCurrentProvider] = useState<Provider | undefined>(undefined);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false)
@@ -56,8 +56,12 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
 
     // Auto-fill form when transactions change
     useEffect(() => {
+        console.log('💰 useCashRegisterForm - selectedTransactions changed:', selectedTransactions);
+        console.log('💰 useCashRegisterForm - incomes:', incomes);
+        
         if (incomes.length > 0) {
             const provider = getProviderDetailsFromTransactions(selectedTransactions);
+            console.log('💰 useCashRegisterForm - extracted provider:', provider);
             setCurrentProvider(provider);
 
             const { cash, transfers, cards } = calculateAutoFillValues(incomes)
@@ -71,6 +75,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
                 error: false,
             }))
         } else {
+            console.log('💰 useCashRegisterForm - no incomes, clearing provider');
             setCurrentProvider(undefined)
         }
     }, [incomes, selectedTransactions])
@@ -89,7 +94,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
         setFormState((prev) => ({ ...prev, submitting: true, success: false, error: false }))
 
         try {
-            await HttpService.post("/api/v1/closing", {
+            const payload: any = {
                 cashInRegister: calculations.cashInRegister,
                 cashFromTransfers: calculations.cashFromTransfers,
                 cashFromCards: calculations.cashFromCards,
@@ -99,7 +104,11 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
                 createdById: user?.id,
                 provider: currentProvider,
                 providerId: currentProvider?.id,
-            })
+            }
+
+            // Note: closingDate is no longer sent - backend determines it from transactions
+
+            await HttpService.post("/api/v1/closing", payload)
 
             setFormState((prev) => ({
                 ...prev,
@@ -107,13 +116,22 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[])
                 success: true,
             }))
             setShowSuccessDialog(true)
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error registrando cierre:", err)
+            
+            // Extract error message from response
+            let errorMessage = "Error desconocido"
+            if (err?.response?.data?.message) {
+                errorMessage = err.response.data.message
+            } else if (err?.message) {
+                errorMessage = err.message
+            }
+            
             setFormState((prev) => ({
                 ...prev,
                 submitting: false,
                 error: true,
-                errorMessage: err instanceof Error ? err.message : "Error desconocido",
+                errorMessage,
             }))
         }
     }

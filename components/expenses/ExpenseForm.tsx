@@ -39,7 +39,7 @@ export function ExpenseForm({ onSuccess, isModal = false, expenseData, isEditing
       <form onSubmit={onSubmit} className="space-y-6">
         <ExpenseBasicInfo control={form.control} />
 
-        <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardContent className="pt-6">
             <ExpenseAdditionalDetails control={form.control} />
             <div className="mt-6">

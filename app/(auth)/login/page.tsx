@@ -1,8 +1,8 @@
-import type { Metadata } from "next"
+﻿import type { Metadata } from "next"
 import { ModeToggle } from "@/components/mode-toggle"
 import { LoginForm } from "@/components/auth/login-form"
-import { Particles } from "@/components/ui/particles"
 import { Suspense } from "react"
+import { Bike, Shield, TrendingUp, Clock } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Login | MotoFácil Atlántico",
@@ -11,88 +11,134 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-black via-gray-900 to-gray-800">
-      {/* Animated background particles */}
-      <Particles className="absolute inset-0 z-0" quantity={100} color="#ffffff" speed={0.5} />
-
-      {/* Decorative elements */}
-      <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-purple-700/20 blur-3xl"></div>
-      <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-blue-700/20 blur-3xl"></div>
-
-      {/* Abstract pattern overlay */}
-      <div className="absolute inset-0 bg-[url('/abstract-geometric-shapes.png')] bg-cover bg-center opacity-5"></div>
-
-      {/* Animated gradient ring */}
-      <div className="absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/5 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent"></div>
-
-      {/* Theme toggle */}
-      <div className="absolute right-4 top-4 z-50">
+    <div className="relative min-h-screen w-full bg-background">
+      <div className="absolute right-6 top-6 z-50 md:right-10 md:top-10">
         <ModeToggle />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Logo and branding */}
-          <div className="mb-8 flex flex-col items-center">
-            <div className="group mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600 p-0.5 shadow-lg transition-all duration-300 hover:scale-105">
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-black/80 backdrop-blur-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="url(#logo-gradient)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-8 w-8 text-white"
-                >
-                  <defs>
-                    <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#a855f7" />
-                      <stop offset="100%" stopColor="#3b82f6" />
-                    </linearGradient>
-                  </defs>
-                  <rect width="20" height="14" x="2" y="5" rx="2" />
-                  <path d="M2 10h20" />
-                </svg>
+      <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
+        <div className="relative hidden flex-col justify-between overflow-hidden bg-muted p-12 texture-pattern lg:flex xl:p-16">
+          {/* Subtle decorative element */}
+          <div className="absolute right-0 top-0 h-[500px] w-[500px] translate-x-1/3 -translate-y-1/3 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-[400px] w-[400px] -translate-x-1/3 translate-y-1/3 rounded-full bg-accent/30 blur-3xl" />
+
+          <div className="relative z-20">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20 transition-transform hover:scale-105">
+                <Bike className="h-6 w-6 text-primary-foreground" strokeWidth={2.5} />
               </div>
+              <span className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+                MotoFácil Atlántico
+              </span>
             </div>
-            <h1 className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-3xl font-bold tracking-tighter text-transparent">
-              MotoFácil Atlántico
-            </h1>
-            <p className="mt-2 text-center text-sm text-gray-400">Sistema de gestión de arrendamientos</p>
           </div>
 
-          {/* Login card */}
-          <div className="overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.2)]">
-            {/* Card header with decorative gradient */}
-            <div className="h-2 w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600"></div>
+          <div className="relative z-20 space-y-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/50 px-4 py-1.5 text-sm font-medium text-foreground backdrop-blur-sm">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                Sistema de gestión empresarial
+              </div>
+              <h1 className="font-serif text-5xl font-bold leading-tight tracking-tight text-foreground text-balance xl:text-6xl">
+                Gestiona tu negocio con elegancia y eficiencia
+              </h1>
+              <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
+                Plataforma integral para administrar arrendamientos de motocicletas, contratos, pagos y reportes en
+                tiempo real.
+              </p>
+            </div>
 
-            <div className="relative bg-black/40 backdrop-blur-xl">
-              {/* Decorative circles */}
-              <div className="absolute -left-16 -top-16 h-32 w-32 rounded-full bg-purple-500/10"></div>
-              <div className="absolute -bottom-16 -right-16 h-32 w-32 rounded-full bg-blue-500/10"></div>
-
-              {/* Card content */}
-              <div className="relative z-10 p-8">
-                <div className="mb-6 flex flex-col space-y-2 text-center">
-                  <h2 className="text-2xl font-semibold tracking-tight text-white">Bienvenido de nuevo</h2>
-                  <p className="text-sm text-gray-400">Ingresa tus credenciales para acceder al sistema</p>
+            <div className="grid gap-6 pt-4">
+              <div className="group flex items-start gap-4 rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 hover:shadow-lg">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Shield className="h-6 w-6" strokeWidth={2} />
                 </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground">Seguridad garantizada</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Protección de datos empresariales con encriptación de nivel bancario
+                  </p>
+                </div>
+              </div>
 
-                <Suspense fallback={<div>Cargando formulario...</div>}>
-                  <LoginForm />
-                </Suspense>
+              <div className="group flex items-start gap-4 rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 hover:shadow-lg">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <TrendingUp className="h-6 w-6" strokeWidth={2} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground">Análisis en tiempo real</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Dashboards interactivos con métricas clave de tu operación
+                  </p>
+                </div>
+              </div>
+
+              <div className="group flex items-start gap-4 rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 hover:shadow-lg">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Clock className="h-6 w-6" strokeWidth={2} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground">Ahorra tiempo</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Automatiza procesos repetitivos y enfócate en hacer crecer tu negocio
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} MotoFácil Atlántico. Todos los derechos reservados.
-            </p>
+          <div className="relative z-20 flex items-center justify-between border-t border-border/50 pt-8">
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} MotoFácil Atlántico</p>
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <a href="#" className="transition-colors hover:text-foreground">
+                Privacidad
+              </a>
+              <a href="#" className="transition-colors hover:text-foreground">
+                Términos
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center p-8 lg:p-12">
+          <div className="mx-auto w-full max-w-[440px] space-y-8">
+            {/* Mobile logo */}
+            <div className="flex flex-col items-center space-y-3 lg:hidden">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
+                <Bike className="h-7 w-7 text-primary-foreground" strokeWidth={2.5} />
+              </div>
+              <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground">MotoFácil Atlántico</h1>
+            </div>
+
+            <div className="space-y-3 text-center lg:text-left">
+              <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground lg:text-4xl">Bienvenido</h2>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                Ingresa tus credenciales para acceder al sistema de gestión
+              </p>
+            </div>
+
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
+                </div>
+              }
+            >
+              <LoginForm />
+            </Suspense>
+
+            {/* Mobile footer */}
+            <div className="space-y-4 pt-6 text-center lg:hidden">
+              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Privacidad
+                </a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Términos
+                </a>
+              </div>
+              <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} MotoFácil Atlántico</p>
+            </div>
           </div>
         </div>
       </div>

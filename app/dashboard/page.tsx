@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Overview } from "@/components/dashboard/overview"
@@ -13,152 +15,156 @@ import { AlertCircle, ArrowUpRight, Bell, Download, Filter } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { RoleGuard } from "@/components/RoleGuard"
+import { DashboardProvider, useDashboardContext } from "@/components/dashboard/dashboard-provider"
 
-export default function DashboardPage() {
+function DashboardContent() {
+    const { data, loading } = useDashboardContext()
+    const pendingPaymentsThisWeek = data?.alerts?.pendingPaymentsThisWeek || 0
+
     return (
-        <RoleGuard>
-            <div className="flex-1 w-full">
-                <div className="gradient-bg text-white p-8">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold">Dashboard</h1>
-                            <p className="text-white/80 mt-1">Bienvenido de nuevo, Admin</p>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                                <Download className="mr-2 h-4 w-4" />
-                                Exportar Datos
-                            </Button>
-                            <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                                <Filter className="mr-2 h-4 w-4" />
-                                Filtrar
-                            </Button>
-                            <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 relative">
-                                <Bell className="h-5 w-5" />
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                    3
+        <div className="flex-1 w-full h-screen overflow-hidden flex flex-col">
+            <div className="bg-primary text-primary-foreground p-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold">Dashboard</h1>
+                        <p className="text-primary-foreground/80 text-sm">Bienvenido de nuevo, Admin</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hidden lg:flex">
+                            <Download className="mr-2 h-4 w-4" />
+                            Exportar
+                        </Button>
+                        <Button size="sm" variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hidden lg:flex">
+                            <Filter className="mr-2 h-4 w-4" />
+                            Filtrar
+                        </Button>
+                        <Button size="sm" variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 relative">
+                            <Bell className="h-4 w-4" />
+                            {pendingPaymentsThisWeek > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                    {pendingPaymentsThisWeek}
                                 </span>
-                            </Button>
-                            <MobileSidebar />
-                        </div>
+                            )}
+                        </Button>
+                        <MobileSidebar />
                     </div>
                 </div>
+            </div>
 
-                <div className="p-6">
-                    <Alert className="mb-6 border-amber-500/50 bg-amber-500/10">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {!loading && pendingPaymentsThisWeek > 0 && (
+                    <Alert className="border-amber-500/50 bg-amber-500/10 py-2">
                         <AlertCircle className="h-4 w-4 text-amber-500" />
-                        <AlertTitle className="text-amber-500">Atención</AlertTitle>
-                        <AlertDescription>
-                            Hay 5 arrendamientos con pagos pendientes esta semana.{" "}
-                            <a href="#" className="font-medium underline">
+                        <AlertTitle className="text-amber-500 text-sm">Atención</AlertTitle>
+                        <AlertDescription className="text-sm">
+                            {pendingPaymentsThisWeek === 1 
+                                ? "Hay 1 pago pendiente esta semana." 
+                                : `Hay ${pendingPaymentsThisWeek} pagos pendientes esta semana.`}{" "}
+                            <a href="/calendario-pagos" className="font-medium underline">
                                 Ver detalles
                             </a>
                         </AlertDescription>
                     </Alert>
+                )}
 
-                    <DashboardStats />
+                <DashboardStats />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                        <Card className="col-span-1 lg:col-span-2 card-hover-effect">
-                            <CardHeader className="flex flex-row items-center justify-between">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                    <Card>
+                        <CardHeader className="p-3">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Flujo de Caja</CardTitle>
-                                    <CardDescription>Ingresos y egresos de los últimos 6 meses</CardDescription>
+                                    <CardTitle className="text-sm">Flujo de Caja</CardTitle>
+                                    <CardDescription className="text-xs">Últimos 6 meses</CardDescription>
                                 </div>
-                                <Badge variant="outline" className="flex items-center">
+                                <Badge variant="outline" className="flex items-center text-xs">
                                     <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
                                     <span className="text-green-500">+12.5%</span>
                                 </Badge>
-                            </CardHeader>
-                            <CardContent>
-                                <CashFlowChart />
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0">
+                            <CashFlowChart />
+                        </CardContent>
+                    </Card>
 
-                        <Card className="card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Acciones Rápidas</CardTitle>
-                                <CardDescription>Operaciones frecuentes</CardDescription>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Estado</CardTitle>
+                                <CardDescription className="text-xs">Distribución</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <QuickActions />
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                        <Card className="card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Estado de arrendamientos</CardTitle>
-                                <CardDescription>Distribución actual</CardDescription>
-                            </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-3 pt-0">
                                 <LoanStatusChart />
                             </CardContent>
                         </Card>
 
-                        <Card className="col-span-1 lg:col-span-2 card-hover-effect">
-                            <CardHeader>
-                                <CardTitle>Calendario de Pagos</CardTitle>
-                                <CardDescription>Próximos 7 días</CardDescription>
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Acciones</CardTitle>
+                                <CardDescription className="text-xs">Rápidas</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <PaymentCalendar />
+                            <CardContent className="p-3 pt-0">
+                                <QuickActions />
                             </CardContent>
                         </Card>
                     </div>
-
-                    <Tabs defaultValue="overview" className="mt-6">
-                        <TabsList className="grid w-full grid-cols-3 mb-4">
-                            <TabsTrigger value="overview">Resumen General</TabsTrigger>
-                            <TabsTrigger value="recent">arrendamientos Recientes</TabsTrigger>
-                            <TabsTrigger value="analytics">Análisis Detallado</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="overview" className="space-y-6">
-                            <Card className="card-hover-effect">
-                                <CardHeader>
-                                    <CardTitle>Resumen de arrendamientos</CardTitle>
-                                    <CardDescription>arrendamientos activos en los últimos 30 días</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Overview />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="recent" className="space-y-6">
-                            <Card className="card-hover-effect">
-                                <CardHeader>
-                                    <CardTitle>arrendamientos Recientes</CardTitle>
-                                    <CardDescription>Últimos arrendamientos realizados</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <RecentLoans />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="analytics" className="space-y-6">
-                            <Card className="card-hover-effect">
-                                <CardHeader>
-                                    <CardTitle>Análisis Detallado</CardTitle>
-                                    <CardDescription>Estadísticas detalladas de arrendamientos y pagos</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <p>Análisis detallado en desarrollo</p>
-                                        <Button variant="outline" className="mt-4">
-                                            Solicitar Acceso Anticipado
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    </Tabs>
                 </div>
-            </div>
-        </RoleGuard>
 
+                <Tabs defaultValue="overview" className="mt-3">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="overview" className="text-xs">Resumen</TabsTrigger>
+                        <TabsTrigger value="recent" className="text-xs">Recientes</TabsTrigger>
+                        <TabsTrigger value="calendar" className="text-xs">Calendario</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="overview" className="mt-3">
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Resumen de Arrendamientos</CardTitle>
+                                <CardDescription className="text-xs">Últimos 30 días</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0">
+                                <Overview />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="recent" className="mt-3">
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Arrendamientos Recientes</CardTitle>
+                                <CardDescription className="text-xs">Últimos realizados</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0">
+                                <RecentLoans />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="calendar" className="mt-3">
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Calendario de Pagos</CardTitle>
+                                <CardDescription className="text-xs">Próximos 7 días</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0">
+                                <PaymentCalendar />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </div>
+        )
+}
+
+export default function DashboardPage() {
+    return (
+        <RoleGuard>
+            <DashboardProvider>
+                <DashboardContent />
+            </DashboardProvider>
+        </RoleGuard>
     )
 }

@@ -12,7 +12,7 @@ interface ExpenseTableHeadersProps {
 export function ExpenseTableHeaders({ sortDirection, onToggleSort }: ExpenseTableHeadersProps) {
     return (
         <TableHeader>
-            <TableRow className="bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50">
+            <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className="text-left">
                     <div className="flex items-center gap-1.5">
                         <Hash className="h-4 w-4" />
@@ -26,7 +26,7 @@ export function ExpenseTableHeaders({ sortDirection, onToggleSort }: ExpenseTabl
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="ml-1 p-0 h-6 w-6 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
+                            className="ml-1 p-0 h-6 w-6 text-primary hover:text-primary"
                             onClick={onToggleSort}
                         >
                             <ArrowUpDown className={`h-4 w-4 ${sortDirection === "desc" ? "" : "rotate-180"}`} />

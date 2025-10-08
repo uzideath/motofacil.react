@@ -14,13 +14,13 @@ interface SuccessDialogProps {
 export function SuccessDialog({ isOpen, onOpenChange, message }: SuccessDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-dark-blue-900 border-green-600 text-white max-w-md">
+            <DialogContent className="bg-card border-green-600 max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-green-400 flex items-center gap-2">
                         <CheckCircle className="h-5 w-5" />
                         Recibo enviado con éxito
                     </DialogTitle>
-                    <DialogDescription className="text-blue-100">{message}</DialogDescription>
+                    <DialogDescription className="text-foreground">{message}</DialogDescription>
                 </DialogHeader>
                 <div className="flex justify-center p-4">
                     <div className="bg-green-600/20 p-4 rounded-full">
@@ -28,7 +28,7 @@ export function SuccessDialog({ isOpen, onOpenChange, message }: SuccessDialogPr
                     </div>
                 </div>
                 <div className="flex justify-end">
-                    <Button onClick={() => onOpenChange(false)} className="bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={() => onOpenChange(false)} className="bg-green-600 hover:bg-green-700">
                         Aceptar
                     </Button>
                 </div>

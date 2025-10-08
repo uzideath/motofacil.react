@@ -31,7 +31,7 @@ export function FormFieldWrapper({
             name={name}
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel className={`flex items-center gap-1.5 ${required ? "after:content-['*'] after:text-red-500 after:ml-0.5" : ""}`}>
+                    <FormLabel className={`flex items-center gap-1.5 ${required ? "after:content-['*'] after:text-destructive after:ml-0.5" : ""}`}>
                         {icon}
                         {label}
                     </FormLabel>
@@ -40,7 +40,6 @@ export function FormFieldWrapper({
                             type={type}
                             placeholder={placeholder}
                             {...field}
-                            className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
                         />
                     </FormControl>
                     <FormDescription className="text-xs">{description}</FormDescription>

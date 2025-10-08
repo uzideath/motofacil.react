@@ -53,14 +53,13 @@ export function PdfViewerDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-dark-blue-900 border-dark-blue-800 text-white max-w-4xl max-h-[90vh] flex flex-col">
+            <DialogContent className="bg-card border-border max-w-4xl max-h-[90vh] flex flex-col">
                 <DialogHeader className="flex flex-row items-center justify-between">
-                    <DialogTitle className="text-blue-100">{title}</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            className="bg-dark-blue-800/50 border-dark-blue-700/50 text-blue-300 hover:bg-dark-blue-700/70"
                             onClick={handlePrint}
                         >
                             <Printer className="h-4 w-4 mr-2" />
@@ -69,7 +68,6 @@ export function PdfViewerDialog({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="bg-dark-blue-800/50 border-dark-blue-700/50 text-blue-300 hover:bg-dark-blue-700/70"
                             onClick={handleDownload}
                         >
                             <Download className="h-4 w-4 mr-2" />
@@ -78,7 +76,6 @@ export function PdfViewerDialog({
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="text-blue-300 hover:bg-dark-blue-700/70"
                             onClick={() => onOpenChange(false)}
                         >
                             <X className="h-4 w-4" />

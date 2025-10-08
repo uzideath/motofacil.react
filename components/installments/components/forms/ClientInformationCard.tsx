@@ -73,7 +73,7 @@ export function ClientInformationCard({ control, loans, selectedLoan, onLoanChan
                                                 {loans.map((loan) => (
                                                     <CommandItem
                                                         key={loan.id}
-                                                        value={`${loan.user.name} ${loan.motorcycle.plate || ""} ${loan.user.identification || ""}`}
+                                                        value={`${loan.user.name} ${loan.vehicle?.plate || loan.motorcycle?.plate || ""} ${loan.user.identification || ""}`}
                                                         onSelect={() => {
                                                             field.onChange(loan.id)
                                                             onLoanChange(loan.id)
@@ -82,8 +82,10 @@ export function ClientInformationCard({ control, loans, selectedLoan, onLoanChan
                                                     >
                                                         <div className="flex flex-col">
                                                             <span className={loan.id === field.value ? "font-medium" : ""}>{loan.user.name}</span>
-                                                            {loan.motorcycle.plate && (
-                                                                <span className="text-xs text-muted-foreground">Placa: {loan.motorcycle.plate}</span>
+                                                            {(loan.vehicle?.plate || loan.motorcycle?.plate) && (
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    Placa: {loan.vehicle?.plate || loan.motorcycle?.plate}
+                                                                </span>
                                                             )}
                                                         </div>
                                                     </CommandItem>
@@ -102,7 +104,7 @@ export function ClientInformationCard({ control, loans, selectedLoan, onLoanChan
                     <div className="relative h-10">
                         <Bike className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            value={selectedLoan?.motorcycle.model || ""}
+                            value={selectedLoan?.vehicle?.model || selectedLoan?.motorcycle?.model || ""}
                             className="pl-9 bg-muted/50 h-10"
                             disabled
                             placeholder="Seleccione un cliente primero"
@@ -114,7 +116,7 @@ export function ClientInformationCard({ control, loans, selectedLoan, onLoanChan
                     <div className="relative h-10">
                         <Bike className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            value={selectedLoan?.motorcycle.plate || ""}
+                            value={selectedLoan?.vehicle?.plate || selectedLoan?.motorcycle?.plate || ""}
                             className="pl-9 bg-muted/50 h-10"
                             disabled
                             placeholder="Seleccione un cliente primero"

@@ -61,7 +61,7 @@ export function ExpenseTable() {
     } = useExpenseTable()
 
     return (
-        <Card className="bg-white dark:bg-gray-950 border border-blue-100 dark:border-blue-900/30 shadow-md">
+        <Card className="bg-card border-border shadow-md">
             <ExpenseTableHeader onRefresh={refreshData} onExport={exportToCSV} />
 
             <CardContent className="p-6">
@@ -88,7 +88,7 @@ export function ExpenseTable() {
                         formatMoney={formatMoney}
                     />
 
-                    <div className="rounded-lg border border-blue-100 dark:border-blue-900/30 overflow-hidden">
+                    <div className="rounded-lg border border-border overflow-hidden">
                         <div className="overflow-x-auto">
                             <Table>
                                 <ExpenseTableHeaders sortDirection={sortDirection} onToggleSort={toggleSortDirection} />

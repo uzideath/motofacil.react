@@ -23,7 +23,7 @@ export function UserDeleteConfirmDialog({ open, onOpenChange, onConfirm }: Delet
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                    <AlertDialogTitle className="flex items-center gap-2 text-destructive">
                         <AlertTriangle className="h-5 w-5" />
                         Confirmar eliminación
                     </AlertDialogTitle>
@@ -35,7 +35,7 @@ export function UserDeleteConfirmDialog({ open, onOpenChange, onConfirm }: Delet
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={onConfirm}
-                        className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1.5"
+                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground flex items-center gap-1.5"
                     >
                         <Trash2 className="h-4 w-4" />
                         Eliminar

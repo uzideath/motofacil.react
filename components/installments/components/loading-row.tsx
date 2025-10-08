@@ -3,36 +3,36 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function LoadingRow() {
     return (
-        <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
+        <TableRow className="border-border hover:bg-muted/30">
             <TableCell>
-                <Skeleton className="h-6 w-[150px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[150px] bg-muted" />
             </TableCell>
             <TableCell className="hidden md:table-cell">
-                <Skeleton className="h-6 w-[120px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[120px] bg-muted" />
             </TableCell>
             <TableCell className="hidden md:table-cell">
-                <Skeleton className="h-6 w-[120px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[120px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[100px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[100px] bg-muted" />
             </TableCell>
             <TableCell className="hidden md:table-cell">
-                <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[100px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[100px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[100px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[80px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[80px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[80px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[80px] bg-muted" />
             </TableCell>
             <TableCell>
-                <Skeleton className="h-6 w-[50px] bg-dark-blue-800/50" />
+                <Skeleton className="h-6 w-[50px] bg-muted" />
             </TableCell>
         </TableRow>
     )

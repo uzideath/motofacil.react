@@ -5,23 +5,23 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { UserIcon, Bike, ChevronsUpDownIcon as ChevronUpDown } from "lucide-react"
+import { UserIcon, Car, ChevronsUpDownIcon as ChevronUpDown } from "lucide-react"
 import type { Control } from "react-hook-form"
-import { Motorcycle, User } from "@/lib/types"
+import { Vehicle, User } from "@/lib/types"
 
 interface LoanFormClientVehicleCardProps {
     control: Control<any>
     availableUsers: User[]
-    availableMotorcycles: Motorcycle[]
-    onMotorcycleChange: (motorcycleId: string) => void
+    availableVehicles: Vehicle[]
+    onVehicleChange: (vehicleId: string) => void
     formatCurrency: (amount: number) => string
 }
 
 export function LoanFormClientVehicleCard({
     control,
     availableUsers,
-    availableMotorcycles,
-    onMotorcycleChange,
+    availableVehicles,
+    onVehicleChange,
     formatCurrency,
 }: LoanFormClientVehicleCardProps) {
     return (
@@ -85,10 +85,10 @@ export function LoanFormClientVehicleCard({
                     />
                     <FormField
                         control={control}
-                        name="motorcycleId"
+                        name="vehicleId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Motocicleta</FormLabel>
+                                <FormLabel>Vehículo</FormLabel>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <FormControl>
@@ -99,10 +99,10 @@ export function LoanFormClientVehicleCard({
                                             >
                                                 {field.value
                                                     ? (() => {
-                                                        const moto = availableMotorcycles.find((m) => m.id === field.value)
-                                                        return moto ? `${moto.brand} ${moto.model} (${moto.plate})` : "Seleccionar motocicleta"
+                                                        const vehicle = availableVehicles.find((v) => v.id === field.value)
+                                                        return vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.plate})` : "Seleccionar vehículo"
                                                     })()
-                                                    : "Seleccionar motocicleta"}
+                                                    : "Seleccionar vehículo"}
                                                 <ChevronUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
                                         </FormControl>
@@ -112,26 +112,26 @@ export function LoanFormClientVehicleCard({
                                             <CommandInput placeholder="Buscar por marca, modelo o placa..." />
                                             <CommandList>
                                                 <CommandEmpty>
-                                                    {availableMotorcycles.length === 0
-                                                        ? "No hay motocicletas disponibles. Todas están asignadas a préstamos activos."
-                                                        : "No se encontraron motocicletas."}
+                                                    {availableVehicles.length === 0
+                                                        ? "No hay vehículos disponibles. Todos están asignados a préstamos activos."
+                                                        : "No se encontraron vehículos."}
                                                 </CommandEmpty>
                                                 <CommandGroup>
-                                                    {availableMotorcycles.map((moto) => (
+                                                    {availableVehicles.map((vehicle) => (
                                                         <CommandItem
-                                                            key={moto.id}
-                                                            value={`${moto.brand} ${moto.model} ${moto.plate}`}
+                                                            key={vehicle.id}
+                                                            value={`${vehicle.brand} ${vehicle.model} ${vehicle.plate}`}
                                                             onSelect={() => {
-                                                                field.onChange(moto.id)
-                                                                onMotorcycleChange(moto.id)
+                                                                field.onChange(vehicle.id)
+                                                                onVehicleChange(vehicle.id)
                                                             }}
                                                         >
-                                                            <Bike className="mr-2 h-4 w-4" />
+                                                            <Car className="mr-2 h-4 w-4" />
                                                             <div className="flex flex-col">
-                                                                <span className={moto.id === field.value ? "font-medium" : ""}>
-                                                                    {moto.brand} {moto.model} ({moto.plate})
+                                                                <span className={vehicle.id === field.value ? "font-medium" : ""}>
+                                                                    {vehicle.brand} {vehicle.model} ({vehicle.plate})
                                                                 </span>
-                                                                <span className="text-xs text-muted-foreground">{formatCurrency(moto.price || 0)}</span>
+                                                                <span className="text-xs text-muted-foreground">{formatCurrency(vehicle.price || 0)}</span>
                                                             </div>
                                                         </CommandItem>
                                                     ))}

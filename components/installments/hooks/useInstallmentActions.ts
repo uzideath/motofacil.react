@@ -31,14 +31,15 @@ export function useInstallmentActions(refreshInstallments: () => void) {
 
         const payload = {
             name: installment.loan.user.name.trim(),
-            identification: installment.loan.motorcycle.plate,
+            identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
             concept: "Monto",
             amount: installment.amount,
-            latePaymentDate: installment.latePaymentDate,
+            isLate: installment.isLate, // Include isLate flag
+            latePaymentDate: installment.latePaymentDate, // Include late payment date
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
-            date: installment.paymentDate,
-            paymentDate: installment.latePaymentDate || installment.paymentDate,
+            date: installment.paymentDate, // Actual payment date
+            paymentDate: installment.paymentDate, // Actual payment date
             notes: installment.notes,
             receiptNumber: installment.id,
         }
@@ -112,13 +113,16 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             const receiptData = {
                 phoneNumber,
                 name: installment.loan.user.name,
-                identification: installment.loan.motorcycle.plate,
+                identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
                 concept: `Monto`,
                 amount: installment.amount,
-                latePaymentDate: installment.latePaymentDate,
+                isLate: installment.isLate, // Include isLate flag
+                latePaymentDate: installment.latePaymentDate, // Include late payment date
                 gps: installment.gps,
                 total: installment.amount,
-                date: installment.createdAt,
+                date: installment.paymentDate,
+                paymentDate: installment.paymentDate,
+                notes: installment.notes,
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
             }

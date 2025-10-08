@@ -38,15 +38,15 @@ export function DailySummary() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* Resumen financiero */}
-                <Card className="card-hover-effect">
-                    <CardHeader>
-                        <CardTitle>Resumen Financiero</CardTitle>
-                        <CardDescription>Totales del día</CardDescription>
+                <Card className="bg-card border-border">
+                    <CardHeader className="py-3 pb-2">
+                        <CardTitle className="text-base">Resumen Financiero</CardTitle>
+                        <CardDescription className="text-xs">Totales del día</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-3 py-3">
                         {loading ? (
                             <>
                                 <Skeleton className="h-20 w-full" />
@@ -93,12 +93,12 @@ export function DailySummary() {
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center mr-3">
-                                                    <PiggyBank className="h-5 w-5 text-blue-500" />
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                                    <PiggyBank className="h-5 w-5 text-primary" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-medium text-muted-foreground">Balance del Día</p>
-                                                    <h3 className="text-2xl font-bold text-blue-500">{formatCurrency(data.balance)}</h3>
+                                                    <h3 className="text-2xl font-bold text-primary">{formatCurrency(data.balance)}</h3>
                                                 </div>
                                             </div>
                                         </div>
@@ -110,21 +110,21 @@ export function DailySummary() {
                 </Card>
 
                 {/* Métodos de pago */}
-                <Card className="card-hover-effect">
-                    <CardHeader>
-                        <CardTitle>Métodos de Pago</CardTitle>
-                        <CardDescription>Distribución por método de pago</CardDescription>
+                <Card className="bg-card border-border">
+                    <CardHeader className="py-3 pb-2">
+                        <CardTitle className="text-base">Métodos de Pago</CardTitle>
+                        <CardDescription className="text-xs">Distribución por método de pago</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-3 py-3">
                         {loading || !data ? (
                             <>
-                                <Skeleton className="h-12 w-full" />
-                                <Skeleton className="h-12 w-full" />
-                                <Skeleton className="h-12 w-full" />
-                                <Skeleton className="h-12 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
                             </>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {[
                                     {
                                         label: "Efectivo",
@@ -147,15 +147,15 @@ export function DailySummary() {
                                         icon: <div className="h-4 w-4 rounded-full border border-gray-300 mr-2" />,
                                     },
                                 ].map((method) => (
-                                    <div key={method.label} className="space-y-2">
+                                    <div key={method.label} className="space-y-1">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
                                                 {method.icon}
-                                                <span className="text-sm font-medium">{method.label}</span>
+                                                <span className="text-xs font-medium">{method.label}</span>
                                             </div>
-                                            <span className="text-sm font-medium">{formatCurrency(method.value)}</span>
+                                            <span className="text-xs font-medium">{formatCurrency(method.value)}</span>
                                         </div>
-                                        <Progress value={getPercentage(method.value, data.totalIncome)} className="h-2" />
+                                        <Progress value={getPercentage(method.value, data.totalIncome)} className="h-1.5" />
                                     </div>
                                 ))}
                             </div>
@@ -164,30 +164,30 @@ export function DailySummary() {
                 </Card>
 
                 {/* Categorías de ingreso */}
-                <Card className="card-hover-effect">
-                    <CardHeader>
-                        <CardTitle>Categorías de Ingresos</CardTitle>
-                        <CardDescription>Distribución por tipo de ingreso</CardDescription>
+                <Card className="bg-card border-border">
+                    <CardHeader className="py-3 pb-2">
+                        <CardTitle className="text-base">Categorías de Ingresos</CardTitle>
+                        <CardDescription className="text-xs">Distribución por tipo de ingreso</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-3 py-3">
                         {loading || !data ? (
                             <>
-                                <Skeleton className="h-20 w-full" />
-                                <Skeleton className="h-20 w-full" />
+                                <Skeleton className="h-16 w-full" />
+                                <Skeleton className="h-16 w-full" />
                             </>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {[
                                     { label: "Pagos de arrendamientos", value: data.categories.loanPayments },
                                     { label: "Otros Ingresos", value: data.categories.otherIncome },
                                 ].map((cat) => (
-                                    <div className="space-y-2" key={cat.label}>
+                                    <div className="space-y-1" key={cat.label}>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">{cat.label}</span>
-                                            <span className="text-sm font-medium">{formatCurrency(cat.value)}</span>
+                                            <span className="text-xs font-medium">{cat.label}</span>
+                                            <span className="text-xs font-medium">{formatCurrency(cat.value)}</span>
                                         </div>
-                                        <Progress value={getPercentage(cat.value, data.totalIncome)} className="h-2" />
-                                        <p className="text-xs text-muted-foreground">
+                                        <Progress value={getPercentage(cat.value, data.totalIncome)} className="h-1.5" />
+                                        <p className="text-[10px] text-muted-foreground">
                                             {getPercentage(cat.value, data.totalIncome)}% del total de ingresos
                                         </p>
                                     </div>

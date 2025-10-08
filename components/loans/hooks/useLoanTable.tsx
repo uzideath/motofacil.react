@@ -37,7 +37,9 @@ export function useLoanTable() {
             const mappedLoans: Loan[] = response.data.map((loan) => ({
                 ...loan,
                 userName: loan.user?.name ?? "Sin nombre",
-                motorcycleModel: loan.motorcycle?.model ?? "Sin modelo",
+                vehicleModel: loan.vehicle?.model ?? "Sin modelo",
+                // Backwards compatibility
+                motorcycleModel: loan.vehicle?.model ?? loan.motorcycle?.model ?? "Sin modelo",
                 archived: loan.archived ?? false, // Default to false if not provided
             }))
             setLoans(mappedLoans)
@@ -168,11 +170,11 @@ export function useLoanTable() {
                     customerAddress: loan.user.address || "Dirección no disponible",
                     customerCity: loan.user.city || "Ciudad no disponible",
                     customerPhone: loan.user.phone || "Teléfono no disponible",
-                    plate: loan.motorcycle.plate || "Placa no disponible",
-                    brand: loan.motorcycle.brand || "Marca no disponible",
-                    engine: loan.motorcycle.engine,
-                    model: loan.motorcycle.model || "Modelo no disponible",
-                    chassis: loan.motorcycle.chassis,
+                    plate: loan.vehicle?.plate || loan.motorcycle?.plate || "Placa no disponible",
+                    brand: loan.vehicle?.brand || loan.motorcycle?.brand || "Marca no disponible",
+                    engine: loan.vehicle?.engine || loan.motorcycle?.engine,
+                    model: loan.vehicle?.model || loan.motorcycle?.model || "Modelo no disponible",
+                    chassis: loan.vehicle?.chassis || loan.motorcycle?.chassis,
                     date: new Date().toISOString(),
                 },
                 {
@@ -215,11 +217,11 @@ export function useLoanTable() {
         if (loan.archived !== showArchived) return false
 
         // Filter by search term
-        const userMatch = loan.user.name?.toLowerCase().includes(searchTerm.toLowerCase())
-        const motoMatch = loan.motorcycle.model?.toLowerCase().includes(searchTerm.toLowerCase())
-        const idMatch = loan.user.identification?.toLowerCase().includes(searchTerm.toLowerCase())
-        const plateMatch = loan.motorcycle.plate?.toLowerCase().includes(searchTerm.toLowerCase())
-        return userMatch || motoMatch || idMatch || plateMatch
+        const userMatch = loan.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        const vehicleMatch = loan.vehicle?.model?.toLowerCase().includes(searchTerm.toLowerCase())
+        const idMatch = loan.user?.identification?.toLowerCase().includes(searchTerm.toLowerCase())
+        const plateMatch = loan.vehicle?.plate?.toLowerCase().includes(searchTerm.toLowerCase())
+        return userMatch || vehicleMatch || idMatch || plateMatch
     })
 
     const totalItems = filteredLoans.length
@@ -248,47 +250,211 @@ export function useLoanTable() {
             }
         }
 
+        const getInterestTypeText = (type: string | undefined) => {
+            switch (type) {
+                case "FIXED":
+                    return "Fijo"
+                case "COMPOUND":
+                    return "Compuesto"
+                default:
+                    return "No especificado"
+            }
+        }
+
+        const getStatusText = (status: string) => {
+            switch (status) {
+                case "ACTIVE":
+                    return "Activo"
+                case "COMPLETED":
+                    return "Completado"
+                case "DEFAULTED":
+                    return "En mora"
+                case "CANCELLED":
+                    return "Cancelado"
+                default:
+                    return status
+            }
+        }
+
+        const formatCurrency = (value: number) => {
+            return `$${value.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+        }
+
+        const formatPercentage = (value: number) => {
+            return `${value}%`
+        }
+
+        const escapeCSV = (value: string | number | null | undefined): string => {
+            if (value === null || value === undefined) return ""
+            const stringValue = String(value)
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                return `"${stringValue.replace(/"/g, '""')}"`
+            }
+            return stringValue
+        }
+
+        // Enhanced headers with more detailed information
         const headers = [
+            // Cliente Information
+            "ID Préstamo",
+            "Número de Contrato",
             "Cliente",
-            "Identificación",
-            "Motocicleta",
+            "Identificación Cliente",
+            "Teléfono Cliente",
+            "Dirección Cliente",
+            
+            // Vehículo Information
+            "Marca Vehículo",
+            "Modelo Vehículo",
+            "Año",
+            "Color",
+            "Placa",
+            "Chasis",
+            "Motor",
+            "Cilindraje (CC)",
+            
+            // Loan Financial Details
             "Monto Total",
             "Cuota Inicial",
-            "Cuotas",
+            "Monto Financiado",
+            "Tasa de Interés",
+            "Tipo de Interés",
+            "Cuota por Instalación",
+            "GPS por Cuota",
+            
+            // Payment Status
+            "Total de Cuotas",
             "Cuotas Pagadas",
+            "Cuotas Restantes",
+            "Total Pagado",
             "Deuda Restante",
-            "Frecuencia",
+            "Progreso (%)",
+            
+            // Schedule Information
+            "Frecuencia de Pago",
+            "Fecha de Inicio",
+            "Fecha de Finalización",
+            "Días Transcurridos",
+            
+            // Status
             "Estado",
             "Archivado",
+            
+            // Metadata
+            "Fecha de Creación",
+            "Última Actualización",
         ]
+
         const csvRows = [
             headers.join(","),
-            ...filteredLoans.map((loan) =>
-                [
-                    loan.user.name,
-                    loan.user.identification,
-                    loan.motorcycle.model,
-                    loan.totalAmount,
-                    loan.downPayment,
-                    loan.installments,
-                    loan.paidInstallments,
-                    loan.debtRemaining,
-                    getPaymentFrequencyText(loan.paymentFrequency || "DAILY"),
-                    loan.status,
-                    loan.archived ? "Sí" : "No",
-                ].join(","),
-            ),
+            ...filteredLoans.map((loan) => {
+                const vehicle = loan.vehicle || loan.motorcycle
+                const startDate = loan.startDate ? new Date(loan.startDate) : null
+                const endDate = loan.endDate ? new Date(loan.endDate) : null
+                const createdAt = new Date(loan.createdAt)
+                const updatedAt = new Date(loan.updatedAt)
+                
+                // Calculate days elapsed
+                const daysElapsed = startDate ? Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : 0
+                
+                // Calculate progress percentage
+                const progress = loan.installments > 0 ? Math.round((loan.paidInstallments / loan.installments) * 100) : 0
+                
+                // Financed amount (total - down payment)
+                const financedAmount = loan.totalAmount - loan.downPayment
+
+                return [
+                    // Cliente Information
+                    escapeCSV(loan.id),
+                    escapeCSV(loan.contractNumber || "Sin número"),
+                    escapeCSV(loan.user.name),
+                    escapeCSV(loan.user.identification),
+                    escapeCSV(loan.user.phone || "No disponible"),
+                    escapeCSV(loan.user.address || "No disponible"),
+                    
+                    // Vehículo Information
+                    escapeCSV(vehicle?.brand || "Sin marca"),
+                    escapeCSV(vehicle?.model || "Sin modelo"),
+                    escapeCSV("N/A"), // year field doesn't exist
+                    escapeCSV(vehicle?.color || "N/A"),
+                    escapeCSV(vehicle?.plate || "Sin placa"),
+                    escapeCSV(vehicle?.chassis || "N/A"),
+                    escapeCSV(vehicle?.engine || "N/A"),
+                    escapeCSV(vehicle?.cc || "N/A"),
+                    
+                    // Loan Financial Details
+                    escapeCSV(formatCurrency(loan.totalAmount)),
+                    escapeCSV(formatCurrency(loan.downPayment)),
+                    escapeCSV(formatCurrency(financedAmount)),
+                    escapeCSV(formatPercentage(loan.interestRate)),
+                    escapeCSV(getInterestTypeText(loan.interestType)),
+                    escapeCSV(formatCurrency(loan.installmentPaymentAmmount)),
+                    escapeCSV(formatCurrency(loan.gpsInstallmentPayment)),
+                    
+                    // Payment Status
+                    escapeCSV(loan.installments),
+                    escapeCSV(loan.paidInstallments),
+                    escapeCSV(loan.remainingInstallments),
+                    escapeCSV(formatCurrency(loan.totalPaid)),
+                    escapeCSV(formatCurrency(loan.debtRemaining)),
+                    escapeCSV(`${progress}%`),
+                    
+                    // Schedule Information
+                    escapeCSV(getPaymentFrequencyText(loan.paymentFrequency || "DAILY")),
+                    escapeCSV(startDate ? startDate.toLocaleDateString('es-CO') : "No establecida"),
+                    escapeCSV(endDate ? endDate.toLocaleDateString('es-CO') : "No establecida"),
+                    escapeCSV(daysElapsed > 0 ? `${daysElapsed} días` : "0 días"),
+                    
+                    // Status
+                    escapeCSV(getStatusText(loan.status)),
+                    escapeCSV(loan.archived ? "Sí" : "No"),
+                    
+                    // Metadata
+                    escapeCSV(createdAt.toLocaleString('es-CO')),
+                    escapeCSV(updatedAt.toLocaleString('es-CO')),
+                ].join(",")
+            }),
         ]
-        const csvContent = csvRows.join("\n")
+
+        // Add summary statistics at the end
+        const totalLoans = filteredLoans.length
+        const totalAmount = filteredLoans.reduce((sum, loan) => sum + loan.totalAmount, 0)
+        const totalPaid = filteredLoans.reduce((sum, loan) => sum + loan.totalPaid, 0)
+        const totalRemaining = filteredLoans.reduce((sum, loan) => sum + loan.debtRemaining, 0)
+        const activeLoans = filteredLoans.filter(loan => loan.status === "ACTIVE").length
+        const completedLoans = filteredLoans.filter(loan => loan.status === "COMPLETED").length
+
+        csvRows.push("")
+        csvRows.push("RESUMEN ESTADÍSTICO")
+        csvRows.push(`Total de Préstamos,${totalLoans}`)
+        csvRows.push(`Préstamos Activos,${activeLoans}`)
+        csvRows.push(`Préstamos Completados,${completedLoans}`)
+        csvRows.push(`Monto Total Prestado,${formatCurrency(totalAmount)}`)
+        csvRows.push(`Total Recaudado,${formatCurrency(totalPaid)}`)
+        csvRows.push(`Deuda Total Pendiente,${formatCurrency(totalRemaining)}`)
+        csvRows.push(`Tasa de Recuperación,${totalAmount > 0 ? Math.round((totalPaid / totalAmount) * 100) : 0}%`)
+        csvRows.push("")
+        csvRows.push(`Generado el,${new Date().toLocaleString('es-CO')}`)
+
+        const csvContent = "\uFEFF" + csvRows.join("\n") // Add BOM for proper UTF-8 encoding in Excel
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
         const url = URL.createObjectURL(blob)
         const link = document.createElement("a")
+        const timestamp = new Date().toISOString().split('T')[0]
+        const fileName = showArchived 
+            ? `arrendamientos-archivados-${timestamp}.csv` 
+            : `arrendamientos-${timestamp}.csv`
         link.setAttribute("href", url)
-        link.setAttribute("download", showArchived ? "prestamos-archivados.csv" : "prestamos.csv")
+        link.setAttribute("download", fileName)
         link.style.visibility = "hidden"
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+
+        toast({
+            title: "Exportación exitosa",
+            description: `Se exportaron ${totalLoans} préstamos al archivo CSV`,
+        })
     }
 
     return {

@@ -24,10 +24,10 @@ export const ChartsTab: React.FC<ChartsTabProps> = ({ calculations }) => {
     const { paymentMethodData, transactionTypeData } = createChartData(calculations)
 
     return (
-        <Card className="border shadow-sm">
-            <CardHeader className="pb-3 border-b">
+        <Card className="bg-card border-border shadow-sm">
+            <CardHeader className="pb-3 border-b border-border">
                 <CardTitle className="text-xl flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
+                    <BarChart3 className="h-5 w-5 text-primary" />
                     Visualización de Datos
                 </CardTitle>
                 <CardDescription>Gráficos para analizar la distribución de ingresos y egresos</CardDescription>

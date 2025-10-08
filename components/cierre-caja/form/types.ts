@@ -1,12 +1,8 @@
 import { PaymentMethod, Provider } from "@/lib/types"
+import type { SelectedTransaction as TransactionSelectedTransaction } from "../transactions/constants/types"
 
-export type SelectedTransaction = {
-    id: string
-    amount: number
-    paymentMethod: PaymentMethod
-    type: "income" | "expense"
-    provider?: Provider
-}
+// Re-export the SelectedTransaction from transactions to ensure consistency
+export type SelectedTransaction = TransactionSelectedTransaction
 
 export type FormState = {
     cashInRegister: string
@@ -22,6 +18,7 @@ export type FormState = {
 export type CashRegisterFormProps = {
     token: string
     selectedTransactions: SelectedTransaction[]
+    closingDate?: Date
 }
 
 export type ChartData = {

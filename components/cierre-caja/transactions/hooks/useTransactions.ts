@@ -32,6 +32,11 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
     const [currentProviderName, setCurrentProviderName] = useState<string | undefined>(undefined)
     const [attemptedProviderName, setAttemptedProviderName] = useState<string | undefined>(undefined)
 
+    // Date mismatch dialog state
+    const [showDateMismatchDialog, setShowDateMismatchDialog] = useState(false)
+    const [currentDate, setCurrentDate] = useState<string | undefined>(undefined)
+    const [attemptedDate, setAttemptedDate] = useState<string | undefined>(undefined)
+
     // Filters state
     const [filters, setFilters] = useState<TransactionFiltersState>({
         searchTerm: "",
@@ -45,7 +50,12 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
     const throttleRef = useRef<NodeJS.Timeout | null>(null)
 
     // Memoized derived state
-    const filteredTransactions = useMemo(() => filterAndSortTransactions(transactions, filters), [transactions, filters])
+    const filteredTransactions = useMemo(() => {
+        const filtered = filterAndSortTransactions(transactions, filters)
+        console.log('🔍 useTransactions - Filtered transactions:', filtered);
+        console.log('🔍 useTransactions - Total transactions:', transactions.length);
+        return filtered
+    }, [transactions, filters])
 
     const transactionSummary = useMemo(() => calculateTransactionSummary(filteredTransactions), [filteredTransactions])
 
@@ -109,6 +119,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             setLoading(true)
             setRefreshing(true)
             const data = await fetchAvailableTransactions(token)
+            console.log('📦 useTransactions - Fetched transactions:', data);
             setTransactions(data)
         } catch (error) {
             console.error("Error loading transactions:", error)
@@ -118,24 +129,22 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         }
     }, [token])
 
-    // Throttled onSelect callback
-    const throttledOnSelect = useCallback(
-        (selectedTransactions: SelectedTransaction[]) => {
-            if (throttleRef.current) {
-                clearTimeout(throttleRef.current)
-            }
-
-            throttleRef.current = setTimeout(() => {
-                onSelect?.(selectedTransactions)
-            }, 50) // 50ms throttle
-        },
-        [onSelect],
-    )
-
     // Initial fetch
     useEffect(() => {
+        console.log('🚀 useTransactions - Fetching with token:', token ? 'Token exists' : 'NO TOKEN');
         fetchTransactions()
     }, [fetchTransactions])
+
+    // Store onSelect callback in ref to avoid re-running effect
+    const onSelectRef = useRef(onSelect)
+    useEffect(() => {
+        onSelectRef.current = onSelect
+    }, [onSelect])
+
+    // Convert Set to string for stable dependency comparison
+    const selectedIdsKey = useMemo(() => {
+        return Array.from(globalSelectedIds).sort().join(',')
+    }, [globalSelectedIds])
 
     // Notify parent component when selection changes (throttled)
     useEffect(() => {
@@ -152,14 +161,28 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             }),
         )
 
-        throttledOnSelect(selectedTransactions)
+        console.log('🎯 useTransactions - Mapped selected transactions:', selectedTransactions);
+        console.log('🎯 useTransactions - Provider info:', selectedTransactions.map(t => ({
+            id: t.id,
+            type: t.type,
+            provider: t.provider
+        })));
+
+        // Call onSelect directly with throttling handled internally
+        if (throttleRef.current) {
+            clearTimeout(throttleRef.current)
+        }
+
+        throttleRef.current = setTimeout(() => {
+            onSelectRef.current?.(selectedTransactions)
+        }, 50)
 
         return () => {
             if (throttleRef.current) {
                 clearTimeout(throttleRef.current)
             }
         }
-    }, [selectedTransactionsSummary.selectedTransactions, getPaymentMethod, throttledOnSelect])
+    }, [selectedIdsKey, selectedTransactionsSummary.selectedTransactions, getPaymentMethod])
 
     // Filter handlers with throttling
     const handleSearchChange = useCallback((value: string) => {
@@ -204,11 +227,57 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
 
                 if (globalSelectedIds.size > 0 && currentTransaction) {
                     const firstSelectedTransaction = transactions.find((t) => globalSelectedIds.has(t.id))
-                    if (firstSelectedTransaction && currentTransaction.provider !== firstSelectedTransaction.provider) {
+                    
+                    if (firstSelectedTransaction && currentTransaction.provider?.id !== firstSelectedTransaction.provider?.id) {
+                        // Provider mismatch validation
                         setCurrentProviderName(formatProviderName(firstSelectedTransaction.provider?.name))
                         setAttemptedProviderName(formatProviderName(currentTransaction.provider?.name))
                         setShowProviderMismatchDialog(true)
                         return
+                    }
+
+                    // Date mismatch validation - check if transactions belong to the same closing date
+                    // IMPORTANT: Transactions must have the same "closing date":
+                    // - For on-time payments: use paymentDate (the date it was paid)
+                    // - For late payments: use latePaymentDate (the original due date)
+                    // This prevents mixing transactions from different due dates in the same closing
+                    if (firstSelectedTransaction) {
+                        // Get the "closing date" for each transaction
+                        const getClosingDate = (transaction: typeof firstSelectedTransaction) => {
+                            // If it's a late payment, use the due date (latePaymentDate)
+                            // Otherwise, use the payment date
+                            if (transaction.isLate && transaction.latePaymentDate) {
+                                return new Date(transaction.latePaymentDate).toDateString()
+                            }
+                            return new Date(transaction.date).toDateString()
+                        }
+
+                        const firstClosingDate = getClosingDate(firstSelectedTransaction)
+                        const currentClosingDate = getClosingDate(currentTransaction)
+                        
+                        if (firstClosingDate !== currentClosingDate) {
+                            // Format dates for display
+                            const firstDisplayDate = firstSelectedTransaction.isLate && firstSelectedTransaction.latePaymentDate
+                                ? new Date(firstSelectedTransaction.latePaymentDate)
+                                : new Date(firstSelectedTransaction.date)
+                            
+                            const currentDisplayDate = currentTransaction.isLate && currentTransaction.latePaymentDate
+                                ? new Date(currentTransaction.latePaymentDate)
+                                : new Date(currentTransaction.date)
+
+                            setCurrentDate(firstDisplayDate.toLocaleDateString('es-CO', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            }))
+                            setAttemptedDate(currentDisplayDate.toLocaleDateString('es-CO', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                            }))
+                            setShowDateMismatchDialog(true)
+                            return
+                        }
                     }
                 }
 
@@ -316,6 +385,9 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         showProviderMismatchDialog,
         currentProviderName,
         attemptedProviderName,
+        showDateMismatchDialog,
+        currentDate,
+        attemptedDate,
 
         // Actions
         fetchTransactions,
@@ -330,5 +402,6 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         clearAllSelections,
         handlePageChange,
         setShowProviderMismatchDialog,
+        setShowDateMismatchDialog,
     }
 }

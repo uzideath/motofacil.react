@@ -5,28 +5,33 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Edit, Trash2, Building, Calendar, Bike, DollarSign } from "lucide-react"
+import { Edit, Trash2, Building, Calendar, Bike, DollarSign, Eye, TrendingUp, Activity } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import type { Provider } from "@/lib/types"
+import type { Provider, ProviderStats } from "@/lib/types"
 import { ProviderCashRegistersDialog } from "../components/ProvidersCashRegistersDialog"
 import { ProviderMotorcyclesDialog } from "../components/ProvidersMotorcyclesDialog"
 import { ProviderForm } from "../form/ProviderForm"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ProviderTableRowProps {
     provider: Provider
+    stats?: ProviderStats
     index: number
     onEdit: (provider?: Provider) => void
     onDelete: (id: string) => void
+    onViewDetails: (providerId: string) => void
     createProvider: (name: string) => Promise<Provider>
     updateProvider: (id: string, name: string) => Promise<Provider>
 }
 
 export function ProviderTableRow({
     provider,
+    stats,
     index,
     onEdit,
     onDelete,
+    onViewDetails,
     createProvider,
     updateProvider,
 }: ProviderTableRowProps) {
@@ -36,18 +41,26 @@ export function ProviderTableRow({
     const motorcycleCount = provider.motorcylces?.length || 0
     const cashRegisterCount = provider.cashRegisters?.length || 0
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+        }).format(amount)
+    }
+
     return (
         <>
             <TableRow
                 key={`provider-row-${provider.id}-${index}`}
-                className="border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                className="border-border hover:bg-muted/50"
             >
                 <TableCell>
                     <div className="font-medium flex items-center gap-1.5">
-                        <Building className="h-4 w-4 text-blue-500" />
+                        <Building className="h-4 w-4 text-primary" />
                         <Badge
                             variant="outline"
-                            className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                            className="bg-primary/10 border-primary/30 text-primary"
                         >
                             {provider.name}
                         </Badge>
@@ -55,29 +68,48 @@ export function ProviderTableRow({
                 </TableCell>
 
                 <TableCell className="text-center">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setMotorcyclesDialogOpen(true)}
-                                    className="h-8 px-3 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-200 dark:hover:bg-blue-900/30"
-                                >
-                                    <Bike className="h-4 w-4 mr-1" />
-                                    <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                                    >
-                                        {motorcycleCount}
-                                    </Badge>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Ver motocicletas ({motorcycleCount})</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <Badge variant="secondary" className="bg-primary/20 text-primary">
+                                {stats.totalVehicles} total
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                                {stats.vehiclesByStatus.RENTED} arrendados
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-20 mx-auto" />
+                    )}
+                </TableCell>
+
+                <TableCell className="text-center">
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                {stats.activeLoans} activos
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                                {stats.completedLoans} completados
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-20 mx-auto" />
+                    )}
+                </TableCell>
+
+                <TableCell className="text-center">
+                    {stats ? (
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="font-medium text-green-600 dark:text-green-400">
+                                {formatCurrency(stats.totalRevenue)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                                {formatCurrency(stats.pendingPayments)} pendiente
+                            </div>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-8 w-24 mx-auto" />
+                    )}
                 </TableCell>
 
                 <TableCell className="text-center">
@@ -88,12 +120,12 @@ export function ProviderTableRow({
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setCashRegistersDialogOpen(true)}
-                                    className="h-8 px-3 text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-200 dark:hover:bg-green-900/30"
+                                    className="h-8 px-3 text-amber-600 hover:text-amber-800 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-200 dark:hover:bg-amber-900/30"
                                 >
                                     <DollarSign className="h-4 w-4 mr-1" />
                                     <Badge
                                         variant="secondary"
-                                        className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                        className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
                                     >
                                         {cashRegisterCount}
                                     </Badge>
@@ -107,14 +139,32 @@ export function ProviderTableRow({
                 </TableCell>
 
                 <TableCell>
-                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                        <Calendar className="h-4 w-4 text-purple-500" />
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Calendar className="h-4 w-4 text-primary" />
                         <span>{format(new Date(provider.createdAt), "dd/MM/yyyy", { locale: es })}</span>
                     </div>
                 </TableCell>
 
                 <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => onViewDetails(provider.id)}
+                                        className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                        <span className="sr-only">Ver detalles</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Ver detalles completos</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -129,7 +179,7 @@ export function ProviderTableRow({
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 dark:hover:text-blue-300"
+                                                className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                                             >
                                                 <Edit className="h-4 w-4" />
                                                 <span className="sr-only">Editar</span>
@@ -149,7 +199,7 @@ export function ProviderTableRow({
                                         variant="outline"
                                         size="icon"
                                         onClick={() => onDelete(provider.id)}
-                                        className="border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 dark:hover:text-red-300"
+                                        className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Eliminar</span>

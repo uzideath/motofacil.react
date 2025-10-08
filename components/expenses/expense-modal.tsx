@@ -30,7 +30,7 @@ export function ExpenseModal({ onSuccess, children, expenseData, isEditing = fal
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children || (
-                    <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-sm hover:shadow-md transition-all">
+                    <Button className="bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md transition-all">
                         {isEditing ? (
                             <>
                                 <FileEdit className="mr-2 h-4 w-4" />
@@ -45,8 +45,8 @@ export function ExpenseModal({ onSuccess, children, expenseData, isEditing = fal
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 max-h-[90vh] overflow-y-auto">
-                <div className="bg-gradient-to-r from-blue-600 to-sky-500 p-6">
+            <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-card max-h-[90vh] overflow-y-auto">
+                <div className="bg-primary p-6">
                     <div className="flex items-center gap-3">
                         <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
                             <Receipt className="h-6 w-6 text-white" />
@@ -55,7 +55,7 @@ export function ExpenseModal({ onSuccess, children, expenseData, isEditing = fal
                             <DialogTitle className="text-xl font-bold text-white">
                                 {isEditing ? "Editar Egreso" : "Registrar Nuevo Egreso"}
                             </DialogTitle>
-                            <DialogDescription className="text-blue-100">
+                            <DialogDescription className="text-primary-foreground/90">
                                 {isEditing
                                     ? "Modifique la información del egreso seleccionado"
                                     : "Complete el formulario para registrar un nuevo egreso en el sistema"}

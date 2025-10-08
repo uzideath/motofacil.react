@@ -30,74 +30,68 @@ export function TransactionSummary({
     return (
         <div className="space-y-4">
             {isShowingSelected && (
-                <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                <div className="flex items-center gap-2 text-sm text-primary">
                     <CheckSquare className="h-4 w-4" />
                     <span>Mostrando resumen de {selectedCount} transacciones seleccionadas</span>
                 </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card
-                    className={`${isShowingSelected ? "ring-2 ring-blue-200 dark:ring-blue-800" : ""} bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800/30`}
+                    className={`${isShowingSelected ? "ring-2 ring-primary/30" : ""} bg-card border-border`}
                 >
                     <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                                <p className="text-sm font-medium text-muted-foreground">
                                     {isShowingSelected ? "Ingresos Seleccionados" : "Total Ingresos"}
                                 </p>
-                                <p className="text-2xl font-bold text-green-700 dark:text-green-300">{formatCurrency(displayIncome)}</p>
+                                <p className="text-2xl font-bold text-green-500">{formatCurrency(displayIncome)}</p>
                             </div>
-                            <div className="bg-green-100 dark:bg-green-800/30 p-3 rounded-full">
-                                <ArrowUpToLine className="h-6 w-6 text-green-600 dark:text-green-400" />
+                            <div className="bg-green-500/10 p-3 rounded-full">
+                                <ArrowUpToLine className="h-6 w-6 text-green-500" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card
-                    className={`${isShowingSelected ? "ring-2 ring-blue-200 dark:ring-blue-800" : ""} bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800/30`}
+                    className={`${isShowingSelected ? "ring-2 ring-primary/30" : ""} bg-card border-border`}
                 >
                     <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                             <div>
-                                <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                                <p className="text-sm font-medium text-muted-foreground">
                                     {isShowingSelected ? "Egresos Seleccionados" : "Total Egresos"}
                                 </p>
-                                <p className="text-2xl font-bold text-red-700 dark:text-red-300">{formatCurrency(displayExpense)}</p>
+                                <p className="text-2xl font-bold text-red-500">{formatCurrency(displayExpense)}</p>
                             </div>
-                            <div className="bg-red-100 dark:bg-red-800/30 p-3 rounded-full">
-                                <ArrowDownToLine className="h-6 w-6 text-red-600 dark:text-red-400" />
+                            <div className="bg-red-500/10 p-3 rounded-full">
+                                <ArrowDownToLine className="h-6 w-6 text-red-500" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card
-                    className={`${isShowingSelected ? "ring-2 ring-blue-200 dark:ring-blue-800" : ""} ${displayNet >= 0
-                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30"
-                            : "bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30"
-                        }`}
+                    className={`${isShowingSelected ? "ring-2 ring-primary/30" : ""} bg-card border-border`}
                 >
                     <CardContent className="p-4">
                         <div className="flex justify-between items-center">
                             <div>
-                                <p
-                                    className={`text-sm font-medium ${displayNet >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
-                                        }`}
-                                >
+                                <p className="text-sm font-medium text-muted-foreground">
                                     {isShowingSelected ? "Balance Seleccionado" : "Balance Neto"}
                                 </p>
                                 <p
-                                    className={`text-2xl font-bold ${displayNet >= 0 ? "text-blue-700 dark:text-blue-300" : "text-amber-700 dark:text-amber-300"
+                                    className={`text-2xl font-bold ${displayNet >= 0 ? "text-primary" : "text-amber-500"
                                         }`}
                                 >
                                     {formatCurrency(displayNet)}
                                 </p>
                             </div>
                             <div
-                                className={`p-3 rounded-full ${displayNet >= 0 ? "bg-blue-100 dark:bg-blue-800/30" : "bg-amber-100 dark:bg-amber-800/30"
+                                className={`p-3 rounded-full ${displayNet >= 0 ? "bg-primary/10" : "bg-amber-500/10"
                                     }`}
                             >
                                 <Wallet
-                                    className={`h-6 w-6 ${displayNet >= 0 ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
+                                    className={`h-6 w-6 ${displayNet >= 0 ? "text-primary" : "text-amber-500"
                                         }`}
                                 />
                             </div>

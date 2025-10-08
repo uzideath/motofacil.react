@@ -31,12 +31,12 @@ export function ExpenseAttachmentUpload({
             render={({ field }) => (
                 <FormItem className="col-span-1 md:col-span-2">
                     <FormLabel className="flex items-center gap-1.5">
-                        <ImageIcon className="h-4 w-4 text-blue-500" />
+                        <ImageIcon className="h-4 w-4 text-primary" />
                         Comprobante
                     </FormLabel>
                     <div className="space-y-4">
                         {!imagePreview ? (
-                            <div className="flex flex-col items-center justify-center border-2 border-dashed border-blue-200 dark:border-blue-900/50 rounded-lg p-6 transition-all hover:border-blue-300 dark:hover:border-blue-800">
+                            <div className="flex flex-col items-center justify-center border-2 border-dashed border-border rounded-lg p-6 transition-all hover:border-primary/50">
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -50,7 +50,6 @@ export function ExpenseAttachmentUpload({
                                     variant="outline"
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={uploadingImage}
-                                    className="mb-2 border-blue-200 hover:border-blue-300 dark:border-blue-900/50 dark:hover:border-blue-800"
                                 >
                                     {uploadingImage ? (
                                         <>
@@ -68,7 +67,7 @@ export function ExpenseAttachmentUpload({
                             </div>
                         ) : (
                             <div className="relative">
-                                <div className="relative rounded-lg overflow-hidden border border-blue-200 dark:border-blue-900/50">
+                                <div className="relative rounded-lg overflow-hidden border border-border">
                                     <img
                                         src={imagePreview || "/placeholder.svg"}
                                         alt="Comprobante"

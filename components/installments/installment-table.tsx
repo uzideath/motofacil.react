@@ -24,7 +24,16 @@ import { useTableState } from "./hooks/useTableState"
 import { NotesDialog } from "./components/dialogs/note"
 
 export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
-  const { installments, loading, fetchInstallments, refreshInstallments } = useInstallments(onRefresh)
+  const { 
+    installments, 
+    loading, 
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    fetchInstallments, 
+    refreshInstallments 
+  } = useInstallments(onRefresh)
 
   const {
     isGenerating,
@@ -62,12 +71,10 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     setPaymentFilter,
     statusFilter,
     setStatusFilter,
-    currentPage,
     itemsPerPage,
     dateRange,
     filteredInstallments,
     paginatedInstallments,
-    totalPages,
     indexOfFirstItem,
     indexOfLastItem,
     hasActiveFilters,
@@ -76,23 +83,24 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
     handlePageChange,
     handleItemsPerPageChange,
     handleDateRangeChange,
-  } = useTableState(installments)
+  } = useTableState({
+    installments,
+    totalItems,
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    onFiltersChange: (filters) => {
+      fetchInstallments(filters)
+    }
+  })
 
   return (
-    <Card className="bg-dark-blue-900/80 border-dark-blue-800/50 shadow-lg">
+    <Card className="bg-card border-border shadow-lg">
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-xl text-white flex items-center">
-            <Calendar className="mr-2 h-5 w-5 text-blue-300" />
-            Registro de Cuotas
-          </CardTitle>
-          <InstallmentForm onSaved={refreshInstallments}>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1">
-              <PlusCircle className="h-4 w-4" />
-              Nueva Cuota
-            </Button>
-          </InstallmentForm>
-        </div>
+        <CardTitle className="text-xl flex items-center">
+          <Calendar className="mr-2 h-5 w-5 text-primary" />
+          Registro de Cuotas
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <LoadingOverlay isVisible={isGenerating} message="Procesando..." />
@@ -104,7 +112,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           onDateRangeChange={(range) => {
             handleDateRangeChange(range)
             if (range === undefined || (range.from && range.to)) {
-              fetchInstallments(range)
+              fetchInstallments({ dateRange: range })
             }
           }}
           paymentFilter={paymentFilter}
@@ -112,13 +120,21 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           onResetFilters={resetFilters}
-          onRefresh={() => fetchInstallments(dateRange)}
+          onRefresh={() => fetchInstallments({ dateRange })}
           hasActiveFilters={hasActiveFilters}
+          actionButton={
+            <InstallmentForm onSaved={refreshInstallments}>
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1">
+                <PlusCircle className="h-4 w-4" />
+                Nueva Cuota
+              </Button>
+            </InstallmentForm>
+          }
         />
 
         <DateRangeSummary dateRange={dateRange} />
 
-        <div className="rounded-lg border border-dark-blue-800/50 overflow-hidden shadow-md">
+        <div className="rounded-lg border border-border overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <Table>
               <InstallmentTableHeader sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
@@ -151,8 +167,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={itemsPerPage}
-            totalItems={filteredInstallments.length}
-            visibleItems={paginatedInstallments.length}
+            totalItems={totalItems}
+            visibleItems={filteredInstallments.length}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             indexOfFirstItem={indexOfFirstItem}
@@ -164,8 +180,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           dateRange={dateRange}
           paymentFilter={paymentFilter}
           statusFilter={statusFilter}
-          totalFiltered={filteredInstallments.length}
-          totalItems={installments.length}
+          totalFiltered={totalItems}
+          totalItems={totalItems}
         />
       </CardContent>
 

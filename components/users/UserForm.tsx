@@ -38,7 +38,7 @@ export function UserForm({ children, userId, userData, onCreated }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900">
+      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-gradient-to-br from-card to-background">
         <div className="relative">
           <DialogHeader isEditing={isEditing} onClose={handleClose} />
 

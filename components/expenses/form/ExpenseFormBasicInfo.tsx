@@ -18,9 +18,9 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
     const { providers, loading, error } = useProviders()
 
     return (
-        <Card className="border border-blue-100 dark:border-blue-900/30 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardContent className="pt-6">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-primary">
                     <Tag className="h-5 w-5" />
                     Información del egreso
                 </h3>
@@ -31,12 +31,12 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
-                                    <Tag className="h-4 w-4 text-blue-500" />
+                                    <Tag className="h-4 w-4 text-primary" />
                                     Categoría
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                        <SelectTrigger>
                                             <SelectValue placeholder="Seleccione una categoría" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -63,14 +63,13 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
-                                    <Calendar className="h-4 w-4 text-blue-500" />
+                                    <Calendar className="h-4 w-4 text-primary" />
                                     Fecha
                                 </FormLabel>
                                 <FormControl>
                                     <Input
                                         type="date"
                                         {...field}
-                                        className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
                                     />
                                 </FormControl>
                                 <FormDescription className="text-xs">Fecha en que se realizó el egreso</FormDescription>
@@ -84,7 +83,7 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
-                                    <DollarSign className="h-4 w-4 text-blue-500" />
+                                    <DollarSign className="h-4 w-4 text-primary" />
                                     Monto
                                 </FormLabel>
                                 <FormControl>
@@ -93,7 +92,6 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                                         step="0.01"
                                         placeholder="0.00"
                                         {...field}
-                                        className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700"
                                     />
                                 </FormControl>
                                 <FormDescription className="text-xs">Valor del egreso</FormDescription>
@@ -107,12 +105,12 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
-                                    <CreditCard className="h-4 w-4 text-blue-500" />
+                                    <CreditCard className="h-4 w-4 text-primary" />
                                     Método de pago
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                        <SelectTrigger>
                                             <SelectValue placeholder="Seleccione un método de pago" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -135,12 +133,12 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5">
-                                    <Tag className="h-4 w-4 text-blue-500" />
+                                    <Tag className="h-4 w-4 text-primary" />
                                     Proveedor
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
                                     <FormControl>
-                                        <SelectTrigger className="border-blue-100 focus:border-blue-300 dark:border-blue-900/50 dark:focus:border-blue-700">
+                                        <SelectTrigger>
                                             <SelectValue
                                                 placeholder={
                                                     loading
@@ -155,18 +153,18 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                                     </FormControl>
                                     <SelectContent>
                                         {loading ? (
-                                            <SelectItem value="" disabled>
+                                            <SelectItem value="__loading__" disabled>
                                                 <div className="flex items-center gap-2">
                                                     <Loader2 className="h-4 w-4 animate-spin" />
                                                     Cargando proveedores...
                                                 </div>
                                             </SelectItem>
                                         ) : error ? (
-                                            <SelectItem value="" disabled>
+                                            <SelectItem value="__error__" disabled>
                                                 Error al cargar proveedores
                                             </SelectItem>
                                         ) : providers.length === 0 ? (
-                                            <SelectItem value="" disabled>
+                                            <SelectItem value="__empty__" disabled>
                                                 No hay proveedores disponibles
                                             </SelectItem>
                                         ) : (

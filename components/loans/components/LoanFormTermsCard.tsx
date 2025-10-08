@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calculator, Calendar, Clock, Percent, Navigation } from "lucide-react"
+import { Calculator, Calendar, Clock, Percent, Navigation, CalendarDays } from "lucide-react"
 import type { Control } from "react-hook-form"
 
 interface LoanFormTermsCardProps {
@@ -28,6 +28,51 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                         control={control}
+                        name="startDate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Inicio</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            type="date"
+                                            className="pl-9"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormDescription className="text-xs">Fecha de inicio del préstamo</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
+                        name="endDate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Finalización (Opcional)</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            type="date"
+                                            className="pl-9"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormDescription className="text-xs">
+                                    Si no se proporciona, se calculará automáticamente
+                                    {formValues.paymentFrequency === "DAILY" && " (excluye domingos)"}
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={control}
                         name="loanTermMonths"
                         render={({ field }) => (
                             <FormItem>
@@ -43,10 +88,15 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                                 const value = parseFormattedNumber(e.target.value)
                                                 field.onChange(value)
                                             }}
+                                            readOnly={!!(formValues.startDate && formValues.endDate)}
                                         />
                                     </div>
                                 </FormControl>
-                                <FormDescription className="text-xs">Duración total del préstamo en meses</FormDescription>
+                                <FormDescription className="text-xs">
+                                    {formValues.startDate && formValues.endDate 
+                                        ? "Calculado automáticamente desde las fechas" 
+                                        : "Duración total del préstamo en meses"}
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -72,10 +122,70 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                     </SelectContent>
                                 </Select>
                                 <FormDescription className="text-xs">
-                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días"}
+                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días (lunes a sábado)"}
                                     {formValues.paymentFrequency === "WEEKLY" && "Pagos una vez por semana"}
                                     {formValues.paymentFrequency === "BIWEEKLY" && "Pagos cada dos semanas"}
                                     {formValues.paymentFrequency === "MONTHLY" && "Pagos una vez al mes"}
+                                    {formValues.loanTermMonths > 0 && formValues.paymentFrequency && (
+                                        <span className="block mt-1 font-medium text-primary">
+                                            {(() => {
+                                                // If dates are provided, calculate from dates
+                                                if (formValues.startDate && formValues.endDate) {
+                                                    const calculateInstallmentsFromDates = (startDate: string, endDate: string, frequency: string): number => {
+                                                        const start = new Date(startDate)
+                                                        const end = new Date(endDate)
+                                                        
+                                                        if (start >= end) return 0
+                                                        
+                                                        if (frequency === "DAILY") {
+                                                            let businessDays = 0
+                                                            const currentDate = new Date(start)
+                                                            
+                                                            while (currentDate <= end) {
+                                                                if (currentDate.getDay() !== 0) {
+                                                                    businessDays++
+                                                                }
+                                                                currentDate.setDate(currentDate.getDate() + 1)
+                                                            }
+                                                            
+                                                            return businessDays
+                                                        } else {
+                                                            const diffTime = Math.abs(end.getTime() - start.getTime())
+                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                                                            
+                                                            switch (frequency) {
+                                                                case "WEEKLY": return Math.ceil(diffDays / 7)
+                                                                case "BIWEEKLY": return Math.ceil(diffDays / 14)
+                                                                case "MONTHLY":
+                                                                    const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
+                                                                    return Math.max(1, months)
+                                                                default: return 0
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    const installments = calculateInstallmentsFromDates(
+                                                        formValues.startDate, 
+                                                        formValues.endDate, 
+                                                        formValues.paymentFrequency
+                                                    )
+                                                    return `${installments} cuotas (calculado desde fechas)`
+                                                }
+                                                
+                                                // Otherwise use month-based calculation
+                                                const getInstallments = (months: number, freq: string) => {
+                                                    switch (freq) {
+                                                        case "DAILY": return months * 30
+                                                        case "WEEKLY": return months * 4
+                                                        case "BIWEEKLY": return months * 2
+                                                        case "MONTHLY": return months
+                                                        default: return months
+                                                    }
+                                                }
+                                                return `≈ ${getInstallments(formValues.loanTermMonths, formValues.paymentFrequency)} cuotas totales`
+                                            })()}
+                                        </span>
+                                    )}
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
