@@ -30,7 +30,7 @@ export function CalendarPayments() {
   } = useCalendarPayments()
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col space-y-4">
       <CalendarHeader
         currentDate={currentDate}
         selectedLoan={selectedLoan}
@@ -51,7 +51,7 @@ export function CalendarPayments() {
         <CalendarStats payments={payments} currentMonth={currentDate} />
       )}
 
-      <Card className="p-6">
+      <Card className="flex-1 p-6 min-h-0 overflow-auto">
         {!selectedLoan ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="bg-blue-50 dark:bg-blue-950/30 rounded-full p-6 mb-4">

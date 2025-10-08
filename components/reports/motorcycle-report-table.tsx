@@ -25,7 +25,7 @@ export function MotorcycleReportTable({ data }: MotorcycleReportTableProps) {
   const [sortBy, setSortBy] = useState("id")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
 
-  const itemsPerPage = 10
+  const itemsPerPage = 5
   const totalPages = Math.ceil(data.length / itemsPerPage)
 
   // Formatear moneda

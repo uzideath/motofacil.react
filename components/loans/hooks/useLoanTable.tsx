@@ -10,7 +10,7 @@ export function useLoanTable() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [itemsPerPage, setItemsPerPage] = useState(8)
     const [refreshKey, setRefreshKey] = useState(0)
     const [printingContract, setPrintingContract] = useState(false)
     const [printProgress, setPrintProgress] = useState(0)

@@ -114,7 +114,7 @@ export default function ReportsDashboard() {
   // Don't render stats until mounted to avoid hydration mismatch
   if (!mounted) {
     return (
-      <div className="flex flex-col h-[calc(100vh-120px)] space-y-3">
+      <div className="flex flex-col h-full space-y-3">
         <div className="flex gap-3">
           <Card className="flex-1">
             <CardContent className="p-3">
@@ -133,7 +133,7 @@ export default function ReportsDashboard() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] space-y-3">
+    <div className="flex flex-col h-full space-y-3">
       {/* Compact Top Bar with Filters and Stats */}
       <div className="flex gap-3">
         {/* Left: Filters */}
