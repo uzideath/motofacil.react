@@ -32,11 +32,6 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
     const [currentProviderName, setCurrentProviderName] = useState<string | undefined>(undefined)
     const [attemptedProviderName, setAttemptedProviderName] = useState<string | undefined>(undefined)
 
-    // Date mismatch dialog state
-    const [showDateMismatchDialog, setShowDateMismatchDialog] = useState(false)
-    const [currentDate, setCurrentDate] = useState<string | undefined>(undefined)
-    const [attemptedDate, setAttemptedDate] = useState<string | undefined>(undefined)
-
     // Filters state
     const [filters, setFilters] = useState<TransactionFiltersState>({
         searchTerm: "",
@@ -235,50 +230,6 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
                         setShowProviderMismatchDialog(true)
                         return
                     }
-
-                    // Date mismatch validation - check if transactions belong to the same closing date
-                    // IMPORTANT: Transactions must have the same "closing date":
-                    // - For on-time payments: use paymentDate (the date it was paid)
-                    // - For late payments: use latePaymentDate (the original due date)
-                    // This prevents mixing transactions from different due dates in the same closing
-                    if (firstSelectedTransaction) {
-                        // Get the "closing date" for each transaction
-                        const getClosingDate = (transaction: typeof firstSelectedTransaction) => {
-                            // If it's a late payment, use the due date (latePaymentDate)
-                            // Otherwise, use the payment date
-                            if (transaction.isLate && transaction.latePaymentDate) {
-                                return new Date(transaction.latePaymentDate).toDateString()
-                            }
-                            return new Date(transaction.date).toDateString()
-                        }
-
-                        const firstClosingDate = getClosingDate(firstSelectedTransaction)
-                        const currentClosingDate = getClosingDate(currentTransaction)
-                        
-                        if (firstClosingDate !== currentClosingDate) {
-                            // Format dates for display
-                            const firstDisplayDate = firstSelectedTransaction.isLate && firstSelectedTransaction.latePaymentDate
-                                ? new Date(firstSelectedTransaction.latePaymentDate)
-                                : new Date(firstSelectedTransaction.date)
-                            
-                            const currentDisplayDate = currentTransaction.isLate && currentTransaction.latePaymentDate
-                                ? new Date(currentTransaction.latePaymentDate)
-                                : new Date(currentTransaction.date)
-
-                            setCurrentDate(firstDisplayDate.toLocaleDateString('es-CO', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                            }))
-                            setAttemptedDate(currentDisplayDate.toLocaleDateString('es-CO', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                            }))
-                            setShowDateMismatchDialog(true)
-                            return
-                        }
-                    }
                 }
 
                 setGlobalSelectedIds((prev) => {
@@ -385,9 +336,6 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         showProviderMismatchDialog,
         currentProviderName,
         attemptedProviderName,
-        showDateMismatchDialog,
-        currentDate,
-        attemptedDate,
 
         // Actions
         fetchTransactions,
@@ -402,6 +350,5 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         clearAllSelections,
         handlePageChange,
         setShowProviderMismatchDialog,
-        setShowDateMismatchDialog,
     }
 }
