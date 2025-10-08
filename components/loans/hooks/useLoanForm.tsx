@@ -331,8 +331,9 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 headers: { Authorization: token ? `Bearer ${token}` : "" },
             })
 
+            // Filter for truly active loans only (not archived, not completed, not defaulted)
             const activeLoans = loansResponse.data.filter(
-                (loan) => !loan.archived && loan.status !== "COMPLETED" && loan.status !== "DEFAULTED",
+                (loan) => !loan.archived && loan.status === "ACTIVE"
             )
 
             // Get IDs of users and vehicles that are already assigned to active loans
@@ -349,11 +350,21 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             const filteredUsers = allUsers.filter((user) => !assignedUserIds.has(user.id))
             const filteredVehicles = allVehicles.filter((vehicle) => !assignedVehicleIds.has(vehicle.id))
 
+            console.log("Active loans count:", activeLoans.length)
+            console.log("Assigned user IDs:", Array.from(assignedUserIds))
+            console.log("Available users:", filteredUsers.length, "of", allUsers.length)
+            console.log("Available vehicles:", filteredVehicles.length, "of", allVehicles.length)
+
             setAvailableUsers(filteredUsers)
             setAvailableVehicles(filteredVehicles)
         } catch (error) {
             console.error("Error filtering available options:", error)
-            // Fallback to showing all options if filtering fails
+            // On error, still filter but don't fetch loans - safer to show all options
+            toast({
+                variant: "destructive",
+                title: "Advertencia",
+                description: "No se pudo verificar disponibilidad. Se muestran todos los usuarios y vehículos.",
+            })
             setAvailableUsers(allUsers)
             setAvailableVehicles(allVehicles)
         }
