@@ -24,6 +24,7 @@ export default function ReportsDashboard() {
   const [filterStatus, setFilterStatus] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const [mounted, setMounted] = useState(false)
 
   const {
     loading,
@@ -39,6 +40,11 @@ export default function ReportsDashboard() {
     exportReport,
   } = useReports()
 
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Build filters object
   const getFilters = (): ReportFilters => ({
     startDate: dateRange?.from?.toISOString().split("T")[0],
@@ -49,8 +55,10 @@ export default function ReportsDashboard() {
 
   // Initial load
   useEffect(() => {
-    fetchAllReports(getFilters())
-  }, [])
+    if (mounted) {
+      fetchAllReports(getFilters())
+    }
+  }, [mounted])
 
   // Fetch report based on active tab
   const handleApplyFilters = () => {
@@ -90,6 +98,38 @@ export default function ReportsDashboard() {
     payments: paymentReport || { total: 0, onTime: 0, late: 0, totalCollected: 0, pendingCollection: 0, items: [] },
     clients: clientReport || { total: 0, active: 0, inactive: 0, withDefaultedLoans: 0, items: [] },
     motorcycles: vehicleReport || { total: 0, financed: 0, available: 0, totalValue: 0, items: [] },
+  }
+
+  // Format currency consistently (fixes hydration issue)
+  const formatCompactCurrency = (value: number) => {
+    if (!mounted) return "$0" // Return simple string during SSR
+    return new Intl.NumberFormat("es-CO", { 
+      style: "currency", 
+      currency: "COP", 
+      notation: "compact",
+      maximumFractionDigits: 1 
+    }).format(value)
+  }
+
+  // Don't render stats until mounted to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-120px)] space-y-3">
+        <div className="flex gap-3">
+          <Card className="flex-1">
+            <CardContent className="p-3">
+              <Skeleton className="h-9 w-full" />
+            </CardContent>
+          </Card>
+          <Card className="w-[320px]">
+            <CardContent className="p-3">
+              <Skeleton className="h-12 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+        <Skeleton className="flex-1 w-full" />
+      </div>
+    )
   }
 
   return (
@@ -197,12 +237,7 @@ export default function ReportsDashboard() {
                     <div>
                       <div className="text-[10px] text-muted-foreground uppercase">Financiado</div>
                       <div className="text-sm font-semibold">
-                        {new Intl.NumberFormat("es-CO", { 
-                          style: "currency", 
-                          currency: "COP", 
-                          notation: "compact",
-                          maximumFractionDigits: 1 
-                        }).format(reportData.loans.totalAmount)}
+                        {formatCompactCurrency(reportData.loans.totalAmount)}
                       </div>
                     </div>
                     <div>
@@ -224,12 +259,7 @@ export default function ReportsDashboard() {
                     <div>
                       <div className="text-[10px] text-muted-foreground uppercase">Recaudado</div>
                       <div className="text-sm font-semibold">
-                        {new Intl.NumberFormat("es-CO", { 
-                          style: "currency", 
-                          currency: "COP", 
-                          notation: "compact",
-                          maximumFractionDigits: 1 
-                        }).format(reportData.payments.totalCollected)}
+                        {formatCompactCurrency(reportData.payments.totalCollected)}
                       </div>
                     </div>
                     <div>
@@ -271,12 +301,7 @@ export default function ReportsDashboard() {
                     <div>
                       <div className="text-[10px] text-muted-foreground uppercase">Valor Total</div>
                       <div className="text-sm font-semibold">
-                        {new Intl.NumberFormat("es-CO", { 
-                          style: "currency", 
-                          currency: "COP", 
-                          notation: "compact",
-                          maximumFractionDigits: 1 
-                        }).format(reportData.motorcycles.totalValue)}
+                        {formatCompactCurrency(reportData.motorcycles.totalValue)}
                       </div>
                     </div>
                     <div>
@@ -308,7 +333,7 @@ export default function ReportsDashboard() {
           </TabsTrigger>
           <TabsTrigger value="motocicletas" className="flex items-center gap-1.5 text-xs">
             <BarChart3Icon className="h-3.5 w-3.5" />
-            <span>Motocicletas</span>
+            <span>Vehículos</span>
           </TabsTrigger>
         </TabsList>
 

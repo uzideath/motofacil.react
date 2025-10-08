@@ -196,7 +196,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
           }))
 
         return {
-          title: "Análisis de Motocicletas",
+          title: "Análisis de Vehículos",
           description: "Distribución y estadísticas",
           pieData: vehiclesByStatus,
           barData: brandData.length > 0 ? brandData : [{ name: 'Sin datos', value: 0 }],

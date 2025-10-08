@@ -182,7 +182,7 @@ class ReportsService {
     })
 
     const response = await HttpService.get(
-      `/api/v1/reports/${params.type}/export/${params.format}?${queryParams.toString()}`,
+      `/api/v1/reports/export/${params.type}/${params.format}?${queryParams.toString()}`,
       {
         responseType: "blob",
       }
