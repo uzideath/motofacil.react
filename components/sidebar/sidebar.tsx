@@ -23,6 +23,8 @@ import {
     Smartphone,
     BadgeCheck,
     Calendar,
+    TrendingUp,
+    Wallet,
 } from "lucide-react"
 
 import {
@@ -85,29 +87,29 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         { path: "/proveedores", label: "Proveedores", icon: BadgeCheck },
     ]
 
-    // Finance items
+    // Finance items - Core financial operations
     const financeItems = [
         { path: "/arrendamientos", label: "Arrendamientos", icon: HandCoins },
         { path: "/cuotas", label: "Cuotas", icon: BadgeDollarSign },
         { path: "/egresos", label: "Egresos", icon: FileDown },
-        { path: "/cierre-caja", label: "Cierre de Caja", icon: LogOut },
+        { path: "/cierre-caja", label: "Cierre de Caja", icon: Wallet },
         { path: "/calendario-pagos", label: "Calendario", icon: Calendar },
     ]
 
-    // Operations items
+    // Operations items - Analytics & Tools
     const operationsItems = [
-        // { path: "/flujo-caja", label: "Flujo de Caja", icon: Banknote },
+        { path: "/flujo-efectivo", label: "Flujo de Efectivo", icon: TrendingUp },
         { path: "/calculadora", label: "Calculadora", icon: Calculator },
-        // { path: "/reportes", label: "Reportes", icon: FileBarChart },
-        // { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { path: "/reportes", label: "Reportes", icon: FileBarChart },
     ]
 
-    // Secondary navigation items
-    const secondaryItems = [
-        { path: "/config/whatsapp", label: "WhatsApp", icon: Smartphone },
-        // { path: "/settings", label: "Configuración", icon: Settings },
-        // { path: "/help", label: "Ayuda", icon: HelpCircle },
-    ]
+    // // Secondary navigation items
+
+    // const secondaryItems = [
+    //     { path: "/config/whatsapp", label: "WhatsApp", icon: Smartphone },
+    //     // { path: "/settings", label: "Configuración", icon: Settings },
+    //     // { path: "/help", label: "Ayuda", icon: HelpCircle },
+    // ]
 
     // Admin item (only shown if user has access)
     const adminItem = {
@@ -118,9 +120,9 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     return (
         <Sidebar collapsible="offcanvas" className={cn("border-r", className)} {...props}>
-            <SidebarHeader className="border-b py-5">
+            <SidebarHeader className="border-b py-6 bg-gradient-to-br from-background to-muted/20">
                 <div className="flex items-center justify-center">
-                    <a href="/dashboard" className="flex items-center justify-center">
+                    <a href="/dashboard" className="flex items-center justify-center transition-transform hover:scale-105">
                         {open ? (
                             <div className="relative h-12 w-40">
                                 <Image src="/motofacil.png" alt="MotoFácil Logo" fill className="object-contain" priority />
@@ -133,32 +135,54 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     </a>
                 </div>
             </SidebarHeader>
-            <SidebarContent className="px-2 py-2">
-                <NavMain items={mainItems} pathname={pathname} hasAccess={(path) => hasAccess(path, user?.roles || [])} />
-                <NavFinance items={financeItems} pathname={pathname} hasAccess={(path) => hasAccess(path, user?.roles || [])} />
+            <SidebarContent className="px-2 py-3 space-y-1">
+                <NavMain 
+                    items={mainItems} 
+                    pathname={pathname} 
+                    hasAccess={(path) => hasAccess(path, user?.roles || [])} 
+                />
+                
+                <SidebarSeparator className="my-2" />
+                
+                <NavFinance 
+                    items={financeItems} 
+                    pathname={pathname} 
+                    hasAccess={(path) => hasAccess(path, user?.roles || [])} 
+                />
+                
+                <SidebarSeparator className="my-2" />
+                
                 <NavOperations
                     items={operationsItems}
                     pathname={pathname}
                     hasAccess={(path) => hasAccess(path, user?.roles || [])}
                 />
-                {/* <NavSecondary
-                    items={secondaryItems}
-                    pathname={pathname}
-                    hasAccess={(path) => hasAccess(path, user?.roles || [])}
-                    className="mt-auto"
-                    title="Utilidades"
-                /> */}
+
+                {/* {secondaryItems.length > 0 && (
+                    <>
+                        <SidebarSeparator className="my-2" />
+                        <NavSecondary
+                            items={secondaryItems}
+                            pathname={pathname}
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])}
+                            title="Utilidades"
+                        />
+                    </>
+                )}
+                 */}
                 {user && hasAccess(adminItem.path, user.roles) && (
-                    <NavSecondary
-                        items={[adminItem]}
-                        pathname={pathname}
-                        hasAccess={(path) => hasAccess(path, user?.roles || [])}
-                        title="Administración"
-                    />
+                    <>
+                        <SidebarSeparator className="my-2" />
+                        <NavSecondary
+                            items={[adminItem]}
+                            pathname={pathname}
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])}
+                            title="Administración"
+                        />
+                    </>
                 )}
             </SidebarContent>
-            <SidebarFooter className="border-t p-2">
-                <SidebarSeparator />
+            <SidebarFooter className="border-t p-2 bg-muted/30">
                 <NavUser user={user} onLogout={handleLogout} />
             </SidebarFooter>
         </Sidebar>

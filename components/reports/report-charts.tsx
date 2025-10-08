@@ -35,117 +35,189 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
     }).format(value)
   }
 
-  // Datos para los gráficos según la pestaña activa
+  // Formatear moneda compacta
+  const formatCompactCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`
+    }
+    return `$${value}`
+  }
+
+  // Datos para los gráficos según la pestaña activa usando datos reales
   const getChartData = () => {
     switch (activeTab) {
       case "prestamos":
+        // Agrupar préstamos por estado
+        const loansByStatus = [
+          { name: "Activos", value: data.loans.active },
+          { name: "Completados", value: data.loans.completed },
+          { name: "En Mora", value: data.loans.defaulted },
+        ].filter(item => item.value > 0)
+
+        // Agrupar préstamos por frecuencia de pago
+        const loansByFrequency: { [key: string]: number } = {}
+        data.loans.items.forEach((loan: any) => {
+          const freq = loan.paymentFrequency || 'Semanal'
+          loansByFrequency[freq] = (loansByFrequency[freq] || 0) + 1
+        })
+        const frequencyData = Object.entries(loansByFrequency).map(([name, value]) => ({
+          name,
+          value
+        }))
+
+        // Agrupar préstamos por tipo de interés
+        const loansByInterestType: { [key: string]: number } = {}
+        data.loans.items.forEach((loan: any) => {
+          const type = loan.interestType || 'Fijo'
+          loansByInterestType[type] = (loansByInterestType[type] || 0) + Number(loan.amount || 0)
+        })
+        const interestTypeData = Object.entries(loansByInterestType).map(([name, value]) => ({
+          name,
+          value
+        }))
+
         return {
-          title: "Análisis de arrendamientos",
-          description: "Distribución y tendencias de arrendamientos",
-          pieData: [
-            { name: "Activos", value: data.loans.active },
-            { name: "Completados", value: data.loans.completed },
-            { name: "En Mora", value: data.loans.defaulted },
-          ],
-          barData: [
-            { name: "Ene", value: 12500000 },
-            { name: "Feb", value: 18900000 },
-            { name: "Mar", value: 15600000 },
-            { name: "Abr", value: 22300000 },
-            { name: "May", value: 19800000 },
-            { name: "Jun", value: 25400000 },
-          ],
-          lineData: [
-            { name: "Ene", value: 8 },
-            { name: "Feb", value: 12 },
-            { name: "Mar", value: 10 },
-            { name: "Abr", value: 15 },
-            { name: "May", value: 13 },
-            { name: "Jun", value: 18 },
-          ],
+          title: "Análisis de Arrendamientos",
+          description: "Distribución y estadísticas",
+          pieData: loansByStatus,
+          barData: interestTypeData.length > 0 ? interestTypeData : [{ name: 'Sin datos', value: 0 }],
+          lineData: frequencyData.length > 0 ? frequencyData : [{ name: 'Sin datos', value: 0 }],
+          pieLabel: "Estado",
+          barLabel: "Monto por Tipo",
+          lineLabel: "Por Frecuencia",
+          isCurrency: true,
         }
+
       case "pagos":
+        // Distribución de pagos
+        const paymentsByStatus = [
+          { name: "A Tiempo", value: data.payments.onTime },
+          { name: "Tardíos", value: data.payments.late },
+        ].filter(item => item.value > 0)
+
+        // Agrupar pagos por método
+        const paymentsByMethod: { [key: string]: number } = {}
+        data.payments.items.forEach((payment: any) => {
+          const method = payment.paymentMethod || 'Efectivo'
+          paymentsByMethod[method] = (paymentsByMethod[method] || 0) + Number(payment.amount || 0)
+        })
+        const methodData = Object.entries(paymentsByMethod).map(([name, value]) => ({
+          name,
+          value
+        }))
+
+        // Top clientes por monto pagado
+        const clientPayments: { [key: string]: number } = {}
+        data.payments.items.forEach((payment: any) => {
+          const client = payment.clientName || 'Sin nombre'
+          clientPayments[client] = (clientPayments[client] || 0) + Number(payment.amount || 0)
+        })
+        const topClients = Object.entries(clientPayments)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 5)
+          .map(([name, value]) => ({ name: name.split(' ')[0], value }))
+
         return {
           title: "Análisis de Pagos",
-          description: "Distribución y tendencias de pagos",
-          pieData: [
-            { name: "A Tiempo", value: data.payments.onTime },
-            { name: "Tardíos", value: data.payments.late },
-          ],
-          barData: [
-            { name: "Ene", value: 8500000 },
-            { name: "Feb", value: 12300000 },
-            { name: "Mar", value: 9800000 },
-            { name: "Abr", value: 14500000 },
-            { name: "May", value: 11200000 },
-            { name: "Jun", value: 16800000 },
-          ],
-          lineData: [
-            { name: "Ene", value: 25 },
-            { name: "Feb", value: 32 },
-            { name: "Mar", value: 28 },
-            { name: "Abr", value: 35 },
-            { name: "May", value: 30 },
-            { name: "Jun", value: 38 },
-          ],
+          description: "Distribución y estadísticas",
+          pieData: paymentsByStatus,
+          barData: methodData.length > 0 ? methodData : [{ name: 'Sin datos', value: 0 }],
+          lineData: topClients.length > 0 ? topClients : [{ name: 'Sin datos', value: 0 }],
+          pieLabel: "Puntualidad",
+          barLabel: "Por Método",
+          lineLabel: "Top Clientes",
+          isCurrency: true,
         }
+
       case "clientes":
+        // Distribución de clientes
+        const clientsByStatus = [
+          { name: "Activos", value: data.clients.active },
+          { name: "Inactivos", value: data.clients.inactive },
+        ].filter(item => item.value > 0)
+
+        // Top clientes por monto total
+        const topClientsByAmount = [...data.clients.items]
+          .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+          .slice(0, 6)
+          .map((client: any) => ({
+            name: client.name.split(' ')[0],
+            value: client.totalAmount
+          }))
+
+        // Clientes por cantidad de préstamos
+        const clientsByLoans = [...data.clients.items]
+          .sort((a: any, b: any) => b.totalLoans - a.totalLoans)
+          .slice(0, 5)
+          .map((client: any) => ({
+            name: client.name.split(' ')[0],
+            value: client.totalLoans
+          }))
+
         return {
           title: "Análisis de Clientes",
-          description: "Distribución y tendencias de clientes",
-          pieData: [
-            { name: "Activos", value: data.clients.active },
-            { name: "Inactivos", value: data.clients.inactive },
-          ],
-          barData: [
-            { name: "Ene", value: 3 },
-            { name: "Feb", value: 5 },
-            { name: "Mar", value: 2 },
-            { name: "Abr", value: 4 },
-            { name: "May", value: 6 },
-            { name: "Jun", value: 4 },
-          ],
-          lineData: [
-            { name: "Ene", value: 12 },
-            { name: "Feb", value: 15 },
-            { name: "Mar", value: 14 },
-            { name: "Abr", value: 18 },
-            { name: "May", value: 20 },
-            { name: "Jun", value: 22 },
-          ],
+          description: "Distribución y estadísticas",
+          pieData: clientsByStatus,
+          barData: topClientsByAmount.length > 0 ? topClientsByAmount : [{ name: 'Sin datos', value: 0 }],
+          lineData: clientsByLoans.length > 0 ? clientsByLoans : [{ name: 'Sin datos', value: 0 }],
+          pieLabel: "Estado",
+          barLabel: "Top por Monto",
+          lineLabel: "Top por Préstamos",
+          isCurrency: false,
         }
+
       case "motocicletas":
+        // Distribución de vehículos
+        const vehiclesByStatus = [
+          { name: "Financiadas", value: data.motorcycles.financed },
+          { name: "Disponibles", value: data.motorcycles.available },
+        ].filter(item => item.value > 0)
+
+        // Vehículos por marca
+        const vehiclesByBrand: { [key: string]: number } = {}
+        data.motorcycles.items.forEach((vehicle: any) => {
+          const brand = vehicle.brand || 'Sin marca'
+          vehiclesByBrand[brand] = (vehiclesByBrand[brand] || 0) + 1
+        })
+        const brandData = Object.entries(vehiclesByBrand)
+          .sort(([, a], [, b]) => b - a)
+          .map(([name, value]) => ({ name, value }))
+
+        // Vehículos por precio
+        const vehiclesByPrice = [...data.motorcycles.items]
+          .filter((v: any) => v.price > 0)
+          .sort((a: any, b: any) => b.price - a.price)
+          .slice(0, 6)
+          .map((vehicle: any) => ({
+            name: `${vehicle.brand} ${vehicle.model}`.substring(0, 15),
+            value: vehicle.price
+          }))
+
         return {
           title: "Análisis de Motocicletas",
-          description: "Distribución y tendencias de motocicletas",
-          pieData: [
-            { name: "Financiadas", value: data.motorcycles.financed },
-            { name: "Disponibles", value: data.motorcycles.available },
-          ],
-          barData: [
-            { name: "Honda", value: 8 },
-            { name: "Yamaha", value: 6 },
-            { name: "Suzuki", value: 5 },
-            { name: "Bajaj", value: 7 },
-            { name: "KTM", value: 3 },
-            { name: "Kawasaki", value: 1 },
-          ],
-          lineData: [
-            { name: "Ene", value: 2 },
-            { name: "Feb", value: 4 },
-            { name: "Mar", value: 3 },
-            { name: "Abr", value: 5 },
-            { name: "May", value: 7 },
-            { name: "Jun", value: 6 },
-          ],
+          description: "Distribución y estadísticas",
+          pieData: vehiclesByStatus,
+          barData: brandData.length > 0 ? brandData : [{ name: 'Sin datos', value: 0 }],
+          lineData: vehiclesByPrice.length > 0 ? vehiclesByPrice : [{ name: 'Sin datos', value: 0 }],
+          pieLabel: "Disponibilidad",
+          barLabel: "Por Marca",
+          lineLabel: "Top por Precio",
+          isCurrency: false,
         }
+
       default:
         return {
           title: "Análisis General",
-          description: "Distribución y tendencias generales",
+          description: "Selecciona una pestaña",
           pieData: [],
           barData: [],
           lineData: [],
+          pieLabel: "",
+          barLabel: "",
+          lineLabel: "",
+          isCurrency: false,
         }
     }
   }
@@ -153,99 +225,124 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
   const chartData = getChartData()
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{chartData.title}</CardTitle>
-        <CardDescription>{chartData.description}</CardDescription>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="pb-2 px-3 pt-3 space-y-0 shrink-0">
+        <CardTitle className="text-sm font-semibold">{chartData.title}</CardTitle>
+        <CardDescription className="text-[11px]">{chartData.description}</CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <Tabs defaultValue="distribucion">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="distribucion">Distribución</TabsTrigger>
-            <TabsTrigger value="tendencia">Tendencia</TabsTrigger>
-            <TabsTrigger value="comparativa">Comparativa</TabsTrigger>
+      <CardContent className="flex-1 p-0 flex flex-col min-h-0">
+        <Tabs defaultValue="distribucion" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-full grid grid-cols-3 h-8 mx-3 mb-2 shrink-0">
+            <TabsTrigger value="distribucion" className="text-[10px] py-1">Estado</TabsTrigger>
+            <TabsTrigger value="tendencia" className="text-[10px] py-1">Top</TabsTrigger>
+            <TabsTrigger value="comparativa" className="text-[10px] py-1">Análisis</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="distribucion" className="p-4">
-            <div className="h-[300px] flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData.pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {chartData.pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value}`, "Cantidad"]} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+          <div className="flex-1 min-h-0">
+            <TabsContent value="distribucion" className="px-3 mt-0 h-full">
+              <div className="h-full flex items-center justify-center">
+                {chartData.pieData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData.pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius="65%"
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {chartData.pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => [`${value}`, chartData.pieLabel]}
+                        contentStyle={{ fontSize: '11px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="text-center text-muted-foreground text-xs">
+                    No hay datos disponibles
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-          <TabsContent value="tendencia" className="p-4">
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData.lineData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value) => [
-                      `${value}`,
-                      activeTab === "pagos"
-                        ? "Pagos"
-                        : activeTab === "prestamos"
-                          ? "arrendamientos"
-                          : activeTab === "clientes"
-                            ? "Clientes"
-                            : "Motocicletas",
-                    ]}
-                  />
-                  <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+            <TabsContent value="tendencia" className="px-3 mt-0 h-full">
+              <div className="h-full">
+                {chartData.lineData.length > 0 && chartData.lineData[0].name !== 'Sin datos' ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.lineData} layout="horizontal" margin={{ top: 5, right: 5, left: -5, bottom: 5 }}>
+                      <XAxis type="category" dataKey="name" fontSize={9} />
+                      <YAxis 
+                        type="number" 
+                        fontSize={9}
+                        width={45}
+                        tickFormatter={(value) => 
+                          activeTab === "clientes" || activeTab === "motocicletas"
+                            ? `${value}`
+                            : formatCompactCurrency(value)
+                        }
+                      />
+                      <Tooltip
+                        formatter={(value) => [
+                          activeTab === "clientes" || activeTab === "motocicletas" 
+                            ? value 
+                            : formatCurrency(Number(value)),
+                          chartData.lineLabel
+                        ]}
+                        contentStyle={{ fontSize: '10px' }}
+                      />
+                      <Bar dataKey="value" fill="#8b5cf6" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-center text-muted-foreground text-xs">
+                    No hay datos suficientes
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-          <TabsContent value="comparativa" className="p-4">
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData.barData}>
-                  <XAxis dataKey="name" />
-                  <YAxis
-                    tickFormatter={(value) =>
-                      activeTab === "prestamos" || activeTab === "pagos"
-                        ? `${(value / 1000000).toFixed(0)}M`
-                        : `${value}`
-                    }
-                  />
-                  <Tooltip
-                    formatter={(value) => [
-                      activeTab === "prestamos" || activeTab === "pagos"
-                        ? formatCurrency(Number(value)) // <-- Aquí se fuerza a número
-                        : value,
-                      activeTab === "pagos"
-                        ? "Monto Recaudado"
-                        : activeTab === "prestamos"
-                          ? "Monto Financiado"
-                          : activeTab === "clientes"
-                            ? "Nuevos Clientes"
-                            : "Cantidad",
-                    ]}
-                  />
-
-                  <Bar dataKey="value" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+            <TabsContent value="comparativa" className="px-3 mt-0 h-full">
+              <div className="h-full">
+                {chartData.barData.length > 0 && chartData.barData[0].name !== 'Sin datos' ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.barData} margin={{ top: 5, right: 5, left: -5, bottom: 5 }}>
+                      <XAxis dataKey="name" fontSize={9} />
+                      <YAxis
+                        fontSize={9}
+                        width={45}
+                        tickFormatter={(value) =>
+                          chartData.isCurrency || activeTab === "motocicletas"
+                            ? formatCompactCurrency(value)
+                            : `${value}`
+                        }
+                      />
+                      <Tooltip
+                        formatter={(value) => [
+                          chartData.isCurrency || activeTab === "motocicletas"
+                            ? formatCurrency(Number(value))
+                            : value,
+                          chartData.barLabel
+                        ]}
+                        contentStyle={{ fontSize: '10px' }}
+                      />
+                      <Bar dataKey="value" fill="#10b981" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-center text-muted-foreground text-xs">
+                    No hay datos suficientes
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </div>
         </Tabs>
       </CardContent>
     </Card>

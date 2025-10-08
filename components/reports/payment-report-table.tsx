@@ -40,13 +40,17 @@ export function PaymentReportTable({ data }: PaymentReportTableProps) {
   }
 
   // Formatear fecha
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | string | null) => {
     if (!date) return "Pendiente"
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) {
+      return 'N/A'
+    }
     return new Intl.DateTimeFormat("es-CO", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    }).format(date)
+    }).format(dateObj)
   }
 
   // Filtrar y ordenar datos

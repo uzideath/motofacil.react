@@ -16,185 +16,310 @@ import { ClientReportTable } from "./client-report-table"
 import { MotorcycleReportTable } from "./motorcycle-report-table"
 import { ReportSummary } from "./report-summary"
 import { ReportCharts } from "./report-charts"
+import { useReports, type ReportFilters } from "@/hooks/useReports"
+import type { DateRange } from "react-day-picker"
 
 export default function ReportsDashboard() {
   const [activeTab, setActiveTab] = useState("prestamos")
-  const [loading, setLoading] = useState(true)
-  const [reportData, setReportData] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState("all")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
 
-  // Simular carga de datos
+  const {
+    loading,
+    loanReport,
+    paymentReport,
+    clientReport,
+    vehicleReport,
+    fetchLoanReport,
+    fetchPaymentReport,
+    fetchClientReport,
+    fetchVehicleReport,
+    fetchAllReports,
+    exportReport,
+  } = useReports()
+
+  // Build filters object
+  const getFilters = (): ReportFilters => ({
+    startDate: dateRange?.from?.toISOString().split("T")[0],
+    endDate: dateRange?.to?.toISOString().split("T")[0],
+    status: filterStatus,
+    search: searchTerm || undefined,
+  })
+
+  // Initial load
   useEffect(() => {
-    setLoading(true)
-
-    // Simulación de carga de datos
-    const timer = setTimeout(() => {
-      // Datos de ejemplo para los reportes
-      const data = {
-        loans: {
-          total: 24,
-          active: 18,
-          completed: 6,
-          defaulted: 2,
-          totalAmount: 245000000,
-          totalInterest: 32450000,
-          items: generateLoansData(),
-        },
-        payments: {
-          total: 156,
-          onTime: 142,
-          late: 14,
-          totalCollected: 98500000,
-          pendingCollection: 146500000,
-          items: generatePaymentsData(),
-        },
-        clients: {
-          total: 20,
-          active: 15,
-          inactive: 5,
-          withDefaultedLoans: 2,
-          items: generateClientsData(),
-        },
-        motorcycles: {
-          total: 30,
-          financed: 24,
-          available: 6,
-          totalValue: 360000000,
-          items: generateMotorcyclesData(),
-        },
-      }
-
-      setReportData(data)
-      setLoading(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
+    fetchAllReports(getFilters())
   }, [])
 
-  // Función para exportar reportes
-  const handleExport = (format: string) => {
-    console.log(`Exportando reporte de ${activeTab} en formato ${format}`)
-    // Aquí iría la lógica real para exportar los datos
+  // Fetch report based on active tab
+  const handleApplyFilters = () => {
+    const filters = getFilters()
+    
+    switch (activeTab) {
+      case "prestamos":
+        fetchLoanReport(filters)
+        break
+      case "pagos":
+        fetchPaymentReport(filters)
+        break
+      case "clientes":
+        fetchClientReport(filters)
+        break
+      case "motocicletas":
+        fetchVehicleReport(filters)
+        break
+    }
+  }
+
+  // Export handler
+  const handleExport = (format: "excel" | "pdf" | "csv") => {
+    const typeMap = {
+      prestamos: "loans" as const,
+      pagos: "payments" as const,
+      clientes: "clients" as const,
+      motocicletas: "vehicles" as const,
+    }
+    
+    exportReport(typeMap[activeTab as keyof typeof typeMap], format, getFilters())
+  }
+
+  // Aggregate report data for summary
+  const reportData = {
+    loans: loanReport || { total: 0, active: 0, completed: 0, defaulted: 0, totalAmount: 0, totalInterest: 0, items: [] },
+    payments: paymentReport || { total: 0, onTime: 0, late: 0, totalCollected: 0, pendingCollection: 0, items: [] },
+    clients: clientReport || { total: 0, active: 0, inactive: 0, withDefaultedLoans: 0, items: [] },
+    motorcycles: vehicleReport || { total: 0, financed: 0, available: 0, totalValue: 0, items: [] },
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Filtros de Reporte</CardTitle>
-            <CardDescription>Selecciona los filtros para generar el reporte</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="date-range">Rango de Fechas</Label>
-              <DatePickerWithRange className="w-full" />
-            </div>
+    <div className="flex flex-col h-[calc(100vh-120px)] space-y-3">
+      {/* Compact Top Bar with Filters and Stats */}
+      <div className="flex gap-3">
+        {/* Left: Filters */}
+        <Card className="flex-1">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-[220px] max-w-[280px]">
+                <DatePickerWithRange 
+                  className="w-full h-9" 
+                  date={dateRange}
+                  onDateChange={setDateRange}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Estado</Label>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Seleccionar estado" />
+                <SelectTrigger className="h-9 w-[120px]">
+                  <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="active">Activos</SelectItem>
-                  <SelectItem value="completed">Completados</SelectItem>
-                  <SelectItem value="defaulted">En mora</SelectItem>
+                  <SelectItem value="ACTIVE">Activos</SelectItem>
+                  <SelectItem value="COMPLETED">Completados</SelectItem>
+                  <SelectItem value="DEFAULTED">En mora</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="search">Buscar</Label>
-              <Input id="search" placeholder="Nombre, ID, etc." />
-            </div>
+              <Input 
+                placeholder="Buscar..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
+                className="h-9 w-[180px]"
+              />
 
-            <div className="pt-4 space-y-2">
-              <Label>Exportar Como</Label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => handleExport("excel")}
-                >
-                  <FileTextIcon className="h-4 w-4" />
-                  Excel
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => handleExport("pdf")}
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                  onClick={() => handleExport("csv")}
-                >
-                  <FileTextIcon className="h-4 w-4" />
-                  CSV
-                </Button>
-              </div>
+              <Button 
+                onClick={handleApplyFilters} 
+                disabled={loading}
+                size="sm"
+                className="h-9 px-4"
+              >
+                Aplicar
+              </Button>
+
+              <div className="h-6 w-px bg-border mx-1" />
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-2.5"
+                onClick={() => handleExport("excel")}
+                disabled={loading}
+                title="Excel"
+              >
+                <FileTextIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-2.5"
+                onClick={() => handleExport("pdf")}
+                disabled={loading}
+                title="PDF"
+              >
+                <DownloadIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-2.5"
+                onClick={() => handleExport("csv")}
+                disabled={loading}
+                title="CSV"
+              >
+                <FileTextIcon className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* Right: Quick Stats Summary */}
         {loading ? (
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-40 w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
+          <Card className="w-[320px]">
+            <CardContent className="p-3">
+              <Skeleton className="h-12 w-full" />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="w-[320px]">
+            <CardContent className="p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {activeTab === "prestamos" && (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                      <div className="text-lg font-bold">{reportData.loans.total}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Activos</div>
+                      <div className="text-lg font-bold text-blue-500">{reportData.loans.active}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Financiado</div>
+                      <div className="text-sm font-semibold">
+                        {new Intl.NumberFormat("es-CO", { 
+                          style: "currency", 
+                          currency: "COP", 
+                          notation: "compact",
+                          maximumFractionDigits: 1 
+                        }).format(reportData.loans.totalAmount)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Mora</div>
+                      <div className="text-lg font-bold text-red-500">{reportData.loans.defaulted}</div>
+                    </div>
+                  </>
+                )}
+                {activeTab === "pagos" && (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                      <div className="text-lg font-bold">{reportData.payments.total}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">A Tiempo</div>
+                      <div className="text-lg font-bold text-green-500">{reportData.payments.onTime}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Recaudado</div>
+                      <div className="text-sm font-semibold">
+                        {new Intl.NumberFormat("es-CO", { 
+                          style: "currency", 
+                          currency: "COP", 
+                          notation: "compact",
+                          maximumFractionDigits: 1 
+                        }).format(reportData.payments.totalCollected)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Tardíos</div>
+                      <div className="text-lg font-bold text-orange-500">{reportData.payments.late}</div>
+                    </div>
+                  </>
+                )}
+                {activeTab === "clientes" && (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                      <div className="text-lg font-bold">{reportData.clients.total}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Activos</div>
+                      <div className="text-lg font-bold text-green-500">{reportData.clients.active}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Inactivos</div>
+                      <div className="text-lg font-bold text-gray-500">{reportData.clients.inactive}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">En Mora</div>
+                      <div className="text-lg font-bold text-red-500">{reportData.clients.withDefaultedLoans}</div>
+                    </div>
+                  </>
+                )}
+                {activeTab === "motocicletas" && (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                      <div className="text-lg font-bold">{reportData.motorcycles.total}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Financiadas</div>
+                      <div className="text-lg font-bold text-blue-500">{reportData.motorcycles.financed}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Valor Total</div>
+                      <div className="text-sm font-semibold">
+                        {new Intl.NumberFormat("es-CO", { 
+                          style: "currency", 
+                          currency: "COP", 
+                          notation: "compact",
+                          maximumFractionDigits: 1 
+                        }).format(reportData.motorcycles.totalValue)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Disponibles</div>
+                      <div className="text-lg font-bold text-green-500">{reportData.motorcycles.available}</div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
-        ) : reportData ? (
-          <ReportSummary data={reportData} activeTab={activeTab} />
-        ) : null}
+        )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="prestamos" className="flex items-center gap-2">
-            <BarChart3Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">arrendamientos</span>
+      {/* Main Content Area with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-full grid grid-cols-4 h-9 shrink-0">
+          <TabsTrigger value="prestamos" className="flex items-center gap-1.5 text-xs">
+            <BarChart3Icon className="h-3.5 w-3.5" />
+            <span>Arrendamientos</span>
           </TabsTrigger>
-          <TabsTrigger value="pagos" className="flex items-center gap-2">
-            <TrendingUpIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Pagos</span>
+          <TabsTrigger value="pagos" className="flex items-center gap-1.5 text-xs">
+            <TrendingUpIcon className="h-3.5 w-3.5" />
+            <span>Pagos</span>
           </TabsTrigger>
-          <TabsTrigger value="clientes" className="flex items-center gap-2">
-            <PieChartIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Clientes</span>
+          <TabsTrigger value="clientes" className="flex items-center gap-1.5 text-xs">
+            <PieChartIcon className="h-3.5 w-3.5" />
+            <span>Clientes</span>
           </TabsTrigger>
-          <TabsTrigger value="motocicletas" className="flex items-center gap-2">
-            <BarChart3Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">Motocicletas</span>
+          <TabsTrigger value="motocicletas" className="flex items-center gap-1.5 text-xs">
+            <BarChart3Icon className="h-3.5 w-3.5" />
+            <span>Motocicletas</span>
           </TabsTrigger>
         </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <TabsContent value="prestamos" className="mt-0">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-3 mt-3 min-h-0">
+          {/* Main Table Area - Takes 3 columns */}
+          <div className="lg:col-span-3 min-h-0">
+            <TabsContent value="prestamos" className="mt-0 h-full">
               {loading ? (
-                <Card>
-                  <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-[400px] w-full" />
+                <Card className="h-full">
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-full w-full" />
                   </CardContent>
                 </Card>
               ) : (
@@ -202,14 +327,11 @@ export default function ReportsDashboard() {
               )}
             </TabsContent>
 
-            <TabsContent value="pagos" className="mt-0">
+            <TabsContent value="pagos" className="mt-0 h-full">
               {loading ? (
-                <Card>
-                  <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-[400px] w-full" />
+                <Card className="h-full">
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-full w-full" />
                   </CardContent>
                 </Card>
               ) : (
@@ -217,14 +339,11 @@ export default function ReportsDashboard() {
               )}
             </TabsContent>
 
-            <TabsContent value="clientes" className="mt-0">
+            <TabsContent value="clientes" className="mt-0 h-full">
               {loading ? (
-                <Card>
-                  <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-[400px] w-full" />
+                <Card className="h-full">
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-full w-full" />
                   </CardContent>
                 </Card>
               ) : (
@@ -232,14 +351,11 @@ export default function ReportsDashboard() {
               )}
             </TabsContent>
 
-            <TabsContent value="motocicletas" className="mt-0">
+            <TabsContent value="motocicletas" className="mt-0 h-full">
               {loading ? (
-                <Card>
-                  <CardHeader>
-                    <Skeleton className="h-8 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-[400px] w-full" />
+                <Card className="h-full">
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-full w-full" />
                   </CardContent>
                 </Card>
               ) : (
@@ -248,14 +364,12 @@ export default function ReportsDashboard() {
             </TabsContent>
           </div>
 
-          <div>
+          {/* Charts Sidebar - Takes 1 column */}
+          <div className="lg:col-span-1 min-h-0">
             {loading ? (
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-8 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-[300px] w-full" />
+              <Card className="h-full">
+                <CardContent className="pt-6 h-full">
+                  <Skeleton className="h-full w-full" />
                 </CardContent>
               </Card>
             ) : (
@@ -266,78 +380,4 @@ export default function ReportsDashboard() {
       </Tabs>
     </div>
   )
-}
-
-// Funciones para generar datos de ejemplo
-function generateLoansData() {
-  const statuses = ["ACTIVE", "COMPLETED", "DEFAULTED"]
-  const loanTypes = ["FIXED", "COMPOUND"]
-  const frequencies = ["MONTHLY", "BIWEEKLY", "WEEKLY"]
-
-  return Array.from({ length: 20 }, (_, i) => ({
-    id: `LOAN-${1000 + i}`,
-    clientName: `Cliente ${i + 1}`,
-    motorcycle: `Moto ${i + 1}`,
-    amount: Math.floor(Math.random() * 15000000) + 5000000,
-    interestRate: Math.floor(Math.random() * 15) + 5,
-    interestType: loanTypes[Math.floor(Math.random() * loanTypes.length)],
-    paymentFrequency: frequencies[Math.floor(Math.random() * frequencies.length)],
-    installments: Math.floor(Math.random() * 24) + 6,
-    paidInstallments: Math.floor(Math.random() * 12),
-    startDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    progress: Math.floor(Math.random() * 100),
-  }))
-}
-
-function generatePaymentsData() {
-  const statuses = ["PAID", "PENDING", "LATE"]
-
-  return Array.from({ length: 30 }, (_, i) => ({
-    id: `PAY-${2000 + i}`,
-    loanId: `LOAN-${1000 + Math.floor(Math.random() * 20)}`,
-    clientName: `Cliente ${Math.floor(Math.random() * 20) + 1}`,
-    amount: Math.floor(Math.random() * 1000000) + 200000,
-    dueDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-    paymentDate:
-      Math.random() > 0.2 ? new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1) : null,
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    installmentNumber: Math.floor(Math.random() * 12) + 1,
-  }))
-}
-
-function generateClientsData() {
-  const statuses = ["ACTIVE", "INACTIVE"]
-
-  return Array.from({ length: 15 }, (_, i) => ({
-    id: `CLI-${3000 + i}`,
-    name: `Cliente ${i + 1}`,
-    document: `1${Math.floor(Math.random() * 100000000)}`,
-    phone: `3${Math.floor(Math.random() * 100000000)}`,
-    email: `cliente${i + 1}@example.com`,
-    address: `Dirección ${i + 1}`,
-    activeLoans: Math.floor(Math.random() * 3),
-    totalLoans: Math.floor(Math.random() * 5) + 1,
-    totalAmount: Math.floor(Math.random() * 30000000) + 5000000,
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    joinDate: new Date(2022, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-  }))
-}
-
-function generateMotorcyclesData() {
-  const statuses = ["AVAILABLE", "FINANCED", "SOLD"]
-  const brands = ["Honda", "Yamaha", "Suzuki", "Bajaj", "KTM", "Kawasaki"]
-
-  return Array.from({ length: 15 }, (_, i) => ({
-    id: `MOTO-${4000 + i}`,
-    brand: brands[Math.floor(Math.random() * brands.length)],
-    model: `Modelo ${Math.floor(Math.random() * 10) + 2010}`,
-    plate: `AB${Math.floor(Math.random() * 100)}CD`,
-    color: ["Negro", "Rojo", "Azul", "Blanco"][Math.floor(Math.random() * 4)],
-    year: Math.floor(Math.random() * 10) + 2010,
-    price: Math.floor(Math.random() * 15000000) + 5000000,
-    purchaseDate: new Date(2022, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    clientName: Math.random() > 0.3 ? `Cliente ${Math.floor(Math.random() * 15) + 1}` : null,
-  }))
 }
