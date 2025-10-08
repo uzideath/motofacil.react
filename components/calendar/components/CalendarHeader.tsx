@@ -166,7 +166,7 @@ export function CalendarHeader({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[600px] p-0" align="start">
-                <Command>
+                <Command shouldFilter={false}>
                   <CommandInput 
                     placeholder="Buscar por placa, modelo, marca o cliente..." 
                     value={searchValue}
@@ -194,9 +194,9 @@ export function CalendarHeader({
                       {filteredLoans.map((loan) => (
                         <CommandItem
                           key={loan.id}
-                          value={loan.id}
-                          onSelect={(currentValue) => {
-                            onLoanSelect(currentValue === selectedLoan ? null : currentValue)
+                          value={`${loan.vehicle.plate} ${loan.vehicle.brand} ${loan.vehicle.model} ${loan.user.name}`}
+                          onSelect={() => {
+                            onLoanSelect(loan.id)
                             setOpen(false)
                             setSearchValue("")
                           }}
