@@ -473,12 +473,12 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 gpsInstallmentPayment: Number(values.gpsAmount) || 0,
             }
 
-            // Add dates if provided
+            // Add dates if provided (append time to avoid timezone conversion)
             if (values.startDate) {
-                submissionValues.startDate = new Date(values.startDate).toISOString()
+                submissionValues.startDate = new Date(`${values.startDate}T00:00:00`).toISOString()
             }
             if (endDateToUse) {
-                submissionValues.endDate = new Date(endDateToUse).toISOString()
+                submissionValues.endDate = new Date(`${endDateToUse}T00:00:00`).toISOString()
             }
 
             // Remove fields that are not part of the API

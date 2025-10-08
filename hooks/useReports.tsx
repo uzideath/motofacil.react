@@ -105,7 +105,7 @@ export function useReports() {
 
   // Export Report
   const exportReport = useCallback(async (
-    type: "loans" | "payments" | "clients" | "vehicles",
+    type: "loans" | "payments" | "clients" | "vehicles" | "missing-installments",
     format: "excel" | "pdf" | "csv",
     filters: ReportFilters = {}
   ) => {
@@ -118,6 +118,7 @@ export function useReports() {
         payments: "pagos",
         clients: "clientes",
         vehicles: "vehiculos",
+        "missing-installments": "cuotas_pendientes",
       }
       
       const timestamp = new Date().toISOString().split("T")[0]

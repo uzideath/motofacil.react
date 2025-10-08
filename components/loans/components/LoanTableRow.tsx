@@ -11,7 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { formatCurrency, cn } from "@/lib/utils"
+import { formatCurrency, formatDate, cn } from "@/lib/utils"
 import {
     User,
     Bike,
@@ -174,22 +174,14 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <div className="flex items-center gap-1.5 text-primary">
                         <CalendarIcon className="h-4 w-4" />
                         <span className="text-sm font-medium">
-                            {loan.startDate ? new Date(loan.startDate).toLocaleDateString('es-CO', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                            }) : 'No establecida'}
+                            {loan.startDate ? formatDate(loan.startDate.split('T')[0], 'd MMM yyyy') : 'No establecida'}
                         </span>
                     </div>
                     {loan.endDate && (
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                             <CalendarIcon className="h-4 w-4" />
                             <span className="text-sm font-medium">
-                                {new Date(loan.endDate).toLocaleDateString('es-CO', { 
-                                    year: 'numeric', 
-                                    month: 'short', 
-                                    day: 'numeric' 
-                                })}
+                                {formatDate(loan.endDate.split('T')[0], 'd MMM yyyy')}
                             </span>
                         </div>
                     )}

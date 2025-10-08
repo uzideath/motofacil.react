@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -27,22 +27,84 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ArrowUpDown,
+  FileSpreadsheet,
+  FileText,
+  Download,
 } from "lucide-react"
 import type { MissingInstallmentData } from "@/lib/services/reports.service"
 import { Progress } from "@/components/ui/progress"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface MissingInstallmentsReportTableProps {
   data: MissingInstallmentData[]
+  onExport?: (format: "excel" | "pdf" | "csv") => void
 }
 
 type SortField = "userName" | "daysSinceLastPayment" | "missedInstallments" | "totalMissedAmount"
 type SortDirection = "asc" | "desc"
 
-export function MissingInstallmentsReportTable({ data }: MissingInstallmentsReportTableProps) {
+export function MissingInstallmentsReportTable({ data, onExport }: MissingInstallmentsReportTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [sortField, setSortField] = useState<SortField>("daysSinceLastPayment")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [isExporting, setIsExporting] = useState(false)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  const handleExport = async (format: "excel" | "pdf" | "csv") => {
+    if (onExport) {
+      setIsExporting(true)
+      try {
+        await onExport(format)
+      } finally {
+        setIsExporting(false)
+      }
+    }
+  }
+
+  // Calculate dynamic items per page based on available height
+  useEffect(() => {
+    const calculateItemsPerPage = () => {
+      if (!tableContainerRef.current) return
+
+      // Get the container height
+      const containerHeight = tableContainerRef.current.clientHeight
+      
+      // Approximate row height (adjust based on your design)
+      // Header: ~40px, Row: ~80px, Pagination: ~52px
+      const headerHeight = 40
+      const paginationHeight = 52
+      const rowHeight = 80
+      
+      const availableHeight = containerHeight - headerHeight - paginationHeight
+      const calculatedItems = Math.floor(availableHeight / rowHeight)
+      
+      // Set minimum of 5 and maximum of 50 items per page
+      const newItemsPerPage = Math.max(5, Math.min(50, calculatedItems))
+      
+      setItemsPerPage(newItemsPerPage)
+    }
+
+    // Calculate on mount
+    calculateItemsPerPage()
+
+    // Recalculate on window resize
+    const handleResize = () => {
+      calculateItemsPerPage()
+      // Reset to first page when items per page changes
+      setCurrentPage(1)
+    }
+
+    window.addEventListener('resize', handleResize)
+    
+    // Also recalculate after a short delay to ensure proper rendering
+    const timeoutId = setTimeout(calculateItemsPerPage, 100)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeoutId)
+    }
+  }, [])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Sin pagos"
@@ -135,6 +197,13 @@ export function MissingInstallmentsReportTable({ data }: MissingInstallmentsRepo
   const endIndex = startIndex + itemsPerPage
   const currentData = sortedData.slice(startIndex, endIndex)
 
+  // Reset to page 1 if current page exceeds total pages (can happen when itemsPerPage changes)
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1)
+    }
+  }, [currentPage, totalPages])
+
   const goToFirstPage = () => setCurrentPage(1)
   const goToLastPage = () => setCurrentPage(totalPages)
   const goToNextPage = () => setCurrentPage(Math.min(currentPage + 1, totalPages))
@@ -163,10 +232,75 @@ export function MissingInstallmentsReportTable({ data }: MissingInstallmentsRepo
               {sortedData.length} {sortedData.length === 1 ? "cliente" : "clientes"} con pagos atrasados
             </CardDescription>
           </div>
+          
+          {/* Export Buttons */}
+          {onExport && data.length > 0 && (
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport("excel")}
+                      disabled={isExporting}
+                      className="h-8 px-3"
+                    >
+                      <FileSpreadsheet className="h-4 w-4 mr-1.5 text-green-600" />
+                      Excel
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Exportar a Excel</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport("pdf")}
+                      disabled={isExporting}
+                      className="h-8 px-3"
+                    >
+                      <FileText className="h-4 w-4 mr-1.5 text-red-600" />
+                      PDF
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Exportar a PDF</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport("csv")}
+                      disabled={isExporting}
+                      className="h-8 px-3"
+                    >
+                      <Download className="h-4 w-4 mr-1.5 text-blue-600" />
+                      CSV
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Exportar a CSV</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+      <CardContent ref={tableContainerRef} className="flex-1 overflow-hidden p-0 flex flex-col">
         {data.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-4 mb-4">
@@ -338,6 +472,9 @@ export function MissingInstallmentsReportTable({ data }: MissingInstallmentsRepo
                   Mostrando <span className="font-medium">{startIndex + 1}</span> a{" "}
                   <span className="font-medium">{Math.min(endIndex, sortedData.length)}</span> de{" "}
                   <span className="font-medium">{sortedData.length}</span> registros
+                  <span className="text-xs ml-2 opacity-70">
+                    ({itemsPerPage} por página)
+                  </span>
                 </div>
                 
                 <div className="flex items-center gap-2">

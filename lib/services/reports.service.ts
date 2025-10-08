@@ -149,7 +149,7 @@ export interface MissingInstallmentReportSummary {
 }
 
 export interface ReportExportParams {
-  type: "loans" | "payments" | "clients" | "vehicles"
+  type: "loans" | "payments" | "clients" | "vehicles" | "missing-installments"
   format: "excel" | "pdf" | "csv"
   filters: any
 }

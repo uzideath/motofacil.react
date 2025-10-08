@@ -100,6 +100,11 @@ export default function ReportsDashboard() {
     exportReport(typeMap[activeTab as keyof typeof typeMap], format, getFilters())
   }
 
+  // Export handler for missing installments
+  const handleMissingInstallmentsExport = (format: "excel" | "pdf" | "csv") => {
+    exportReport("missing-installments", format, getFilters())
+  }
+
   // Aggregate report data for summary
   const reportData = {
     loans: loanReport || { total: 0, active: 0, completed: 0, defaulted: 0, totalAmount: 0, totalInterest: 0, items: [] },
@@ -431,7 +436,10 @@ export default function ReportsDashboard() {
                   {clientSubTab === "general" ? (
                     <ClientReportTable data={reportData?.clients.items || []} />
                   ) : (
-                    <MissingInstallmentsReportTable data={reportData?.missingInstallments.items || []} />
+                    <MissingInstallmentsReportTable 
+                      data={reportData?.missingInstallments.items || []} 
+                      onExport={handleMissingInstallmentsExport}
+                    />
                   )}
                 </div>
               )}

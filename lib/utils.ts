@@ -25,7 +25,14 @@ export function formatCurrency(amount: number): string {
 export function formatDate(date: string | Date | number, formatStr = 'dd/MM/yyyy'): string {
   if (!date) return '';
 
-  const dateObj = typeof date === 'object' ? date : new Date(date);
+  // If it's a string in YYYY-MM-DD format, parse it manually to avoid timezone issues
+  let dateObj: Date;
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split('-').map(Number);
+    dateObj = new Date(year, month - 1, day);
+  } else {
+    dateObj = typeof date === 'object' ? date : new Date(date);
+  }
 
   if (isNaN(dateObj.getTime())) {
     console.error('Fecha inválida:', date);
