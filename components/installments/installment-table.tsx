@@ -1,16 +1,14 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Calendar, PlusCircle } from 'lucide-react'
+import { PlusCircle } from 'lucide-react'
 import { InstallmentTableHeader } from "./components/table-header"
 import { InstallmentRow } from "./components/table-row"
 import { LoadingRow } from "./components/loading-row"
 import { EmptyState } from "./components/empty-state"
 import { SearchFilters } from "./components/search-filters"
 import { Pagination } from "./components/pagination"
-import { useState } from "react"
 import { DateRangeSummary } from "./components/date-range"
 import { AttachmentDialog } from "./components/dialogs/attachment"
 import { DeleteDialog } from "./components/dialogs/delete"
@@ -95,14 +93,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
   })
 
   return (
-    <Card className="bg-card border-border shadow-lg">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl flex items-center">
-          <Calendar className="mr-2 h-5 w-5 text-primary" />
-          Registro de Cuotas
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <>
+      <div className="h-full flex flex-col space-y-4">
         <LoadingOverlay isVisible={isGenerating} message="Procesando..." />
 
         <SearchFilters
@@ -134,8 +126,8 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
 
         <DateRangeSummary dateRange={dateRange} />
 
-        <div className="rounded-lg border border-border overflow-hidden shadow-md">
-          <div className="overflow-x-auto">
+        <div className="flex-1 rounded-lg border border-border overflow-hidden shadow-md">
+          <div className="h-full overflow-auto">
             <Table>
               <InstallmentTableHeader sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
               <TableBody>
@@ -183,7 +175,7 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           totalFiltered={totalItems}
           totalItems={totalItems}
         />
-      </CardContent>
+      </div>
 
       {/* Dialogs */}
       <AttachmentDialog
@@ -221,6 +213,6 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           Editar
         </button>
       </InstallmentForm>
-    </Card>
+    </>
   )
 }
