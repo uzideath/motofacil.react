@@ -36,6 +36,8 @@ export type RecentLoan = {
   status: string
   paidInstallments: number
   totalInstallments: number
+  isArchived?: boolean
+  archivedAt?: string
 }
 
 export type OverviewData = {
@@ -81,6 +83,7 @@ export type DashboardData = {
   cashFlow: CashFlowData[]
   loanStatusDistribution: LoanStatusData[]
   recentLoans: RecentLoan[]
+  archivedLoans?: RecentLoan[]
   overview: OverviewData
   upcomingPayments: UpcomingPayment[]
   recentInstallments: RecentInstallment[]

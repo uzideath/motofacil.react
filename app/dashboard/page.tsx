@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Overview } from "@/components/dashboard/overview"
 import { RecentLoans } from "@/components/dashboard/recent-loans"
+import { ArchivedLoans } from "@/components/dashboard/archived-loans"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
@@ -112,9 +113,10 @@ function DashboardContent() {
                 </div>
 
                 <Tabs defaultValue="overview" className="mt-3">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="overview" className="text-xs">Resumen</TabsTrigger>
                         <TabsTrigger value="recent" className="text-xs">Recientes</TabsTrigger>
+                        <TabsTrigger value="archived" className="text-xs">Archivados</TabsTrigger>
                         <TabsTrigger value="calendar" className="text-xs">Calendario</TabsTrigger>
                     </TabsList>
 
@@ -138,6 +140,18 @@ function DashboardContent() {
                             </CardHeader>
                             <CardContent className="p-3 pt-0">
                                 <RecentLoans />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="archived" className="mt-3">
+                        <Card>
+                            <CardHeader className="p-3">
+                                <CardTitle className="text-sm">Arrendamientos Archivados</CardTitle>
+                                <CardDescription className="text-xs">Historial archivado</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0">
+                                <ArchivedLoans />
                             </CardContent>
                         </Card>
                     </TabsContent>
