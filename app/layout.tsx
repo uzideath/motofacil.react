@@ -1,7 +1,7 @@
 "use client"
 
 import type React from 'react'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -14,7 +14,11 @@ import { AppSidebar } from '@/components/sidebar/sidebar'
 
 const ExpiredSessionHandler = lazy(() => import('@/components/SessionHandler'))
 
-const inter = Inter({ subsets: ['latin'] })
+const poppins = Poppins({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+})
 
 export default function RootLayout({
   children,
@@ -42,7 +46,7 @@ export default function RootLayout({
 
   return (
     <html lang="es" suppressHydrationWarning className="dark">
-      <body className={`${inter.className} bg-dark-blue-950 dot-pattern text-gray-100`}>
+      <body className={`${poppins.className} bg-dark-blue-950 dot-pattern text-gray-100`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <AuthProvider>
             <SidebarProvider>
