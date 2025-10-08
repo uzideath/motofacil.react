@@ -437,9 +437,15 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 payload.latePaymentDate = values.latePaymentDate.toISOString()
             }
 
-            if (!isEditing) {
-                payload.paymentDate = values.paymentDate ? values.paymentDate.toISOString() : new Date().toISOString()
-            }
+            // Always include paymentDate for both create and update
+            payload.paymentDate = values.paymentDate ? values.paymentDate.toISOString() : new Date().toISOString()
+
+            console.log('📅 Payment submission payload:', {
+                isEditing,
+                paymentDate: payload.paymentDate,
+                latePaymentDate: payload.latePaymentDate,
+                fullPayload: payload
+            })
 
             if (isEditing && installment) {
                 await HttpService.patch(`/api/v1/installments/${installment.id}`, payload)
