@@ -6,6 +6,13 @@ import { Clock, CheckCircle, AlertTriangle, Calendar } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
+// Payment method translations
+const PAYMENT_METHOD_TRANSLATIONS: Record<string, string> = {
+    CASH: "Efectivo",
+    TRANSACTION: "Transferencia",
+    CARD: "Tarjeta"
+}
+
 interface PaymentStatusSectionProps {
     lastInstallmentInfo: {
         lastPaymentDate: Date | null
@@ -15,6 +22,7 @@ interface PaymentStatusSectionProps {
         id: string
         amount: number
         paymentDate: string
+        latePaymentDate: string | null
         paymentMethod: string
         isLate: boolean
     }>
@@ -113,29 +121,38 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                             Historial Reciente
                         </h4>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
-                            {recentPayments.map((payment, index) => (
-                                <div
-                                    key={payment.id}
-                                    className={`flex items-center justify-between p-2 rounded-md text-sm ${index === 0 ? "bg-primary/10 border border-primary/20" : "bg-muted/20"
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${payment.isLate ? "bg-red-500" : "bg-green-500"}`} />
-                                        <span className="font-medium">
-                                            {format(new Date(payment.paymentDate), "dd/MM/yyyy", { locale: es })}
-                                        </span>
-                                        {payment.isLate && (
-                                            <Badge variant="destructive" className="text-xs px-1 py-0">
-                                                Tardío
-                                            </Badge>
-                                        )}
+                            {recentPayments.map((payment, index) => {
+                                // Use latePaymentDate if it exists (for late payments), otherwise use paymentDate
+                                const displayDate = payment.latePaymentDate 
+                                    ? new Date(payment.latePaymentDate)
+                                    : new Date(payment.paymentDate)
+                                
+                                return (
+                                    <div
+                                        key={payment.id}
+                                        className={`flex items-center justify-between p-2 rounded-md text-sm ${index === 0 ? "bg-primary/10 border border-primary/20" : "bg-muted/20"
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${payment.isLate ? "bg-red-500" : "bg-green-500"}`} />
+                                            <span className="font-medium">
+                                                {format(displayDate, "dd/MM/yyyy", { locale: es })}
+                                            </span>
+                                            {payment.isLate && (
+                                                <Badge variant="destructive" className="text-xs px-1 py-0">
+                                                    Tardío
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-semibold">${payment.amount.toLocaleString()}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {PAYMENT_METHOD_TRANSLATIONS[payment.paymentMethod] || payment.paymentMethod}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold">${payment.amount.toLocaleString()}</p>
-                                        <p className="text-xs text-muted-foreground capitalize">{payment.paymentMethod.toLowerCase()}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     </div>
                 )}
