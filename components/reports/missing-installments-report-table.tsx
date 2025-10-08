@@ -30,6 +30,7 @@ import {
   FileSpreadsheet,
   FileText,
   Download,
+  Loader2,
 } from "lucide-react"
 import type { MissingInstallmentData } from "@/lib/services/reports.service"
 import { Progress } from "@/components/ui/progress"
@@ -45,66 +46,10 @@ type SortDirection = "asc" | "desc"
 
 export function MissingInstallmentsReportTable({ data, onExport }: MissingInstallmentsReportTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [itemsPerPage, setItemsPerPage] = useState(6)
   const [sortField, setSortField] = useState<SortField>("daysSinceLastPayment")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
-  const [isExporting, setIsExporting] = useState(false)
   const tableContainerRef = useRef<HTMLDivElement>(null)
-
-  const handleExport = async (format: "excel" | "pdf" | "csv") => {
-    if (onExport) {
-      setIsExporting(true)
-      try {
-        await onExport(format)
-      } finally {
-        setIsExporting(false)
-      }
-    }
-  }
-
-  // Calculate dynamic items per page based on available height
-  useEffect(() => {
-    const calculateItemsPerPage = () => {
-      if (!tableContainerRef.current) return
-
-      // Get the container height
-      const containerHeight = tableContainerRef.current.clientHeight
-      
-      // Approximate row height (adjust based on your design)
-      // Header: ~40px, Row: ~80px, Pagination: ~52px
-      const headerHeight = 40
-      const paginationHeight = 52
-      const rowHeight = 80
-      
-      const availableHeight = containerHeight - headerHeight - paginationHeight
-      const calculatedItems = Math.floor(availableHeight / rowHeight)
-      
-      // Set minimum of 5 and maximum of 50 items per page
-      const newItemsPerPage = Math.max(5, Math.min(50, calculatedItems))
-      
-      setItemsPerPage(newItemsPerPage)
-    }
-
-    // Calculate on mount
-    calculateItemsPerPage()
-
-    // Recalculate on window resize
-    const handleResize = () => {
-      calculateItemsPerPage()
-      // Reset to first page when items per page changes
-      setCurrentPage(1)
-    }
-
-    window.addEventListener('resize', handleResize)
-    
-    // Also recalculate after a short delay to ensure proper rendering
-    const timeoutId = setTimeout(calculateItemsPerPage, 100)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      clearTimeout(timeoutId)
-    }
-  }, [])
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Sin pagos"
@@ -242,8 +187,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleExport("excel")}
-                      disabled={isExporting}
+                      onClick={() => onExport("excel")}
                       className="h-8 px-3"
                     >
                       <FileSpreadsheet className="h-4 w-4 mr-1.5 text-green-600" />
@@ -262,8 +206,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleExport("pdf")}
-                      disabled={isExporting}
+                      onClick={() => onExport("pdf")}
                       className="h-8 px-3"
                     >
                       <FileText className="h-4 w-4 mr-1.5 text-red-600" />
@@ -282,8 +225,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleExport("csv")}
-                      disabled={isExporting}
+                      onClick={() => onExport("csv")}
                       className="h-8 px-3"
                     >
                       <Download className="h-4 w-4 mr-1.5 text-blue-600" />

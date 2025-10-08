@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DownloadIcon, FileTextIcon, PieChartIcon, BarChart3Icon, TrendingUpIcon } from "lucide-react"
+import { DownloadIcon, FileTextIcon, PieChartIcon, BarChart3Icon, TrendingUpIcon, Loader2, FileSpreadsheet } from "lucide-react"
 import { LoanReportTable } from "./loan-report-table"
 import { PaymentReportTable } from "./payment-report-table"
 import { ClientReportTable } from "./client-report-table"
@@ -27,6 +27,8 @@ export default function ReportsDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [mounted, setMounted] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportFormat, setExportFormat] = useState<string>("")
 
   const {
     loading,
@@ -89,7 +91,7 @@ export default function ReportsDashboard() {
   }
 
   // Export handler
-  const handleExport = (format: "excel" | "pdf" | "csv") => {
+  const handleExport = async (format: "excel" | "pdf" | "csv") => {
     const typeMap = {
       prestamos: "loans" as const,
       pagos: "payments" as const,
@@ -97,12 +99,32 @@ export default function ReportsDashboard() {
       motocicletas: "vehicles" as const,
     }
     
-    exportReport(typeMap[activeTab as keyof typeof typeMap], format, getFilters())
+    setIsExporting(true)
+    setExportFormat(format.toUpperCase())
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    try {
+      await exportReport(typeMap[activeTab as keyof typeof typeMap], format, getFilters())
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setIsExporting(false)
+      setExportFormat("")
+    }
   }
 
   // Export handler for missing installments
-  const handleMissingInstallmentsExport = (format: "excel" | "pdf" | "csv") => {
-    exportReport("missing-installments", format, getFilters())
+  const handleMissingInstallmentsExport = async (format: "excel" | "pdf" | "csv") => {
+    setIsExporting(true)
+    setExportFormat(format.toUpperCase())
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    try {
+      await exportReport("missing-installments", format, getFilters())
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setIsExporting(false)
+      setExportFormat("")
+    }
   }
 
   // Aggregate report data for summary
@@ -472,6 +494,67 @@ export default function ReportsDashboard() {
           </div>
         </div>
       </Tabs>
+
+      {/* Export Loading Overlay - Full Page Coverage */}
+      {isExporting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+          
+          {/* Loading Dialog */}
+          <div className="relative z-10 bg-card border rounded-lg shadow-2xl p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center gap-6">
+              {/* Header */}
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+                <h3 className="text-2xl font-semibold text-foreground">
+                  Generando Reporte
+                </h3>
+              </div>
+
+              {/* Spinner Circle */}
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-4 border-muted flex items-center justify-center">
+                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                </div>
+                {/* Pulsing ring effect */}
+                <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+              </div>
+
+              {/* Messages */}
+              <div className="text-center space-y-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                  <FileSpreadsheet className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary">
+                    Formato: {exportFormat}
+                  </span>
+                </div>
+                <p className="text-base font-medium text-foreground">
+                  Preparando tu reporte...
+                </p>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Por favor espera, esto puede tomar unos segundos dependiendo de la cantidad de datos
+                </p>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full space-y-2">
+                <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-primary to-primary/60 animate-pulse rounded-full" 
+                    style={{ width: "100%" }} 
+                  />
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  Procesando información...
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
