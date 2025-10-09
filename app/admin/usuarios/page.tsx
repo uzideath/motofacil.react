@@ -2,8 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
-import { UserManagement } from "@/components/admin/user-management"
 import { Download, Filter, UserPlus } from "lucide-react"
+import { UserManagement } from "@/components/admin/UserManagement"
 
 export default function AdminUsersPage() {
   return (

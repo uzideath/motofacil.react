@@ -3,10 +3,11 @@ type Owner = {
     id: string
     name: string
     username: string
-    role: "ADMIN" | "USER" | "MANAGER"
+    role: "ADMIN" | "USER" | "MANAGER" | "MODERATOR"
     status: "ACTIVE" | "INACTIVE"
     lastLogin: string
     createdAt: string
+    permissions?: any // PermissionsMap
 }
 
 
