@@ -109,10 +109,18 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
 
   // Get unique providers from data
   const uniqueProviders = useMemo(() => {
-    const providers = data
-      .filter(item => item.providerName)
-      .map(item => item.providerName!)
-    return Array.from(new Set(providers)).sort()
+    const providerMap = new Map<string, { id: string | null; name: string }>()
+    
+    data.forEach(item => {
+      if (item.providerName && item.providerId) {
+        providerMap.set(item.providerId, {
+          id: item.providerId,
+          name: item.providerName
+        })
+      }
+    })
+    
+    return Array.from(providerMap.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [data])
 
   // Filter and sort data
@@ -121,7 +129,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
 
     // Apply provider filter
     if (providerFilter !== "all") {
-      filtered = filtered.filter(item => item.providerName === providerFilter)
+      filtered = filtered.filter(item => item.providerId === providerFilter)
     }
 
     // Apply search filter
@@ -208,10 +216,16 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
 
   const handleExport = (format: "excel" | "pdf" | "csv") => {
     if (onExport) {
-      // Pass the provider filter to the export function if a specific provider is selected
+      // Pass the provider ID (not name) to the export function if a specific provider is selected
       const exportProviderFilter = providerFilter !== "all" ? providerFilter : undefined
       onExport(format, exportProviderFilter)
     }
+  }
+
+  // Get provider name from ID for display
+  const getProviderNameById = (id: string) => {
+    const provider = uniqueProviders.find(p => p.id === id)
+    return provider?.name || id
   }
 
   const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
@@ -235,7 +249,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
             </CardTitle>
             <CardDescription className="mt-1">
               {sortedData.length} {sortedData.length === 1 ? "cliente" : "clientes"} con pagos atrasados
-              {providerFilter !== "all" && ` - ${providerFilter}`}
+              {providerFilter !== "all" && ` - ${getProviderNameById(providerFilter)}`}
             </CardDescription>
           </div>
           
@@ -256,7 +270,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a Excel{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
+                    <p>Exportar a Excel{providerFilter !== "all" ? ` (${getProviderNameById(providerFilter)})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -275,7 +289,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a PDF{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
+                    <p>Exportar a PDF{providerFilter !== "all" ? ` (${getProviderNameById(providerFilter)})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -294,7 +308,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a CSV{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
+                    <p>Exportar a CSV{providerFilter !== "all" ? ` (${getProviderNameById(providerFilter)})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -321,8 +335,8 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
               <SelectContent>
                 <SelectItem value="all">Todos los proveedores</SelectItem>
                 {uniqueProviders.map((provider) => (
-                  <SelectItem key={provider} value={provider}>
-                    {provider}
+                  <SelectItem key={provider.id || 'unknown'} value={provider.id || 'unknown'}>
+                    {provider.name}
                   </SelectItem>
                 ))}
               </SelectContent>
