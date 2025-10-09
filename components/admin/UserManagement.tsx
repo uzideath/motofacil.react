@@ -9,8 +9,11 @@ import { DeleteUserDialog } from "@/components/admin/components/DeleteUserDialog
 import { PermissionsDialog } from "@/components/admin/components/PermissionsDialog"
 import { useToast } from "@/components/ui/use-toast"
 import { UserForm } from "./UserOwnerForm"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function UserManagement({ filter = "all" }: { filter?: UserFilter }) {
+export function UserManagement({ filter: initialFilter = "all" }: { filter?: UserFilter }) {
+  const [activeFilter, setActiveFilter] = useState<UserFilter>(initialFilter)
   const {
     filteredUsers,
     loading,
@@ -19,7 +22,7 @@ export function UserManagement({ filter = "all" }: { filter?: UserFilter }) {
     deleteUser,
     updateUserStatus,
     refreshUsers,
-  } = useUsers(filter)
+  } = useUsers(activeFilter)
 
   const [selectedUser, setSelectedUser] = useState<Owner | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -88,20 +91,94 @@ export function UserManagement({ filter = "all" }: { filter?: UserFilter }) {
 
   return (
     <div className="space-y-4">
-      <UsersToolbar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onCreateNew={handleCreateNew}
-      />
+      <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as UserFilter)} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">Todos los Usuarios</TabsTrigger>
+          <TabsTrigger value="active">Usuarios Activos</TabsTrigger>
+          <TabsTrigger value="inactive">Usuarios Inactivos</TabsTrigger>
+        </TabsList>
 
-      <UsersTable
-        users={filteredUsers}
-        loading={loading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onStatusChange={handleStatusChange}
-        onManagePermissions={handleManagePermissions}
-      />
+        <TabsContent value="all" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Todos los Usuarios</CardTitle>
+              <CardDescription>
+                Gestiona todos los usuarios registrados en el sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <UsersToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onCreateNew={handleCreateNew}
+              />
+
+              <UsersTable
+                users={filteredUsers}
+                loading={loading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onManagePermissions={handleManagePermissions}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="active" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Usuarios Activos</CardTitle>
+              <CardDescription>
+                Gestiona los usuarios activos en el sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <UsersToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onCreateNew={handleCreateNew}
+              />
+
+              <UsersTable
+                users={filteredUsers}
+                loading={loading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onManagePermissions={handleManagePermissions}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="inactive" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Usuarios Inactivos</CardTitle>
+              <CardDescription>
+                Gestiona los usuarios inactivos en el sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <UsersToolbar
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onCreateNew={handleCreateNew}
+              />
+
+              <UsersTable
+                users={filteredUsers}
+                loading={loading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onManagePermissions={handleManagePermissions}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <DeleteUserDialog
         open={isDeleteDialogOpen}

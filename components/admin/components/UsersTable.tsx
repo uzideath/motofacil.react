@@ -23,7 +23,7 @@ export function UsersTable({
   onManagePermissions,
 }: UsersTableProps) {
   return (
-    <div className="glass-table border border-dark-blue-800/30">
+    <div className="rounded-lg border border-border overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <Table>
           <UsersTableHeader />

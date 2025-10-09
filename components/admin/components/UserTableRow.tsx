@@ -39,21 +39,21 @@ export function UserTableRow({
   onManagePermissions,
 }: UserTableRowProps) {
   return (
-    <TableRow className="border-dark-blue-800/30 hover:bg-dark-blue-800/20">
-      <TableCell className="text-white">
+    <TableRow className="hover:bg-muted/50">
+      <TableCell>
         <div className="flex items-center space-x-3">
-          <Avatar className="border border-dark-blue-700 bg-dark-blue-800/50">
+          <Avatar className="border border-border">
             <AvatarImage
               src={`/abstract-geometric-shapes.png?height=40&width=40&query=${user.name}`}
               alt={user.name}
             />
-            <AvatarFallback className="bg-dark-blue-800/80 text-blue-200">
+            <AvatarFallback className="bg-muted text-foreground">
               {getInitials(user.name)}
             </AvatarFallback>
           </Avatar>
           <div>
-            <div className="font-medium text-white">{user.name}</div>
-            <div className="text-sm text-blue-200/70">{user.username}</div>
+            <div className="font-medium">{user.name}</div>
+            <div className="text-sm text-muted-foreground">{user.username}</div>
           </div>
         </div>
       </TableCell>
@@ -69,10 +69,10 @@ export function UserTableRow({
           isAdmin={user.role === "ADMIN"}
         />
       </TableCell>
-      <TableCell className="hidden md:table-cell text-blue-200/70">
+      <TableCell className="hidden md:table-cell text-muted-foreground">
         {formatDateTime(user.lastLogin)}
       </TableCell>
-      <TableCell className="hidden md:table-cell text-blue-200/70">
+      <TableCell className="hidden md:table-cell text-muted-foreground">
         {formatDate(user.createdAt)}
       </TableCell>
       <TableCell className="text-right">
@@ -81,29 +81,26 @@ export function UserTableRow({
             <Button
               variant="ghost"
               size="icon"
-              className="text-blue-300/70 hover:text-white hover:bg-dark-blue-800/50"
+              className="hover:bg-muted"
             >
               <UserCog className="h-4 w-4" />
               <span className="sr-only">Acciones</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="bg-dark-blue-800/90 backdrop-blur-md border-dark-blue-700 text-blue-200"
-          >
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-dark-blue-700" />
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onManagePermissions(user)}
-              className="hover:bg-dark-blue-700/50 cursor-pointer"
+              className="cursor-pointer"
             >
-              <ShieldCheck className="mr-2 h-4 w-4 text-blue-400" />
+              <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
               Gestionar Permisos
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-dark-blue-700" />
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onEdit(user)}
-              className="hover:bg-dark-blue-700/50 cursor-pointer"
+              className="cursor-pointer"
             >
               <Edit className="mr-2 h-4 w-4" />
               Editar
@@ -111,7 +108,7 @@ export function UserTableRow({
             {user.status === "ACTIVE" ? (
               <DropdownMenuItem
                 onClick={() => onStatusChange(user.id, "INACTIVE")}
-                className="hover:bg-dark-blue-700/50 cursor-pointer"
+                className="cursor-pointer"
               >
                 <UserX className="mr-2 h-4 w-4" />
                 Desactivar
@@ -119,7 +116,7 @@ export function UserTableRow({
             ) : (
               <DropdownMenuItem
                 onClick={() => onStatusChange(user.id, "ACTIVE")}
-                className="hover:bg-dark-blue-700/50 cursor-pointer"
+                className="cursor-pointer"
               >
                 <UserCheck className="mr-2 h-4 w-4" />
                 Activar
@@ -127,7 +124,7 @@ export function UserTableRow({
             )}
             <DropdownMenuItem
               onClick={() => onDelete(user)}
-              className="hover:bg-dark-blue-700/50 cursor-pointer text-red-400 hover:text-red-300"
+              className="cursor-pointer text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Eliminar
