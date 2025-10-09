@@ -22,6 +22,8 @@ import { formatCurrency, cn } from "@/lib/utils"
 import { StatusBadge } from "./StatusBadge"
 import { CashRegisterDisplay } from "@/lib/types"
 import { ProviderBadge } from "@/components/ProviderBadge"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 interface CashRegisterTableProps {
     data: CashRegisterDisplay[]
@@ -38,6 +40,9 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
     onPrint,
     isGenerating,
 }) => {
+    const closingPermissions = useResourcePermissions(Resource.CLOSING)
+    const reportPermissions = useResourcePermissions(Resource.REPORT)
+
     if (loading) {
         return (
             <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">
@@ -319,37 +324,41 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onViewDetails(r)}>
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Ver detalles</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
+                                        {closingPermissions.canView && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onViewDetails(r)}>
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Ver detalles</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
 
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() => onPrint(r.id)}
-                                                        disabled={isGenerating}
-                                                    >
-                                                        <FilePdf className="h-4 w-4" />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Imprimir PDF</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
+                                        {(closingPermissions.canView || reportPermissions.canExport) && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => onPrint(r.id)}
+                                                            disabled={isGenerating}
+                                                        >
+                                                            <FilePdf className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Imprimir PDF</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
 
                                         {/* <TooltipProvider>
                                             <Tooltip>

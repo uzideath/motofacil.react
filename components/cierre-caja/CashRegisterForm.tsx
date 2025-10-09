@@ -17,10 +17,13 @@ import { SummaryTab } from "./form/components/SummaryTab"
 import { TransactionsTab } from "./form/components/TransactionsTab"
 import { useCashRegisterForm } from "./form/hooks/useCashRegisterForm"
 import { CashRegisterFormProps } from "./form/types"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 
 export function CashRegisterForm({ token, selectedTransactions, closingDate }: CashRegisterFormProps) {
     const [activeTab, setActiveTab] = useState("summary")
+    const closingPermissions = useResourcePermissions(Resource.CLOSING)
 
     const {
         formState,
@@ -66,21 +69,32 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                             <FormInputs formState={formState} isReadOnly={isReadOnly} onInputChange={handleInputChange} />
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">
-                            <Button type="submit" disabled={!isFormValid} className="w-full shadow-sm transition-all bg-primary hover:bg-primary/90">
-                                {formState.submitting ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                                        <span>Procesando...</span>
-                                    </div>
-                                ) : (
-                                    <span>Registrar Cierre de Caja</span>
-                                )}
-                            </Button>
+                            {closingPermissions.canCreate ? (
+                                <>
+                                    <Button type="submit" disabled={!isFormValid} className="w-full shadow-sm transition-all bg-primary hover:bg-primary/90">
+                                        {formState.submitting ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                                                <span>Procesando...</span>
+                                            </div>
+                                        ) : (
+                                            <span>Registrar Cierre de Caja</span>
+                                        )}
+                                    </Button>
 
-                            {!isFormValid && incomes.length === 0 && (
-                                <p className="text-xs text-amber-600 mt-2 text-center">
-                                    Seleccione al menos una transacción para continuar
-                                </p>
+                                    {!isFormValid && incomes.length === 0 && (
+                                        <p className="text-xs text-amber-600 mt-2 text-center">
+                                            Seleccione al menos una transacción para continuar
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <Alert className="mt-2">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>
+                                        No tienes permisos para crear cierres de caja.
+                                    </AlertDescription>
+                                </Alert>
                             )}
                         </CardFooter>
                     </Card>

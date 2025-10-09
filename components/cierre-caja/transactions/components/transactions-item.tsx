@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +34,8 @@ import { CATEGORY_DETAILS, PAYMENT_METHOD_ICONS, PROVIDER_DETAILS, TRANSACTION_T
 import { formatProviderName } from "../utils/formatters"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { TransactionDetailsModal } from "./TransactionDetailsModal"
+import { PrintableReceipt } from "./PrintableReceipt"
 
 interface TransactionItemProps {
     transaction: Transaction
@@ -41,6 +44,8 @@ interface TransactionItemProps {
 }
 
 export function TransactionItem({ transaction, isSelected, onSelect }: TransactionItemProps) {
+    const [showDetailsModal, setShowDetailsModal] = useState(false)
+
     // Get category details
     const categoryDetails = CATEGORY_DETAILS[transaction.category as keyof typeof CATEGORY_DETAILS] || {
         label: transaction.category,
@@ -251,13 +256,31 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
                 </div>
             </TableCell>
 
-            {/* Created By */}
+            {/* Created By / Client */}
             <TableCell className="text-foreground py-3">
                 <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-950/50">
-                        <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    <div className={`p-1.5 rounded-md ${
+                        transaction.type === "income" 
+                            ? "bg-emerald-100 dark:bg-emerald-950/50" 
+                            : "bg-blue-100 dark:bg-blue-950/50"
+                    }`}>
+                        <User className={`h-3.5 w-3.5 ${
+                            transaction.type === "income"
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-blue-600 dark:text-blue-400"
+                        }`} />
                     </div>
-                    <span className="text-sm font-medium">{transaction.createdBy?.username ?? "—"}</span>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                            {transaction.type === "income" 
+                                ? (transaction.client ?? "—")
+                                : (transaction.createdBy?.username ?? "—")
+                            }
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            {transaction.type === "income" ? "Cliente" : "Registrado"}
+                        </span>
+                    </div>
                 </div>
             </TableCell>
 
@@ -267,7 +290,12 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                                    onClick={() => setShowDetailsModal(true)}
+                                >
                                     <Eye className="h-4 w-4" />
                                     <span className="sr-only">Ver detalles</span>
                                 </Button>
@@ -287,21 +315,37 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
                         <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuLabel className="font-semibold">Opciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => setShowDetailsModal(true)}>
                                 <Eye className="h-4 w-4 mr-2 text-blue-500" />
                                 Ver detalles
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => window.print()}>
                                 <Printer className="h-4 w-4 mr-2 text-purple-500" />
                                 Imprimir recibo
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
+                            <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() => {
+                                    // TODO: Implement download functionality
+                                    console.log("Downloading receipt for:", transaction.id)
+                                }}
+                            >
                                 <Download className="h-4 w-4 mr-2 text-green-500" />
                                 Descargar comprobante
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
+                
+                {/* Transaction Details Modal */}
+                <TransactionDetailsModal
+                    transaction={transaction}
+                    open={showDetailsModal}
+                    onOpenChange={setShowDetailsModal}
+                />
+                
+                {/* Printable Receipt (hidden, only shows when printing) */}
+                <PrintableReceipt transaction={transaction} />
             </TableCell>
         </TableRow>
     )

@@ -25,6 +25,8 @@ import { useExport } from "./history/hooks/useExport"
 import { filterRegisters, calculateSummaryStats } from "./history/utils"
 import type { CashRegisterDisplay } from "@/lib/types"
 import { useToast } from "@/hooks/useToast"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 export function CashRegisterHistory() {
   const [selectedRegister, setSelectedRegister] = useState<CashRegisterDisplay | null>(null)
@@ -34,6 +36,11 @@ export function CashRegisterHistory() {
   const { exportToCSV, exportToPDF, isExporting } = useExport()
   const { toast } = useToast()
 
+  // Permissions (from main branch)
+  const closingPermissions = useResourcePermissions(Resource.CLOSING)
+  const reportPermissions = useResourcePermissions(Resource.REPORT)
+
+  // Data derivations (single source of truth)
   const filteredRegisters = filterRegisters(registers, filters)
   const summaryStats = calculateSummaryStats(filteredRegisters)
   const itemsPerPageNumber = Number.parseInt(pagination.itemsPerPage)
@@ -49,7 +56,7 @@ export function CashRegisterHistory() {
         title: "Exportación exitosa",
         description: `Se exportaron ${filteredRegisters.length} registros a CSV.`,
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error al exportar",
         description: "No se pudo exportar a CSV. Intente nuevamente.",
@@ -65,7 +72,7 @@ export function CashRegisterHistory() {
         title: "Exportación exitosa",
         description: `Se exportaron ${filteredRegisters.length} registros a PDF.`,
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error al exportar",
         description: "No se pudo exportar a PDF. Intente nuevamente.",
@@ -88,6 +95,7 @@ export function CashRegisterHistory() {
               muestra cuándo se creó el cierre.
             </CardDescription>
           </div>
+
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Button
               variant="outline"
@@ -99,34 +107,39 @@ export function CashRegisterHistory() {
               <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">Actualizar</span>
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 sm:h-9 flex-1 md:flex-initial text-xs sm:text-sm bg-transparent"
-                  disabled={isExporting || filteredRegisters.length === 0}
-                >
-                  <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
-                  Exportar
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleExportCSV}>
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Exportar a Excel (CSV)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleExportPDF}>
-                  <FilePdf className="h-4 w-4 mr-2" />
-                  Exportar a PDF
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+            {(reportPermissions.canExport || closingPermissions.canExport) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 sm:h-9 flex-1 md:flex-initial text-xs sm:text-sm bg-transparent"
+                    disabled={isExporting || filteredRegisters.length === 0}
+                  >
+                    <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Exportar</span>
+                    <span className="sm:hidden">Export</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleExportCSV}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Exportar a Excel (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF}>
+                    <FilePdf className="h-4 w-4 mr-2" />
+                    Exportar a PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-3 sm:space-y-4 md:space-y-6 px-3 sm:px-4 md:px-6">
         <FiltersSection filters={filters} onFilterChange={updateFilter} onResetFilters={resetFilters} />
 

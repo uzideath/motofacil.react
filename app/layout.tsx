@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/hooks/useAuth'
+import { PermissionsProvider } from '@/hooks/usePermissions'
 import { useEffect, Suspense, lazy } from 'react'
 import { usePathname } from 'next/navigation'
 import { useNavigationStore } from '@/lib/nav'
@@ -49,18 +50,20 @@ export default function RootLayout({
       <body className={`${poppins.className} bg-dark-blue-950 dot-pattern text-gray-100`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <AuthProvider>
-            <SidebarProvider>
+            <PermissionsProvider>
+              <SidebarProvider>
 
-              <div className="flex h-screen w-full overflow-hidden">
-                <AppSidebar />
-                {children}
-              </div>
-              <Suspense fallback={null}>
-                <ExpiredSessionHandler />
-              </Suspense>
-              <Toaster />
+                <div className="flex h-screen w-full overflow-hidden">
+                  <AppSidebar />
+                  {children}
+                </div>
+                <Suspense fallback={null}>
+                  <ExpiredSessionHandler />
+                </Suspense>
+                <Toaster />
 
-            </SidebarProvider>
+              </SidebarProvider>
+            </PermissionsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

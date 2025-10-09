@@ -20,8 +20,12 @@ import { useInstallmentActions } from "./hooks/useInstallmentActions"
 import { useInstallments } from "./hooks/useInstallments"
 import { useTableState } from "./hooks/useTableState"
 import { NotesDialog } from "./components/dialogs/note"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => void) => void }) {
+  const installmentPermissions = useResourcePermissions(Resource.INSTALLMENT)
+
   const { 
     installments, 
     loading, 
@@ -115,12 +119,14 @@ export function InstallmentTable({ onRefresh }: { onRefresh?: (refreshFn: () => 
           onRefresh={() => fetchInstallments({ dateRange })}
           hasActiveFilters={hasActiveFilters}
           actionButton={
-            <InstallmentForm onSaved={refreshInstallments}>
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1">
-                <PlusCircle className="h-4 w-4" />
-                Nueva Cuota
-              </Button>
-            </InstallmentForm>
+            installmentPermissions.canCreate ? (
+              <InstallmentForm onSaved={refreshInstallments}>
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1">
+                  <PlusCircle className="h-4 w-4" />
+                  Nueva Cuota
+                </Button>
+              </InstallmentForm>
+            ) : null
           }
         />
 
