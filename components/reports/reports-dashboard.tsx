@@ -113,13 +113,18 @@ export default function ReportsDashboard() {
   }
 
   // Export handler for missing installments
-  const handleMissingInstallmentsExport = async (format: "excel" | "pdf" | "csv") => {
+  const handleMissingInstallmentsExport = async (format: "excel" | "pdf" | "csv", providerFilter?: string) => {
     setIsExporting(true)
     setExportFormat(format.toUpperCase())
     await new Promise(resolve => setTimeout(resolve, 100))
     
     try {
-      await exportReport("missing-installments", format, getFilters())
+      const filters = getFilters()
+      // Add provider filter if specified
+      if (providerFilter) {
+        filters.provider = providerFilter
+      }
+      await exportReport("missing-installments", format, filters)
     } finally {
       await new Promise(resolve => setTimeout(resolve, 300))
       setIsExporting(false)

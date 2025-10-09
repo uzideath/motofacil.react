@@ -19,6 +19,7 @@ export interface ClientReportFilters {
   endDate?: string
   status?: string
   search?: string
+  provider?: string
 }
 
 export interface VehicleReportFilters {
@@ -41,6 +42,8 @@ export interface LoanReportData {
   startDate: string
   status: string
   progress: number
+  providerId?: string
+  providerName?: string
 }
 
 export interface PaymentReportData {
@@ -80,6 +83,8 @@ export interface VehicleReportData {
   purchaseDate: string
   status: string
   clientName: string | null
+  providerId?: string
+  providerName?: string
 }
 
 export interface MissingInstallmentData {
@@ -92,6 +97,8 @@ export interface MissingInstallmentData {
   contractNumber: string | null
   vehicle: string
   plate: string
+  providerId: string | null
+  providerName: string | null
   lastPaymentDate: string | null
   lastPaymentWasLate: boolean
   daysSinceLastPayment: number
@@ -210,6 +217,7 @@ class ReportsService {
     if (filters.endDate) params.append("endDate", filters.endDate)
     if (filters.status && filters.status !== "all") params.append("status", filters.status)
     if (filters.search) params.append("search", filters.search)
+    if (filters.provider && filters.provider !== "all") params.append("provider", filters.provider)
 
     const response = await HttpService.get(`/api/v1/reports/missing-installments?${params.toString()}`)
     return response.data

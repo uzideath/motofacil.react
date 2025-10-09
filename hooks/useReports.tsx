@@ -20,6 +20,7 @@ export interface ReportFilters {
   endDate?: string
   status?: string
   search?: string
+  provider?: string
 }
 
 export function useReports() {

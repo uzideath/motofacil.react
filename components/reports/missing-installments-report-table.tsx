@@ -35,10 +35,13 @@ import {
 import type { MissingInstallmentData } from "@/lib/services/reports.service"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { X } from "lucide-react"
 
 interface MissingInstallmentsReportTableProps {
   data: MissingInstallmentData[]
-  onExport?: (format: "excel" | "pdf" | "csv") => void
+  onExport?: (format: "excel" | "pdf" | "csv", providerFilter?: string) => void
 }
 
 type SortField = "userName" | "daysSinceLastPayment" | "missedInstallments" | "totalMissedAmount"
@@ -49,6 +52,8 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
   const [itemsPerPage, setItemsPerPage] = useState(6)
   const [sortField, setSortField] = useState<SortField>("daysSinceLastPayment")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [providerFilter, setProviderFilter] = useState<string>("all")
+  const [searchTerm, setSearchTerm] = useState<string>("")
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
   const formatDate = (dateString: string | null) => {
@@ -102,9 +107,38 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
     }
   }
 
-  // Sort and paginate data
+  // Get unique providers from data
+  const uniqueProviders = useMemo(() => {
+    const providers = data
+      .filter(item => item.providerName)
+      .map(item => item.providerName!)
+    return Array.from(new Set(providers)).sort()
+  }, [data])
+
+  // Filter and sort data
   const sortedData = useMemo(() => {
-    const sorted = [...data].sort((a, b) => {
+    let filtered = [...data]
+
+    // Apply provider filter
+    if (providerFilter !== "all") {
+      filtered = filtered.filter(item => item.providerName === providerFilter)
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      filtered = filtered.filter(item => 
+        item.userName.toLowerCase().includes(searchLower) ||
+        item.userDocument.toLowerCase().includes(searchLower) ||
+        item.userPhone.toLowerCase().includes(searchLower) ||
+        item.vehicle.toLowerCase().includes(searchLower) ||
+        item.plate.toLowerCase().includes(searchLower) ||
+        (item.contractNumber && item.contractNumber.toLowerCase().includes(searchLower))
+      )
+    }
+
+    // Sort filtered data
+    const sorted = filtered.sort((a, b) => {
       let aValue: number | string = 0
       let bValue: number | string = 0
 
@@ -135,7 +169,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
     })
 
     return sorted
-  }, [data, sortField, sortDirection])
+  }, [data, sortField, sortDirection, providerFilter, searchTerm])
 
   const totalPages = Math.ceil(sortedData.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -153,6 +187,32 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
   const goToLastPage = () => setCurrentPage(totalPages)
   const goToNextPage = () => setCurrentPage(Math.min(currentPage + 1, totalPages))
   const goToPrevPage = () => setCurrentPage(Math.max(currentPage - 1, 1))
+
+  const handleProviderChange = (value: string) => {
+    setProviderFilter(value)
+    setCurrentPage(1)
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    setCurrentPage(1)
+  }
+
+  const clearFilters = () => {
+    setProviderFilter("all")
+    setSearchTerm("")
+    setCurrentPage(1)
+  }
+
+  const hasActiveFilters = providerFilter !== "all" || searchTerm !== ""
+
+  const handleExport = (format: "excel" | "pdf" | "csv") => {
+    if (onExport) {
+      // Pass the provider filter to the export function if a specific provider is selected
+      const exportProviderFilter = providerFilter !== "all" ? providerFilter : undefined
+      onExport(format, exportProviderFilter)
+    }
+  }
 
   const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <button
@@ -175,6 +235,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
             </CardTitle>
             <CardDescription className="mt-1">
               {sortedData.length} {sortedData.length === 1 ? "cliente" : "clientes"} con pagos atrasados
+              {providerFilter !== "all" && ` - ${providerFilter}`}
             </CardDescription>
           </div>
           
@@ -187,7 +248,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onExport("excel")}
+                      onClick={() => handleExport("excel")}
                       className="h-8 px-3"
                     >
                       <FileSpreadsheet className="h-4 w-4 mr-1.5 text-green-600" />
@@ -195,7 +256,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a Excel</p>
+                    <p>Exportar a Excel{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -206,7 +267,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onExport("pdf")}
+                      onClick={() => handleExport("pdf")}
                       className="h-8 px-3"
                     >
                       <FileText className="h-4 w-4 mr-1.5 text-red-600" />
@@ -214,7 +275,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a PDF</p>
+                    <p>Exportar a PDF{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -225,7 +286,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onExport("csv")}
+                      onClick={() => handleExport("csv")}
                       className="h-8 px-3"
                     >
                       <Download className="h-4 w-4 mr-1.5 text-blue-600" />
@@ -233,11 +294,51 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Exportar a CSV</p>
+                    <p>Exportar a CSV{providerFilter !== "all" ? ` (${providerFilter})` : ""}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
+          )}
+        </div>
+
+        {/* Filters Section */}
+        <div className="flex items-center gap-2 mt-3">
+          <div className="flex-1">
+            <Input
+              placeholder="Buscar por cliente, documento, teléfono, vehículo..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          
+          {uniqueProviders.length > 0 && (
+            <Select value={providerFilter} onValueChange={handleProviderChange}>
+              <SelectTrigger className="w-[200px] h-9">
+                <SelectValue placeholder="Todos los proveedores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los proveedores</SelectItem>
+                {uniqueProviders.map((provider) => (
+                  <SelectItem key={provider} value={provider}>
+                    {provider}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-9 px-3"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Limpiar
+            </Button>
           )}
         </div>
       </CardHeader>
@@ -262,6 +363,7 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                     </TableHead>
                     <TableHead className="w-[130px]">Contacto</TableHead>
                     <TableHead className="w-[180px]">Vehículo</TableHead>
+                    <TableHead className="w-[140px]">Proveedor</TableHead>
                     <TableHead className="w-[120px]">Último Pago</TableHead>
                     <TableHead className="w-[100px]">
                       <SortButton field="daysSinceLastPayment">Días</SortButton>
@@ -326,6 +428,16 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                               </Badge>
                             </div>
                           </div>
+                        </TableCell>
+                        
+                        <TableCell>
+                          {item.providerName ? (
+                            <Badge variant="secondary" className="text-xs">
+                              {item.providerName}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Sin proveedor</span>
+                          )}
                         </TableCell>
                         
                         <TableCell>
