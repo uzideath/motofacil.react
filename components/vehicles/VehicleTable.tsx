@@ -12,6 +12,7 @@ import { VehicleTableRow } from "./table/VehicleTableRow"
 import { VehicleTableSkeleton } from "./table/VehicleTableSkeleton"
 import { VehicleTableEmptyState } from "./table/VehicleTableState"
 import type { Vehicle } from "@/lib/types"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function VehicleTable() {
   const {
@@ -48,11 +49,11 @@ export function VehicleTable() {
   } = useVehicleTable()
 
   return (
-    <Card className="bg-card border-border shadow-md">
+    <Card className="bg-card border-border shadow-md rounded-lg md:rounded-xl">
       <VehicleTableHeader onRefresh={refreshData} onExport={exportToCSV} />
 
-      <CardContent className="p-6">
-        <div className="space-y-6">
+      <CardContent className="p-3 sm:p-4 md:p-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-6">
           <VehicleTableControls
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -71,30 +72,32 @@ export function VehicleTable() {
           />
 
           <div className="rounded-lg border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <VehicleTableHeaders />
-                <TableBody>
-                  {loading ? (
-                    <VehicleTableSkeleton />
-                  ) : !vehicles || vehicles.length === 0 ? (
-                    <VehicleTableEmptyState hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
-                  ) : (
-                    vehicles.map((vehicle: Vehicle, index: number) => (
-                      <VehicleTableRow
-                        key={`vehicle-row-${vehicle.id}-${index}`}
-                        vehicle={vehicle}
-                        index={index}
-                        getProviderLabel={getProviderLabel}
-                        getVehicleTypeLabel={getVehicleTypeLabel}
-                        onEdit={handleVehicleCreated}
-                        onDelete={handleDelete}
-                      />
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <ScrollArea className="h-[50vh] md:h-[55vh] lg:h-[60vh] max-h-[600px] min-h-[300px] w-full">
+              <div className="overflow-x-auto pr-2 md:pr-3 lg:pr-4">
+                <Table>
+                  <VehicleTableHeaders />
+                  <TableBody>
+                    {loading ? (
+                      <VehicleTableSkeleton />
+                    ) : !vehicles || vehicles.length === 0 ? (
+                      <VehicleTableEmptyState hasActiveFilters={hasActiveFilters} onClearFilters={clearFilters} />
+                    ) : (
+                      vehicles.map((vehicle: Vehicle, index: number) => (
+                        <VehicleTableRow
+                          key={`vehicle-row-${vehicle.id}-${index}`}
+                          vehicle={vehicle}
+                          index={index}
+                          getProviderLabel={getProviderLabel}
+                          getVehicleTypeLabel={getVehicleTypeLabel}
+                          onEdit={handleVehicleCreated}
+                          onDelete={handleDelete}
+                        />
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
           </div>
 
           {!loading && vehicles && vehicles.length > 0 && (
