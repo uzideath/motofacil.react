@@ -34,7 +34,7 @@ export default function CierreCajaPage() {
                 badgeColor="emerald"
             />
 
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 p-6 overflow-hidden">
                 <Tabs 
                     defaultValue="summary" 
                     value={activeTab}
