@@ -25,6 +25,8 @@ import { useExport } from "./history/hooks/useExport"
 import { filterRegisters, calculateSummaryStats } from "./history/utils"
 import { CashRegisterDisplay } from "@/lib/types"
 import { useToast } from "@/hooks/useToast"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 export function CashRegisterHistory() {
     const [selectedRegister, setSelectedRegister] = useState<CashRegisterDisplay | null>(null)
@@ -33,6 +35,8 @@ export function CashRegisterHistory() {
     const { handlePrint, isGenerating } = usePrintPdf()
     const { exportToCSV, exportToPDF, isExporting } = useExport()
     const { toast } = useToast()
+    const closingPermissions = useResourcePermissions(Resource.CLOSING)
+    const reportPermissions = useResourcePermissions(Resource.REPORT)
     
     const filteredRegisters = filterRegisters(registers, filters)
     const summaryStats = calculateSummaryStats(filteredRegisters)
@@ -92,26 +96,28 @@ export function CashRegisterHistory() {
                             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                             Actualizar
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-9" disabled={isExporting || filteredRegisters.length === 0}>
-                                    <Download className="h-4 w-4 mr-1.5" />
-                                    Exportar
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleExportCSV}>
-                                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                                    Exportar a Excel (CSV)
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleExportPDF}>
-                                    <FilePdf className="h-4 w-4 mr-2" />
-                                    Exportar a PDF
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {(reportPermissions.canExport || closingPermissions.canExport) && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-9" disabled={isExporting || filteredRegisters.length === 0}>
+                                        <Download className="h-4 w-4 mr-1.5" />
+                                        Exportar
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleExportCSV}>
+                                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                                        Exportar a Excel (CSV)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleExportPDF}>
+                                        <FilePdf className="h-4 w-4 mr-2" />
+                                        Exportar a PDF
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
                 </div>
             </CardHeader>

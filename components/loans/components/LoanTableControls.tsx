@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Search, Plus, Archive, ArchiveRestore, RefreshCw, FileSpreadsheet, Sparkles } from "lucide-react"
 import { LoanForm } from "../LoanForm"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 interface LoanTableControlsProps {
     searchTerm: string
@@ -31,6 +33,9 @@ export function LoanTableControls({
     onRefresh,
     onExportCSV,
 }: LoanTableControlsProps) {
+    const loanPermissions = useResourcePermissions(Resource.LOAN)
+    const reportPermissions = useResourcePermissions(Resource.REPORT)
+
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
@@ -88,7 +93,8 @@ export function LoanTableControls({
                         <span className="hidden sm:inline">Actualizar</span>
                     </Button>
                 )}
-                {onExportCSV && (
+                {/* Export requires REPORT.EXPORT or LOAN.EXPORT */}
+                {onExportCSV && (reportPermissions.canExport || loanPermissions.canExport) && (
                     <Button
                         variant="outline"
                         size="sm"
@@ -131,12 +137,15 @@ export function LoanTableControls({
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <LoanForm onSaved={onRefresh}>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Préstamo
-                    </Button>
-                </LoanForm>
+                {/* Create new loan requires LOAN.CREATE */}
+                {loanPermissions.canCreate && (
+                    <LoanForm onSaved={onRefresh}>
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nuevo Préstamo
+                        </Button>
+                    </LoanForm>
+                )}
             </div>
         </div>
     )

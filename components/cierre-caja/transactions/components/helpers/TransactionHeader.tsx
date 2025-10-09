@@ -11,6 +11,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Calendar, Download, FileText, Printer, RefreshCw } from "lucide-react"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 interface TransactionHeaderProps {
     refreshing: boolean
@@ -27,6 +29,9 @@ export function TransactionHeader({
     onExportSelected,
     onExportAll,
 }: TransactionHeaderProps) {
+    const reportPermissions = useResourcePermissions(Resource.REPORT)
+    const closingPermissions = useResourcePermissions(Resource.CLOSING)
+
     return (
         <CardHeader className="pb-3">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -58,39 +63,41 @@ export function TransactionHeader({
                         <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                         Actualizar
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 bg-transparent">
-                                <Download className="h-4 w-4 mr-1.5" />
-                                Exportar
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {selectedCount > 0 && (
-                                <>
-                                    <DropdownMenuItem onClick={onExportSelected}>
-                                        <FileText className="h-4 w-4 mr-2" />
-                                        Exportar seleccionadas ({selectedCount})
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                </>
-                            )}
-                            <DropdownMenuItem onClick={onExportAll}>
-                                <FileText className="h-4 w-4 mr-2" />
-                                Exportar todas a CSV
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={onExportAll}>
-                                <FileText className="h-4 w-4 mr-2" />
-                                Exportar todas a Excel
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <Printer className="h-4 w-4 mr-2" />
-                                Imprimir
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {(reportPermissions.canExport || closingPermissions.canExport) && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-9 bg-transparent">
+                                    <Download className="h-4 w-4 mr-1.5" />
+                                    Exportar
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Opciones de exportación</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {selectedCount > 0 && (
+                                    <>
+                                        <DropdownMenuItem onClick={onExportSelected}>
+                                            <FileText className="h-4 w-4 mr-2" />
+                                            Exportar seleccionadas ({selectedCount})
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
+                                <DropdownMenuItem onClick={onExportAll}>
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Exportar todas a CSV
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={onExportAll}>
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    Exportar todas a Excel
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Printer className="h-4 w-4 mr-2" />
+                                    Imprimir
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
             </div>
         </CardHeader>

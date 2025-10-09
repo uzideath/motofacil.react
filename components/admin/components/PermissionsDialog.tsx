@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/hooks/useAuth"
 import { HttpService } from "@/lib/http"
 import {
   Resource,
@@ -48,6 +49,7 @@ export function PermissionsDialog({
   const [saving, setSaving] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const { toast } = useToast()
+  const { user } = useAuth()
 
   useEffect(() => {
     if (open && userId) {
@@ -141,12 +143,18 @@ export function PermissionsDialog({
   const savePermissions = async () => {
     try {
       setSaving(true)
-      const token = localStorage.getItem("token")
-      const currentUserId = localStorage.getItem("userId")
+      
+      // Clean up permissions object - remove undefined values and empty arrays
+      const cleanedPermissions: PermissionsMap = {}
+      Object.entries(permissions).forEach(([resource, actions]) => {
+        if (actions && actions.length > 0) {
+          cleanedPermissions[resource as Resource] = actions
+        }
+      })
 
       await HttpService.post(`/api/v1/permissions/owner/${userId}/set`, {
-        permissions,
-        updatedBy: currentUserId,
+        permissions: cleanedPermissions,
+        updatedBy: user?.id || "system",
       })
 
       toast({

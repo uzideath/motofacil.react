@@ -40,6 +40,8 @@ import { LoanDetails } from "../loan-details"
 import { InstallmentForm } from "../../installments/components/forms/installment-form"
 import { LoanForm } from "../LoanForm"
 import { Loan } from "@/lib/types"
+import { useResourcePermissions } from "@/hooks/useResourcePermissions"
+import { Resource } from "@/lib/types/permissions"
 
 
 interface LoanTableRowProps {
@@ -51,6 +53,11 @@ interface LoanTableRowProps {
 }
 
 export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract }: LoanTableRowProps) {
+    // Get permissions for loans, installments, and contracts
+    const loanPermissions = useResourcePermissions(Resource.LOAN)
+    const installmentPermissions = useResourcePermissions(Resource.INSTALLMENT)
+    const contractPermissions = useResourcePermissions(Resource.CONTRACT)
+
     const getStatusBadge = (status: string, archived: boolean) => {
         if (archived) {
             return (
@@ -214,14 +221,18 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         
-                        <LoanDetails loanId={loan.id} loanData={loan}>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver detalles
-                            </DropdownMenuItem>
-                        </LoanDetails>
+                        {/* View details - requires LOAN.VIEW */}
+                        {loanPermissions.canView && (
+                            <LoanDetails loanId={loan.id} loanData={loan}>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Ver detalles
+                                </DropdownMenuItem>
+                            </LoanDetails>
+                        )}
 
-                        {!loan.archived && (
+                        {/* Register payment - requires INSTALLMENT.CREATE and loan not archived */}
+                        {!loan.archived && installmentPermissions.canCreate && (
                             <InstallmentForm loanId={loan.id}>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                     <CreditCard className="mr-2 h-4 w-4" />
@@ -230,12 +241,16 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                             </InstallmentForm>
                         )}
 
-                        <DropdownMenuItem onClick={() => onPrintContract(loan)}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Generar contrato
-                        </DropdownMenuItem>
+                        {/* Generate contract - requires CONTRACT.VIEW or CONTRACT.CREATE */}
+                        {(contractPermissions.canView || contractPermissions.canCreate) && (
+                            <DropdownMenuItem onClick={() => onPrintContract(loan)}>
+                                <Printer className="mr-2 h-4 w-4" />
+                                Generar contrato
+                            </DropdownMenuItem>
+                        )}
 
-                        {!loan.archived && (
+                        {/* Edit loan - requires LOAN.EDIT and loan not archived */}
+                        {!loan.archived && loanPermissions.canEdit && (
                             <>
                                 <DropdownMenuSeparator />
                                 <LoanForm loanId={loan.id} loanData={loan}>
@@ -247,29 +262,44 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                             </>
                         )}
 
-                        <DropdownMenuSeparator />
-                        
-                        <DropdownMenuItem onClick={() => onArchive(loan.id, loan.archived)}>
-                            {loan.archived ? (
-                                <>
-                                    <ArchiveRestore className="mr-2 h-4 w-4" />
-                                    Desarchivar
-                                </>
-                            ) : (
-                                <>
-                                    <Archive className="mr-2 h-4 w-4" />
-                                    Archivar
-                                </>
-                            )}
-                        </DropdownMenuItem>
+                        {/* Archive/Unarchive - requires LOAN.EDIT or LOAN.MANAGE */}
+                        {(loanPermissions.canEdit || loanPermissions.canManage) && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => onArchive(loan.id, loan.archived)}>
+                                    {loan.archived ? (
+                                        <>
+                                            <ArchiveRestore className="mr-2 h-4 w-4" />
+                                            Desarchivar
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Archive className="mr-2 h-4 w-4" />
+                                            Archivar
+                                        </>
+                                    )}
+                                </DropdownMenuItem>
+                            </>
+                        )}
 
-                        <DropdownMenuItem
-                            onClick={() => onDelete(loan.id)}
-                            className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                        </DropdownMenuItem>
+                        {/* Delete - requires LOAN.DELETE */}
+                        {loanPermissions.canDelete && (
+                            <DropdownMenuItem
+                                onClick={() => onDelete(loan.id)}
+                                className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                            </DropdownMenuItem>
+                        )}
+
+                        {/* Show message if user has no permissions */}
+                        {!loanPermissions.hasAnyAccess && !installmentPermissions.hasAnyAccess && !contractPermissions.hasAnyAccess && (
+                            <DropdownMenuItem disabled>
+                                <AlertCircle className="mr-2 h-4 w-4" />
+                                Sin permisos disponibles
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>

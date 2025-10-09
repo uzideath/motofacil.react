@@ -40,7 +40,12 @@ export class UsersService {
    * Create a new user
    */
   static async create(data: CreateUserDto): Promise<Owner> {
-    const response = await HttpService.post(this.BASE_PATH, data)
+    // Transform role to roles array for backend
+    const payload = {
+      ...data,
+      roles: [data.role],
+    }
+    const response = await HttpService.post(this.BASE_PATH, payload)
     return this.mapToOwner(response.data)
   }
 
@@ -48,7 +53,18 @@ export class UsersService {
    * Update an existing user
    */
   static async update(id: string, data: UpdateUserDto): Promise<Owner> {
-    const response = await HttpService.put(`${this.BASE_PATH}/${id}`, data)
+    // Transform role to roles array for backend
+    const payload: any = {
+      ...data,
+    }
+    
+    // Convert single role to roles array if role is provided
+    if (data.role) {
+      payload.roles = [data.role]
+      delete payload.role
+    }
+    
+    const response = await HttpService.put(`${this.BASE_PATH}/${id}`, payload)
     return this.mapToOwner(response.data)
   }
 
