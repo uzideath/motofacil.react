@@ -14,14 +14,30 @@ function isToday(date: Date): boolean {
   )
 }
 
+/**
+ * Checks if a date is today or in the future in Colombian time (America/Bogota timezone)
+ */
+function isTodayOrFuture(date: Date): boolean {
+  const colombianTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+  
+  // Set time to start of day for both dates to compare dates only
+  colombianTime.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  
+  // Return true if the transaction date is today or in the future
+  return colombianTime >= today
+}
+
 export function filterAndSortTransactions(
   transactions: Transaction[],
   filters: TransactionFiltersState,
 ): Transaction[] {
   let filtered = [...transactions]
 
-  // CRITICAL: Only show transactions from today (Colombian time)
-  filtered = filtered.filter((transaction) => isToday(transaction.date))
+  // CRITICAL: Only show transactions from today and future dates (Colombian time)
+  // Exclude past transactions before today
+  filtered = filtered.filter((transaction) => isTodayOrFuture(transaction.date))
 
   // Apply search filter
   if (filters.searchTerm) {
