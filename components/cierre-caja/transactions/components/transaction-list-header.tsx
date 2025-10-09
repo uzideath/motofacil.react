@@ -131,7 +131,7 @@ export function TransactionListHeader({
                 <TableHead className="font-semibold">
                     <div className="flex items-center">
                         <User className="mr-1.5 h-3.5 w-3.5" />
-                        Registrado
+                        Cliente/Registrado
                     </div>
                 </TableHead>
                 <TableHead className="text-right font-semibold">Acciones</TableHead>

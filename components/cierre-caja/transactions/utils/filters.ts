@@ -1,10 +1,27 @@
 import type { Transaction, TransactionFiltersState, TransactionSummary } from "../constants/types"
 
+/**
+ * Checks if a date is today in Colombian time (America/Bogota timezone)
+ */
+function isToday(date: Date): boolean {
+  const colombianTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+  
+  return (
+    colombianTime.getFullYear() === today.getFullYear() &&
+    colombianTime.getMonth() === today.getMonth() &&
+    colombianTime.getDate() === today.getDate()
+  )
+}
+
 export function filterAndSortTransactions(
   transactions: Transaction[],
   filters: TransactionFiltersState,
 ): Transaction[] {
   let filtered = [...transactions]
+
+  // CRITICAL: Only show transactions from today (Colombian time)
+  filtered = filtered.filter((transaction) => isToday(transaction.date))
 
   // Apply search filter
   if (filters.searchTerm) {
