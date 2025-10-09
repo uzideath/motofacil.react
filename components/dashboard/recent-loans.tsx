@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { CreditCard, Eye } from "lucide-react"
 import Link from "next/link"
 import { useDashboardContext } from "./dashboard-provider"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function RecentLoans() {
   const { data, loading } = useDashboardContext()
@@ -69,6 +70,7 @@ export function RecentLoans() {
   }
 
   return (
+  <ScrollArea className="h-[400px] pr-4">
     <div className="space-y-4">
       {loans.map((loan) => (
         <div key={loan.id} className="flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -109,5 +111,6 @@ export function RecentLoans() {
         </Button>
       </div>
     </div>
+  </ScrollArea>
   )
 }
