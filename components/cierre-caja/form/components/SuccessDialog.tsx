@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { CheckCircle2 } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
 import { type FormCalculations } from "../types"
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 import { Provider } from "@/lib/types"
 
 interface SuccessDialogProps {

@@ -10,7 +10,7 @@ export function useUserTable() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(8)
+    const [itemsPerPage, setItemsPerPage] = useState(15)
     const [refreshKey, setRefreshKey] = useState(0)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [userToDelete, setUserToDelete] = useState<string | null>(null)

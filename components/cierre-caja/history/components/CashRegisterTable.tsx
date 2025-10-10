@@ -21,7 +21,7 @@ import { FileIcon as FilePdf } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
 import { StatusBadge } from "./StatusBadge"
 import { CashRegisterDisplay } from "@/lib/types"
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 import { useResourcePermissions } from "@/hooks/useResourcePermissions"
 import { Resource } from "@/lib/types/permissions"
 

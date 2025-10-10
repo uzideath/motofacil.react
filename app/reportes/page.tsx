@@ -1,5 +1,5 @@
 import ReportsDashboard from "@/components/reports/reports-dashboard"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { BarChart3, FileBarChart } from "lucide-react"
 import type { Metadata } from "next"
 

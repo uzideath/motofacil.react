@@ -2,7 +2,7 @@ import type React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock, AlertCircle, ArrowDownToLine, ArrowUpFromLine, Banknote, CreditCard } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 import { SelectedTransaction } from "../types"
 
 interface TransactionsTabProps {

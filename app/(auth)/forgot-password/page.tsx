@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/common/mode-toggle"
 
 export const metadata: Metadata = {
   title: "Recuperar Contraseña | MotoFácil Atlántico",

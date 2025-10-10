@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { TrendingUp, Banknote, ArrowDownToLine, CreditCard, AlertCircle } from "lucide-react"
 import { formatCurrency, cn } from "@/lib/utils"
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 import { FormCalculations } from "../types"
 import { Expense, Installment, Provider } from "@/lib/types"
 

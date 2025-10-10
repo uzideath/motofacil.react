@@ -1,5 +1,5 @@
 import { UserManagement } from "@/components/admin/UserManagement"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { Users, Shield } from "lucide-react"
 
 export default function AdminUsersPage() {

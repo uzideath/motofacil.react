@@ -21,7 +21,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react"
-import { PaymentMethodIcon } from "@/components/PaymentMethodIcon"
+import { PaymentMethodIcon } from "@/components/common/PaymentMethodIcon"
 
 type Payment = {
   id: string

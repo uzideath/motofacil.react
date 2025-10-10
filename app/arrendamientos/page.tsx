@@ -1,5 +1,5 @@
 import { LoanTable } from "@/components/loans/LoanTable"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { DollarSign, TrendingUp } from "lucide-react"
 
 export default function LoansPage() {

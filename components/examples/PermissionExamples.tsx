@@ -7,7 +7,7 @@
  * You can copy these patterns into your actual components.
  */
 
-import { PermissionGuard } from "@/components/PermissionGuard"
+import { PermissionGuard } from "@/components/common/PermissionGuard"
 import { usePermissions } from "@/hooks/usePermissions"
 import { useResourcePermissions } from "@/hooks/useResourcePermissions"
 import { Action, Resource } from "@/lib/types/permissions"

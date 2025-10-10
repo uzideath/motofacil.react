@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ResetPasswordForm } from "@/components/auth/reset-password-form"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/common/mode-toggle"
 
 export const metadata: Metadata = {
   title: "Restablecer Contraseña | MotoFácil Atlántico",

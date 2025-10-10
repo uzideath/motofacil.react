@@ -18,22 +18,22 @@ export function DeleteDialog({ installment, isOpen, onOpenChange, onConfirm, isD
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-dark-blue-900 border-red-600/30 text-white max-w-md">
+            <DialogContent className="bg-[#232323] border-red-600/30 text-white max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-red-400 flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5" />
                         Confirmar eliminación
                     </DialogTitle>
-                    <DialogDescription className="text-blue-100">
+                    <DialogDescription className="text-gray-200">
                         ¿Estás seguro de que deseas eliminar la cuota de {installment.loan.user.name}?
-                        <p className="mt-2 font-semibold">Esta acción no se puede deshacer.</p>
+                        <span className="block mt-2 font-semibold">Esta acción no se puede deshacer.</span>
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex justify-end gap-2 mt-4">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
-                        className="border-blue-500/30 text-blue-300 hover:bg-dark-blue-800"
+                        className="border-gray-600 text-gray-300 hover:bg-[#2a2a2a]"
                         disabled={isDeleting}
                     >
                         Cancelar

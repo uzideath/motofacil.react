@@ -36,7 +36,7 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
             id: item.id,
             date: format(closingDate, "dd/MM/yyyy", { locale: es }), // Show closing date (no timezone shift)
             time: format(createdAt, "dd/MM/yyyy HH:mm", { locale: es }), // Show full registration date and time
-            user: item.createdBy?.username || "N/A",
+            user: item.createdBy?.name || "N/A",
             totalIncome,
             totalExpense,
             balance,

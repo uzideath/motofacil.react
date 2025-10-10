@@ -7,7 +7,7 @@ import { DailySummary } from "@/components/cierre-caja/daily-summary"
 import { TransactionTable } from "@/components/cierre-caja/transactions/TransactionTable"
 import { CashRegisterHistory } from "@/components/cierre-caja/CashRegisterHistory"
 import type { SelectedTransaction } from "@/components/cierre-caja/transactions/constants/types"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { Wallet, CircleDollarSign } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 

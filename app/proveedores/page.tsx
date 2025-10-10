@@ -1,5 +1,5 @@
 import { ProviderTable } from "@/components/providers/ProviderTable"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { Users, Building2 } from "lucide-react"
 
 export default function ProvidersPage() {

@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from "next"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/common/mode-toggle"
 import { LoginForm } from "@/components/auth/login-form"
 import { Suspense } from "react"
 import { Bike, Shield, TrendingUp, Clock } from "lucide-react"

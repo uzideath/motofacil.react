@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { DateRangePicker } from "@/components/date-range-picker"
+import { DateRangePicker } from "@/components/common/date-range-picker"
 import {
     Search,
     Filter,

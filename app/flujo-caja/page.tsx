@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MobileSidebar } from "@/components/mobile-sidebar"
+import { MobileSidebar } from "@/components/common/mobile-sidebar"
 import { Button } from "@/components/ui/button"
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart"
 import { CashFlowTable } from "@/components/flujo-caja/cash-flow-table"
@@ -8,7 +8,7 @@ import { CashFlowSummary } from "@/components/flujo-caja/cash-flow-summary"
 import { CashFlowProjection } from "@/components/flujo-caja/cash-flow-projection"
 import { ArrowDownToLine, ArrowUpToLine, Calendar, Download, Plus, Printer } from "lucide-react"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
-import { RoleGuard } from "@/components/RoleGuard"
+import { RoleGuard } from "@/components/common/RoleGuard"
 
 export default function CashFlowPage() {
 

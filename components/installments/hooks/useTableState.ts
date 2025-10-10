@@ -34,7 +34,7 @@ export function useTableState({
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
     const [paymentFilter, setPaymentFilter] = useState<string | null>(null)
     const [statusFilter, setStatusFilter] = useState<boolean | null>(null)
-    const [itemsPerPage, setItemsPerPage] = useState(10)
+    const [itemsPerPage, setItemsPerPage] = useState(15)
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
     // Trigger backend fetch when filters change

@@ -7,7 +7,7 @@ import { Search, Plus } from "lucide-react"
 import { ExpenseModal } from "../expense-modal"
 import type { DateRange } from "react-day-picker"
 import type { Provider } from "@/lib/types"
-import { DateRangePicker } from "@/components/date-range-picker"
+import { DateRangePicker } from "@/components/common/date-range-picker"
 
 interface ExpenseTableFiltersProps {
     searchTerm: string

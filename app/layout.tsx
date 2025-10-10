@@ -3,7 +3,7 @@
 import type React from 'react'
 import { Poppins } from 'next/font/google'
 import './globals.css'
-import { ThemeProvider } from '@/components/theme-provider'
+import { ThemeProvider } from '@/components/common/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/hooks/useAuth'
@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation'
 import { useNavigationStore } from '@/lib/nav'
 import { AppSidebar } from '@/components/sidebar/sidebar'
 
-const ExpiredSessionHandler = lazy(() => import('@/components/SessionHandler'))
+const ExpiredSessionHandler = lazy(() => import('@/components/common/SessionHandler'))
 
 const poppins = Poppins({ 
   subsets: ['latin'],

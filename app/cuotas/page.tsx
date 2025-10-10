@@ -1,5 +1,5 @@
 import { InstallmentTable } from "@/components/installments/installment-table"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { Receipt, CheckCircle2 } from "lucide-react"
 
 export default function InstallmentsPage() {

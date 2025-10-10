@@ -1,5 +1,5 @@
 import { CalendarPayments } from "@/components/calendar/CalendarPayments"
-import { PageHeader } from "@/components/PageHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import { CalendarClock, Calendar } from "lucide-react"
 
 export default function CalendarPage() {

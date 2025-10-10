@@ -1,4 +1,4 @@
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 import { AlertCircle } from "lucide-react"
 import type React from "react"
 import { Provider } from "@/lib/types";

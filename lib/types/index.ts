@@ -234,7 +234,7 @@ export interface Closing {
     payments: Installment[]
     expense: Expense[]
 
-    createdBy: Pick<Owner, 'id' | 'username'>
+    createdBy: Pick<Owner, 'id' | 'username' | 'name'>
     provider: Provider
 }
 

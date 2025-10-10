@@ -2,10 +2,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MobileSidebar } from "@/components/mobile-sidebar"
+import { MobileSidebar } from "@/components/common/mobile-sidebar"
 import { Button } from "@/components/ui/button"
 import { Download, TrendingUp, ArrowLeftRight, Settings, BarChart3 } from "lucide-react"
-import { RoleGuard } from "@/components/RoleGuard"
+import { RoleGuard } from "@/components/common/RoleGuard"
 import { AccountsTab } from "@/components/cash-flow/tabs/AccountsTab"
 import { TransactionsTab } from "@/components/cash-flow/tabs/TransactionsTab"
 import { TransfersTab } from "@/components/cash-flow/tabs/TransfersTab"

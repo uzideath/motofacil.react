@@ -5,7 +5,7 @@ import { Info } from "lucide-react"
 import { format } from "date-fns"
 import es from "date-fns/locale/es"
 import type { Closing } from "@/lib/types"
-import { ProviderBadge } from "@/components/ProviderBadge"
+import { ProviderBadge } from "@/components/common/ProviderBadge"
 
 interface GeneralInfoCardProps {
     cashRegister: Closing

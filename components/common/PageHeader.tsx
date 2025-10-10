@@ -1,4 +1,4 @@
-import { MobileSidebar } from "@/components/mobile-sidebar"
+import { MobileSidebar } from "@/components/common/mobile-sidebar"
 import { LucideIcon } from "lucide-react"
 import { ReactNode } from "react"
 
