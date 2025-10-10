@@ -5,12 +5,21 @@ import { Badge } from "@/components/ui/badge"
 import { Clock, CheckCircle, AlertTriangle, Calendar } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { utcToZonedTime } from "date-fns-tz"
 
 // Payment method translations
 const PAYMENT_METHOD_TRANSLATIONS: Record<string, string> = {
     CASH: "Efectivo",
     TRANSACTION: "Transferencia",
     CARD: "Tarjeta"
+}
+
+// Colombian timezone
+const COLOMBIA_TZ = "America/Bogota"
+
+// Helper function to convert date to Colombian time
+const toColombianTime = (date: Date | string) => {
+    return utcToZonedTime(new Date(date), COLOMBIA_TZ)
 }
 
 interface PaymentStatusSectionProps {
@@ -100,7 +109,7 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                             <p className="text-sm font-medium text-muted-foreground">Último pago:</p>
                             {lastInstallmentInfo?.lastPaymentDate ? (
                                 <p className="text-base font-semibold">
-                                    {format(lastInstallmentInfo.lastPaymentDate, "PPP", { locale: es })}
+                                    {format(toColombianTime(lastInstallmentInfo.lastPaymentDate), "PPP", { locale: es })}
                                 </p>
                             ) : (
                                 <p className="text-base font-semibold text-muted-foreground">Sin pagos registrados</p>
@@ -124,8 +133,8 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                             {recentPayments.map((payment, index) => {
                                 // Use latePaymentDate if it exists (for late payments), otherwise use paymentDate
                                 const displayDate = payment.latePaymentDate 
-                                    ? new Date(payment.latePaymentDate)
-                                    : new Date(payment.paymentDate)
+                                    ? toColombianTime(payment.latePaymentDate)
+                                    : toColombianTime(payment.paymentDate)
                                 
                                 return (
                                     <div

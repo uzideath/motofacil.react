@@ -9,8 +9,10 @@ import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
 import { useAuth } from "@/hooks/useAuth"
 import { uploadImageToCloudinary } from "@/lib/services/cloudinary"
+import { utcToZonedTime } from "date-fns-tz"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const COLOMBIA_TZ = "America/Bogota"
 
 const installmentSchema = z
     .object({
@@ -219,14 +221,16 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 ? new Date(lastPayment.latePaymentDate)  // Due date (how late it was)
                 : new Date(lastPayment.paymentDate)      // Payment date (on-time)
             
-            const today = new Date()
+            // Convert dates to Colombian time
+            const today = utcToZonedTime(new Date(), COLOMBIA_TZ)
+            const relevantDateColombian = utcToZonedTime(relevantDate, COLOMBIA_TZ)
 
             // Set time to start of day for accurate day comparison
             const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
             const relevantDateStart = new Date(
-                relevantDate.getFullYear(),
-                relevantDate.getMonth(),
-                relevantDate.getDate(),
+                relevantDateColombian.getFullYear(),
+                relevantDateColombian.getMonth(),
+                relevantDateColombian.getDate(),
             )
 
             // Calculate days since the relevant date
@@ -241,9 +245,11 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         } else {
             // No payments yet - calculate days since loan start
             const startDate = new Date(loan.startDate)
-            const today = new Date()
+            const today = utcToZonedTime(new Date(), COLOMBIA_TZ)
+            const startDateColombian = utcToZonedTime(startDate, COLOMBIA_TZ)
+            
             const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-            const startDateStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+            const startDateStart = new Date(startDateColombian.getFullYear(), startDateColombian.getMonth(), startDateColombian.getDate())
 
             const daysSinceStart = Math.floor((todayStart.getTime() - startDateStart.getTime()) / (1000 * 60 * 60 * 24))
 
@@ -301,16 +307,24 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                     }
                 })
             
-            console.log(`✅ Filtered loans count: ${mappedLoans.length}`, mappedLoans.map(l => ({
+            // Deduplicate loans by ID (in case the API returns duplicates)
+            const uniqueLoans = Array.from(
+                new Map(mappedLoans.map(loan => [loan.id, loan])).values()
+            )
+            
+            console.log(`✅ Filtered loans count: ${mappedLoans.length}, Unique loans: ${uniqueLoans.length}`)
+            console.log('Unique loans:', uniqueLoans.map(l => ({
+                id: l.id,
                 contractNumber: l.contractNumber,
                 userName: l.user?.name,
+                plate: l.vehicle?.plate || l.motorcycle?.plate,
                 archived: l.archived,
                 status: l.status
             })))
             
-            setLoans(mappedLoans)
+            setLoans(uniqueLoans)
             if (loanId) {
-                const loan = mappedLoans.find((l) => l.id === loanId)
+                const loan = uniqueLoans.find((l) => l.id === loanId)
                 if (loan) {
                     setSelectedLoan(loan)
                     form.setValue("loanId", loanId)
