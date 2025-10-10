@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  Legend,
 } from "recharts"
 
 interface ReportChartsProps {
@@ -238,7 +239,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
             <TabsTrigger value="comparativa" className="text-[10px] py-1">Análisis</TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 pb-3">
             <TabsContent value="distribucion" className="px-3 mt-0 h-full">
               <div className="h-full flex items-center justify-center">
                 {chartData.pieData.length > 0 ? (
@@ -247,12 +248,11 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
                       <Pie
                         data={chartData.pieData}
                         cx="50%"
-                        cy="50%"
+                        cy="45%"
                         labelLine={false}
-                        outerRadius="65%"
+                        outerRadius="50%"
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
                         {chartData.pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -261,6 +261,12 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
                       <Tooltip 
                         formatter={(value) => [`${value}`, chartData.pieLabel]}
                         contentStyle={{ fontSize: '11px' }}
+                      />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        wrapperStyle={{ fontSize: '11px' }}
+                        formatter={(value, entry: any) => `${value}: ${entry.payload.value}`}
                       />
                     </PieChart>
                   </ResponsiveContainer>

@@ -74,8 +74,8 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-3 shrink-0">
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Reporte de arrendamientos</CardTitle>
@@ -99,8 +99,8 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="rounded-md border">
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        <div className="rounded-md border flex-1 overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -215,7 +215,7 @@ export function LoanReportTable({ data }: LoanReportTableProps) {
 
         {/* Paginación */}
         {filteredData.length > 0 && (
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t shrink-0">
             <p className="text-sm text-muted-foreground">
               Mostrando {(page - 1) * itemsPerPage + 1} a {Math.min(page * itemsPerPage, filteredData.length)} de{" "}
               {filteredData.length} arrendamientos

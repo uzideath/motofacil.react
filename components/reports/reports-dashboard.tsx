@@ -438,8 +438,8 @@ export default function ReportsDashboard() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
+                <div className="h-full flex flex-col gap-3">
+                  <div className="flex gap-2 shrink-0">
                     <Button
                       variant={clientSubTab === "general" ? "default" : "outline"}
                       size="sm"
@@ -460,14 +460,16 @@ export default function ReportsDashboard() {
                       Cuotas Pendientes
                     </Button>
                   </div>
-                  {clientSubTab === "general" ? (
-                    <ClientReportTable data={reportData?.clients.items || []} />
-                  ) : (
-                    <MissingInstallmentsReportTable 
-                      data={reportData?.missingInstallments.items || []} 
-                      onExport={handleMissingInstallmentsExport}
-                    />
-                  )}
+                  <div className="flex-1 min-h-0">
+                    {clientSubTab === "general" ? (
+                      <ClientReportTable data={reportData?.clients.items || []} />
+                    ) : (
+                      <MissingInstallmentsReportTable 
+                        data={reportData?.missingInstallments.items || []} 
+                        onExport={handleMissingInstallmentsExport}
+                      />
+                    )}
+                  </div>
                 </div>
               )}
             </TabsContent>
