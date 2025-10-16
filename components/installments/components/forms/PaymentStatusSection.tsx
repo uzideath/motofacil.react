@@ -38,19 +38,55 @@ interface PaymentStatusSectionProps {
 }
 
 export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentStatusSectionProps) {
+    // Compute days difference excluding Sundays between two dates (dates treated in Colombian TZ)
+    const diffDaysExcludingSundays = (fromDate: Date | string, toDate: Date | string) => {
+        const start = toColombianTime(fromDate)
+        const end = toColombianTime(toDate)
+
+        // Normalize to start of day for both dates (in Colombian TZ)
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate())
+
+        let count = 0
+        const cursor = new Date(startDay)
+        while (cursor <= endDay) {
+            // getDay(): 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            if (cursor.getDay() !== 0) {
+                count++
+            }
+            cursor.setDate(cursor.getDate() + 1)
+        }
+
+        // If start and end are the same day, count should be 0 if it's Sunday, 1 otherwise.
+        // But original "days since" semantics likely mean difference, not inclusive count.
+        // Convert inclusive day count into a non-inclusive difference by subtracting 1 when start <= end.
+        return Math.max(0, count - 1)
+    }
+
+    // Get effective days since last payment excluding Sundays, falling back to provided value if absent
+    const effectiveDaysSinceLastPayment = (() => {
+        if (!lastInstallmentInfo?.lastPaymentDate) return lastInstallmentInfo?.daysSinceLastPayment ?? null
+        try {
+            const today = new Date()
+            return diffDaysExcludingSundays(lastInstallmentInfo.lastPaymentDate, today)
+        } catch {
+            return lastInstallmentInfo?.daysSinceLastPayment ?? null
+        }
+    })()
+
     const getPaymentStatus = () => {
         if (!lastInstallmentInfo) return { status: "unknown", text: "Sin información", color: "gray" }
 
-        const { daysSinceLastPayment } = lastInstallmentInfo
+        const daysSince = effectiveDaysSinceLastPayment
 
-        if (daysSinceLastPayment === null) return { status: "unknown", text: "Sin información", color: "gray" }
+        if (daysSince === null) return { status: "unknown", text: "Sin información", color: "gray" }
 
-        if (daysSinceLastPayment === 0) {
+        if (daysSince === 0) {
             return { status: "current", text: "Al día", color: "green" }
-        } else if (daysSinceLastPayment === 1) {
+        } else if (daysSince === 1) {
             return { status: "due", text: "Vence hoy", color: "yellow" }
         } else {
-            return { status: "overdue", text: `${daysSinceLastPayment} días atrasado`, color: "red" }
+            return { status: "overdue", text: `${daysSince} días atrasado`, color: "red" }
         }
     }
 
@@ -117,7 +153,7 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                         </div>
                         <div className="text-right">
                             <p className="text-sm font-medium text-muted-foreground">Días desde última cuota:</p>
-                            <p className="text-2xl font-bold">{lastInstallmentInfo?.daysSinceLastPayment ?? 0}</p>
+                            <p className="text-2xl font-bold">{effectiveDaysSinceLastPayment ?? 0}</p>
                         </div>
                     </div>
                 </div>

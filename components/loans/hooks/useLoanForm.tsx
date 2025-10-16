@@ -331,14 +331,14 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 headers: { Authorization: token ? `Bearer ${token}` : "" },
             })
 
-            // Filter for truly active loans only (not archived, not completed, not defaulted)
-            const activeLoans = loansResponse.data.filter(
-                (loan) => !loan.archived && loan.status === "ACTIVE"
+            // Match backend rule: any non-archived, non-completed loan blocks reassignment
+            const blockingLoans = loansResponse.data.filter(
+                (loan) => !loan.archived && loan.status !== "COMPLETED"
             )
 
             // Get IDs of users and vehicles that are already assigned to active loans
-            const assignedUserIds = new Set(activeLoans.map((loan) => loan.userId))
-            const assignedVehicleIds = new Set(activeLoans.map((loan) => loan.vehicleId))
+            const assignedUserIds = new Set(blockingLoans.map((loan) => loan.userId))
+            const assignedVehicleIds = new Set(blockingLoans.map((loan) => loan.vehicleId))
 
             // If we're editing a loan, allow the current user and vehicle to be available
             if (loanData) {
@@ -350,7 +350,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             const filteredUsers = allUsers.filter((user) => !assignedUserIds.has(user.id))
             const filteredVehicles = allVehicles.filter((vehicle) => !assignedVehicleIds.has(vehicle.id))
 
-            console.log("Active loans count:", activeLoans.length)
+            console.log("Blocking loans count:", blockingLoans.length)
             console.log("Assigned user IDs:", Array.from(assignedUserIds))
             console.log("Available users:", filteredUsers.length, "of", allUsers.length)
             console.log("Available vehicles:", filteredVehicles.length, "of", allVehicles.length)
@@ -381,7 +381,8 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
 
             const [userRes, vehicleRes] = await Promise.all([
                 HttpService.get<User[]>("/api/v1/users", { headers: { Authorization: token ? `Bearer ${token}` : "" } }),
-                HttpService.get<{ data: Vehicle[]; pagination: any }>("/api/v1/vehicles", {
+                // Fetch a larger page to include vehicles beyond the default limit (50)
+                HttpService.get<{ data: Vehicle[]; pagination: any }>("/api/v1/vehicles?page=1&limit=1000", {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                 }),
             ])
