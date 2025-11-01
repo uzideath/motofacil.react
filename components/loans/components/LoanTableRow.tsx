@@ -44,6 +44,7 @@ import { LoanDetails } from "../loan-details"
 import { InstallmentForm } from "../../installments/components/forms/installment-form"
 import { LoanForm } from "../LoanForm"
 import { UpdateVehicleStatusDialog } from "./UpdateVehicleStatusDialog"
+import { ArchivedLoansDialog } from "./ArchivedLoansDialog"
 import { Loan } from "@/lib/types"
 import { useResourcePermissions } from "@/hooks/useResourcePermissions"
 import { Resource } from "@/lib/types/permissions"
@@ -189,6 +190,9 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
             <TableCell className="hidden xl:table-cell">
                 {(() => {
                     const archivedCount = loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount || 0
+                    const vehicleId = loan.vehicle?.id || loan.motorcycle?.id || ""
+                    const vehicleInfo = `${loan.vehicle?.model || loan.motorcycle?.model} - ${loan.vehicle?.plate || loan.motorcycle?.plate}`
+                    
                     if (archivedCount === 0) {
                         return (
                             <Badge variant="destructive" className="flex items-center justify-center gap-1 text-xs">
@@ -198,10 +202,12 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         )
                     }
                     return (
-                        <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-1 text-xs">
-                            <Archive className="h-3 w-3" />
-                            <span>{archivedCount}</span>
-                        </Badge>
+                        <ArchivedLoansDialog vehicleId={vehicleId} vehicleInfo={vehicleInfo}>
+                            <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-1 text-xs cursor-pointer transition-colors">
+                                <Archive className="h-3 w-3" />
+                                <span>{archivedCount}</span>
+                            </Badge>
+                        </ArchivedLoansDialog>
                     )
                 })()}
             </TableCell>
