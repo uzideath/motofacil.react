@@ -37,11 +37,13 @@ import {
     Wrench,
     Gavel,
     Navigation,
+    Activity,
 } from "lucide-react"
 
 import { LoanDetails } from "../loan-details"
 import { InstallmentForm } from "../../installments/components/forms/installment-form"
 import { LoanForm } from "../LoanForm"
+import { UpdateVehicleStatusDialog } from "./UpdateVehicleStatusDialog"
 import { Loan } from "@/lib/types"
 import { useResourcePermissions } from "@/hooks/useResourcePermissions"
 import { Resource } from "@/lib/types/permissions"
@@ -53,9 +55,10 @@ interface LoanTableRowProps {
     onDelete: (id: string) => void
     onArchive: (id: string, archived: boolean) => void
     onPrintContract: (loan: Loan) => void
+    onStatusUpdated?: () => void
 }
 
-export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract }: LoanTableRowProps) {
+export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract, onStatusUpdated }: LoanTableRowProps) {
     // Get permissions for loans, installments, and contracts
     const loanPermissions = useResourcePermissions(Resource.LOAN)
     const installmentPermissions = useResourcePermissions(Resource.INSTALLMENT)
@@ -126,27 +129,27 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
         switch (status) {
             case "IN_CIRCULATION":
                 return (
-                    <Badge className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1 text-xs">
+                    <Badge className="bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-1 text-xs">
                         <Navigation className="h-3 w-3" />
                         <span>En circulación</span>
                     </Badge>
                 )
             case "IN_WORKSHOP":
                 return (
-                    <Badge className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1 text-xs">
+                    <Badge className="bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center gap-1 text-xs">
                         <Wrench className="h-3 w-3" />
                         <span>En taller</span>
                     </Badge>
                 )
             case "SEIZED_BY_PROSECUTOR":
                 return (
-                    <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1 text-xs">
+                    <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center justify-center gap-1 text-xs">
                         <Gavel className="h-3 w-3" />
                         <span>Incautado</span>
                     </Badge>
                 )
             default:
-                return <Badge variant="outline" className="text-xs">{status}</Badge>
+                return <Badge variant="outline" className="text-xs flex items-center justify-center">{status}</Badge>
         }
     }
 
@@ -178,9 +181,6 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         <Tag className="h-3 w-3" />
                         {loan.vehicle?.plate || loan.motorcycle?.plate || "Sin placa"}
                     </div>
-                    <div className="flex items-center gap-1.5 mt-1">
-                        {getVehicleStatusBadge(loan.vehicle?.status || loan.motorcycle?.status)}
-                    </div>
                     {(loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount) ? (
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
                             <Archive className="h-3 w-3" />
@@ -188,6 +188,9 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         </div>
                     ) : null}
                 </div>
+            </TableCell>
+            <TableCell className="hidden lg:table-cell">
+                {getVehicleStatusBadge(loan.vehicle?.status || loan.motorcycle?.status)}
             </TableCell>
             <TableCell className="hidden md:table-cell font-medium">
                 <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
@@ -238,7 +241,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     )}
                 </div>
             </TableCell>
-            <TableCell className="hidden lg:table-cell font-medium">
+            <TableCell className="hidden xl:table-cell font-medium">
                 <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
                     <Wallet className="h-4 w-4" />
                     {formatCurrency(loan.debtRemaining)}
@@ -303,6 +306,21 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                                         Editar préstamo
                                     </DropdownMenuItem>
                                 </LoanForm>
+                                
+                                {/* Update vehicle status */}
+                                {(loan.vehicle || loan.motorcycle) && (
+                                    <UpdateVehicleStatusDialog
+                                        vehicleId={loan.vehicle?.id || loan.motorcycle?.id || ""}
+                                        currentStatus={loan.vehicle?.status || loan.motorcycle?.status || "IN_CIRCULATION"}
+                                        vehicleInfo={`${loan.vehicle?.model || loan.motorcycle?.model} - ${loan.vehicle?.plate || loan.motorcycle?.plate}`}
+                                        onStatusUpdated={onStatusUpdated}
+                                    >
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                            <Activity className="mr-2 h-4 w-4" />
+                                            Actualizar estado
+                                        </DropdownMenuItem>
+                                    </UpdateVehicleStatusDialog>
+                                )}
                             </>
                         )}
 
