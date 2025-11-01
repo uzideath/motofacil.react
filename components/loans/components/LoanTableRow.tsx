@@ -181,16 +181,29 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         <Tag className="h-3 w-3" />
                         {loan.vehicle?.plate || loan.motorcycle?.plate || "Sin placa"}
                     </div>
-                    {(loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount) ? (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Archive className="h-3 w-3" />
-                            <span>Archivados: {loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount}</span>
-                        </div>
-                    ) : null}
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
                 {getVehicleStatusBadge(loan.vehicle?.status || loan.motorcycle?.status)}
+            </TableCell>
+            <TableCell className="hidden xl:table-cell">
+                {(() => {
+                    const archivedCount = loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount || 0
+                    if (archivedCount === 0) {
+                        return (
+                            <Badge variant="destructive" className="flex items-center justify-center gap-1 text-xs">
+                                <XCircle className="h-3 w-3" />
+                                <span>NO</span>
+                            </Badge>
+                        )
+                    }
+                    return (
+                        <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-1 text-xs">
+                            <Archive className="h-3 w-3" />
+                            <span>{archivedCount}</span>
+                        </Badge>
+                    )
+                })()}
             </TableCell>
             <TableCell className="hidden md:table-cell font-medium">
                 <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
