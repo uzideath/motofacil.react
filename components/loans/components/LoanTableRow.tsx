@@ -34,6 +34,9 @@ import {
     Archive,
     ArchiveRestore,
     MoreVertical,
+    Wrench,
+    Gavel,
+    Navigation,
 } from "lucide-react"
 
 import { LoanDetails } from "../loan-details"
@@ -117,6 +120,36 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
         }
     }
 
+    const getVehicleStatusBadge = (status?: string) => {
+        if (!status) return null
+
+        switch (status) {
+            case "IN_CIRCULATION":
+                return (
+                    <Badge className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1 text-xs">
+                        <Navigation className="h-3 w-3" />
+                        <span>En circulación</span>
+                    </Badge>
+                )
+            case "IN_WORKSHOP":
+                return (
+                    <Badge className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1 text-xs">
+                        <Wrench className="h-3 w-3" />
+                        <span>En taller</span>
+                    </Badge>
+                )
+            case "SEIZED_BY_PROSECUTOR":
+                return (
+                    <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1 text-xs">
+                        <Gavel className="h-3 w-3" />
+                        <span>Incautado</span>
+                    </Badge>
+                )
+            default:
+                return <Badge variant="outline" className="text-xs">{status}</Badge>
+        }
+    }
+
     return (
         <TableRow
             key={`loan-row-${loan.id}-${index}`}
@@ -136,13 +169,24 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell">
-                <div className="flex items-center gap-1.5">
-                    <Bike className="h-4 w-4 text-primary" />
-                    {loan.vehicle?.model || loan.motorcycle?.model || "Sin modelo"}
-                </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <Tag className="h-3 w-3" />
-                    {loan.vehicle?.plate || loan.motorcycle?.plate || "Sin placa"}
+                <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                        <Bike className="h-4 w-4 text-primary" />
+                        {loan.vehicle?.model || loan.motorcycle?.model || "Sin modelo"}
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Tag className="h-3 w-3" />
+                        {loan.vehicle?.plate || loan.motorcycle?.plate || "Sin placa"}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1">
+                        {getVehicleStatusBadge(loan.vehicle?.status || loan.motorcycle?.status)}
+                    </div>
+                    {(loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount) ? (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Archive className="h-3 w-3" />
+                            <span>Archivados: {loan.vehicle?.archivedLoansCount || loan.motorcycle?.archivedLoansCount}</span>
+                        </div>
+                    ) : null}
                 </div>
             </TableCell>
             <TableCell className="hidden md:table-cell font-medium">

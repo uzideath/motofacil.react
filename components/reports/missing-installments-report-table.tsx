@@ -37,24 +37,71 @@ import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { X } from "lucide-react"
 
 interface MissingInstallmentsReportTableProps {
   data: MissingInstallmentData[]
   onExport?: (format: "excel" | "pdf" | "csv", providerFilter?: string) => void
+  includeArchived?: boolean
+  onIncludeArchivedChange?: (value: boolean) => void
 }
 
 type SortField = "userName" | "daysSinceLastPayment" | "missedInstallments" | "totalMissedAmount"
 type SortDirection = "asc" | "desc"
 
-export function MissingInstallmentsReportTable({ data, onExport }: MissingInstallmentsReportTableProps) {
+export function MissingInstallmentsReportTable({ data, onExport, includeArchived: externalIncludeArchived, onIncludeArchivedChange }: MissingInstallmentsReportTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(6)
   const [sortField, setSortField] = useState<SortField>("daysSinceLastPayment")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
   const [providerFilter, setProviderFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
+  const [includeArchived, setIncludeArchived] = useState<boolean>(false)
   const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  // Helper function to calculate business days (excluding Sundays)
+  const calculateBusinessDays = (startDate: Date, endDate: Date): number => {
+    let count = 0
+    const currentDate = new Date(startDate)
+    currentDate.setHours(0, 0, 0, 0)
+    
+    const end = new Date(endDate)
+    end.setHours(0, 0, 0, 0)
+    
+    while (currentDate <= end) {
+      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const dayOfWeek = currentDate.getDay()
+      
+      // Only count if it's not Sunday (0)
+      if (dayOfWeek !== 0) {
+        count++
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    
+    // Subtract 1 to get the difference (not inclusive count)
+    return Math.max(0, count - 1)
+  }
+
+  // Recalculate days excluding Sundays for display
+  const getAdjustedDaysSinceLastPayment = (item: MissingInstallmentData): number => {
+    if (!item.lastPaymentDate) {
+      // Use the provided value as fallback
+      return item.daysSinceLastPayment
+    }
+    
+    try {
+      const lastPaymentDate = new Date(item.lastPaymentDate)
+      const today = new Date()
+      return calculateBusinessDays(lastPaymentDate, today)
+    } catch {
+      return item.daysSinceLastPayment
+    }
+  }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Sin pagos"
@@ -209,10 +256,20 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
   const clearFilters = () => {
     setProviderFilter("all")
     setSearchTerm("")
+    if (onIncludeArchivedChange) {
+      onIncludeArchivedChange(false)
+    }
     setCurrentPage(1)
   }
 
-  const hasActiveFilters = providerFilter !== "all" || searchTerm !== ""
+  const hasActiveFilters = providerFilter !== "all" || searchTerm !== "" || (externalIncludeArchived ?? false)
+
+  const handleIncludeArchivedChange = (checked: boolean) => {
+    if (onIncludeArchivedChange) {
+      onIncludeArchivedChange(checked)
+    }
+    setCurrentPage(1)
+  }
 
   const handleExport = (format: "excel" | "pdf" | "csv") => {
     if (onExport) {
@@ -343,6 +400,20 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
             </Select>
           )}
 
+          {onIncludeArchivedChange && (
+            <div className="flex items-center gap-2 px-3 py-1.5 border rounded-md bg-background">
+              <Switch
+                id="include-archived"
+                checked={externalIncludeArchived ?? false}
+                onCheckedChange={handleIncludeArchivedChange}
+                className="h-5"
+              />
+              <Label htmlFor="include-archived" className="text-sm cursor-pointer whitespace-nowrap">
+                Incluir archivados
+              </Label>
+            </div>
+          )}
+
           {hasActiveFilters && (
             <Button
               variant="ghost"
@@ -400,6 +471,9 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                       : 0
 
                     const isEven = index % 2 === 0
+                    
+                    // Calculate adjusted days excluding Sundays
+                    const adjustedDays = getAdjustedDaysSinceLastPayment(item)
 
                     return (
                       <TableRow 
@@ -470,11 +544,11 @@ export function MissingInstallmentsReportTable({ data, onExport }: MissingInstal
                         
                         <TableCell>
                           <Badge 
-                            variant={getDaysBadgeVariant(item.daysSinceLastPayment)}
+                            variant={getDaysBadgeVariant(adjustedDays)}
                             className="font-semibold"
                           >
                             <Clock className="h-3 w-3 mr-1" />
-                            {item.daysSinceLastPayment}d
+                            {adjustedDays}d
                           </Badge>
                         </TableCell>
                         

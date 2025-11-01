@@ -29,6 +29,7 @@ export default function ReportsDashboard() {
   const [mounted, setMounted] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [exportFormat, setExportFormat] = useState<string>("")
+  const [includeArchivedLoans, setIncludeArchivedLoans] = useState(false)
 
   const {
     loading,
@@ -55,7 +56,7 @@ export default function ReportsDashboard() {
   const getFilters = (): ReportFilters => ({
     startDate: dateRange?.from?.toISOString().split("T")[0],
     endDate: dateRange?.to?.toISOString().split("T")[0],
-    status: filterStatus,
+    status: includeArchivedLoans && clientSubTab === "missing" ? "include-archived" : filterStatus,
     search: searchTerm || undefined,
   })
 
@@ -467,6 +468,14 @@ export default function ReportsDashboard() {
                       <MissingInstallmentsReportTable 
                         data={reportData?.missingInstallments.items || []} 
                         onExport={handleMissingInstallmentsExport}
+                        includeArchived={includeArchivedLoans}
+                        onIncludeArchivedChange={(checked) => {
+                          setIncludeArchivedLoans(checked)
+                          // Fetch new data when the filter changes
+                          setTimeout(() => {
+                            fetchMissingInstallmentsReport(getFilters())
+                          }, 100)
+                        }}
                       />
                     )}
                   </div>

@@ -36,11 +36,18 @@ export enum VehicleType {
     OTHER = "OTHER",
 }
 
+export enum VehicleStatus {
+    IN_CIRCULATION = "IN_CIRCULATION",
+    IN_WORKSHOP = "IN_WORKSHOP",
+    SEIZED_BY_PROSECUTOR = "SEIZED_BY_PROSECUTOR",
+}
+
 type Vehicle = {
     id: string
     providerId: string
     provider: Provider
     vehicleType: VehicleType
+    status: VehicleStatus
     brand: string
     model: string
     plate: string
@@ -52,6 +59,7 @@ type Vehicle = {
     gps: number | null
     createdAt: string
     updatedAt: string
+    archivedLoansCount?: number
 }
 
 // Legacy type alias for backwards compatibility
