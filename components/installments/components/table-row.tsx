@@ -95,12 +95,12 @@ export function InstallmentRow({
                     </div>
                 )}
             </TableCell>
-            <TableCell className="hidden xl:table-cell text-foreground">
+            {/* <TableCell className="hidden xl:table-cell text-foreground">
                 <div className="flex items-center text-sm">
                     <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
                     {formatSpanishDate(installment.createdAt)}
                 </div>
-            </TableCell>
+            </TableCell> */}
             <TableCell className="text-foreground">
                 <div className="flex items-center whitespace-nowrap">
                     {getIcon(installment.paymentMethod)}
