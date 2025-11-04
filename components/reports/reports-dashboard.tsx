@@ -14,6 +14,7 @@ import { LoanReportTable } from "./loan-report-table"
 import { PaymentReportTable } from "./payment-report-table"
 import { ClientReportTable } from "./client-report-table"
 import { MotorcycleReportTable } from "./motorcycle-report-table"
+import { VehicleStatusReportTable } from "./vehicle-status-report-table"
 import { MissingInstallmentsReportTable } from "./missing-installments-report-table"
 import { ReportSummary } from "./report-summary"
 import { ReportCharts } from "./report-charts"
@@ -37,11 +38,13 @@ export default function ReportsDashboard() {
     paymentReport,
     clientReport,
     vehicleReport,
+    vehicleStatusReport,
     missingInstallmentsReport,
     fetchLoanReport,
     fetchPaymentReport,
     fetchClientReport,
     fetchVehicleReport,
+    fetchVehicleStatusReport,
     fetchMissingInstallmentsReport,
     fetchAllReports,
     exportReport,
@@ -88,6 +91,9 @@ export default function ReportsDashboard() {
       case "motocicletas":
         fetchVehicleReport(filters)
         break
+      case "estado-vehiculos":
+        fetchVehicleStatusReport(filters)
+        break
     }
   }
 
@@ -98,6 +104,7 @@ export default function ReportsDashboard() {
       pagos: "payments" as const,
       clientes: "clients" as const,
       motocicletas: "vehicles" as const,
+      "estado-vehiculos": "vehicle-status" as const,
     }
     
     setIsExporting(true)
@@ -139,6 +146,7 @@ export default function ReportsDashboard() {
     payments: paymentReport || { total: 0, onTime: 0, late: 0, totalCollected: 0, pendingCollection: 0, items: [] },
     clients: clientReport || { total: 0, active: 0, inactive: 0, withDefaultedLoans: 0, items: [] },
     motorcycles: vehicleReport || { total: 0, financed: 0, available: 0, totalValue: 0, items: [] },
+    vehicleStatus: vehicleStatusReport || { total: 0, inCirculation: 0, inWorkshop: 0, seized: 0, totalValue: 0, items: [] },
     missingInstallments: missingInstallmentsReport || { totalClients: 0, totalMissedPayments: 0, totalMissedAmount: 0, criticalClients: 0, items: [] },
   }
 
@@ -191,14 +199,24 @@ export default function ReportsDashboard() {
               </div>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="h-9 w-[120px]">
+                <SelectTrigger className="h-9 w-[140px]">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="ACTIVE">Activos</SelectItem>
-                  <SelectItem value="COMPLETED">Completados</SelectItem>
-                  <SelectItem value="DEFAULTED">En mora</SelectItem>
+                  {activeTab === "estado-vehiculos" ? (
+                    <>
+                      <SelectItem value="IN_CIRCULATION">En Circulación</SelectItem>
+                      <SelectItem value="IN_WORKSHOP">En Taller</SelectItem>
+                      <SelectItem value="SEIZED_BY_PROSECUTOR">Incautado</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="ACTIVE">Activos</SelectItem>
+                      <SelectItem value="COMPLETED">Completados</SelectItem>
+                      <SelectItem value="DEFAULTED">En mora</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
 
@@ -377,6 +395,26 @@ export default function ReportsDashboard() {
                     </div>
                   </>
                 )}
+                {activeTab === "estado-vehiculos" && (
+                  <>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+                      <div className="text-lg font-bold">{reportData.vehicleStatus.total}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Circulación</div>
+                      <div className="text-lg font-bold text-green-500">{reportData.vehicleStatus.inCirculation}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Taller</div>
+                      <div className="text-lg font-bold text-orange-500">{reportData.vehicleStatus.inWorkshop}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-muted-foreground uppercase">Incautados</div>
+                      <div className="text-lg font-bold text-red-500">{reportData.vehicleStatus.seized}</div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -385,7 +423,7 @@ export default function ReportsDashboard() {
 
       {/* Main Content Area with Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="w-full grid grid-cols-4 h-9 shrink-0">
+        <TabsList className="w-full grid grid-cols-5 h-9 shrink-0">
           <TabsTrigger value="prestamos" className="flex items-center gap-1.5 text-xs">
             <BarChart3Icon className="h-3.5 w-3.5" />
             <span>Arrendamientos</span>
@@ -401,6 +439,10 @@ export default function ReportsDashboard() {
           <TabsTrigger value="motocicletas" className="flex items-center gap-1.5 text-xs">
             <BarChart3Icon className="h-3.5 w-3.5" />
             <span>Vehículos</span>
+          </TabsTrigger>
+          <TabsTrigger value="estado-vehiculos" className="flex items-center gap-1.5 text-xs">
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            <span>Estado Vehículos</span>
           </TabsTrigger>
         </TabsList>
 
@@ -492,6 +534,18 @@ export default function ReportsDashboard() {
                 </Card>
               ) : (
                 <MotorcycleReportTable data={reportData?.motorcycles.items || []} />
+              )}
+            </TabsContent>
+
+            <TabsContent value="estado-vehiculos" className="mt-0 h-full">
+              {loading ? (
+                <Card className="h-full">
+                  <CardContent className="pt-6">
+                    <Skeleton className="h-full w-full" />
+                  </CardContent>
+                </Card>
+              ) : (
+                <VehicleStatusReportTable data={reportData?.vehicleStatus.items || []} />
               )}
             </TabsContent>
           </div>

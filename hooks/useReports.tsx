@@ -30,6 +30,7 @@ export function useReports() {
   const [paymentReport, setPaymentReport] = useState<PaymentReportSummary | null>(null)
   const [clientReport, setClientReport] = useState<ClientReportSummary | null>(null)
   const [vehicleReport, setVehicleReport] = useState<VehicleReportSummary | null>(null)
+  const [vehicleStatusReport, setVehicleStatusReport] = useState<any | null>(null)
   const [missingInstallmentsReport, setMissingInstallmentsReport] = useState<MissingInstallmentReportSummary | null>(null)
 
   // Fetch Loan Report
@@ -104,9 +105,27 @@ export function useReports() {
     }
   }, [toast])
 
+  // Fetch Vehicle Status Report
+  const fetchVehicleStatusReport = useCallback(async (filters: ReportFilters = {}) => {
+    try {
+      setLoading(true)
+      const data = await reportsService.getVehicleStatusReport(filters)
+      setVehicleStatusReport(data)
+    } catch (error: any) {
+      console.error("Error fetching vehicle status report:", error)
+      toast({
+        variant: "destructive",
+        title: "Error al cargar reporte",
+        description: error.response?.data?.message || "No se pudo cargar el reporte de estado de vehículos",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [toast])
+
   // Export Report
   const exportReport = useCallback(async (
-    type: "loans" | "payments" | "clients" | "vehicles" | "missing-installments",
+    type: "loans" | "payments" | "clients" | "vehicles" | "vehicle-status" | "missing-installments",
     format: "excel" | "pdf" | "csv",
     filters: ReportFilters = {}
   ) => {
@@ -119,6 +138,7 @@ export function useReports() {
         payments: "pagos",
         clients: "clientes",
         vehicles: "vehiculos",
+        "vehicle-status": "estado_vehiculos",
         "missing-installments": "cuotas_pendientes",
       }
       
@@ -168,9 +188,10 @@ export function useReports() {
       fetchPaymentReport(filters),
       fetchClientReport(filters),
       fetchVehicleReport(filters),
+      fetchVehicleStatusReport(filters),
       fetchMissingInstallmentsReport(filters),
     ])
-  }, [fetchLoanReport, fetchPaymentReport, fetchClientReport, fetchVehicleReport, fetchMissingInstallmentsReport])
+  }, [fetchLoanReport, fetchPaymentReport, fetchClientReport, fetchVehicleReport, fetchVehicleStatusReport, fetchMissingInstallmentsReport])
 
   return {
     loading,
@@ -178,11 +199,13 @@ export function useReports() {
     paymentReport,
     clientReport,
     vehicleReport,
+    vehicleStatusReport,
     missingInstallmentsReport,
     fetchLoanReport,
     fetchPaymentReport,
     fetchClientReport,
     fetchVehicleReport,
+    fetchVehicleStatusReport,
     fetchMissingInstallmentsReport,
     fetchAllReports,
     exportReport,

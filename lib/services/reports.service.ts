@@ -155,8 +155,40 @@ export interface MissingInstallmentReportSummary {
   items: MissingInstallmentData[]
 }
 
+export interface VehicleStatusReportData {
+  id: string
+  brand: string
+  model: string
+  plate: string
+  color: string | null
+  cc: number | null
+  engine: string | null
+  chassis: string | null
+  price: number
+  vehicleStatus: string
+  providerId: string | null
+  providerName: string
+  loanStatus: string | null
+  clientId: string | null
+  clientName: string | null
+  clientPhone: string | null
+  clientDocument: string | null
+  contractNumber: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VehicleStatusReportSummary {
+  total: number
+  inCirculation: number
+  inWorkshop: number
+  seized: number
+  totalValue: number
+  items: VehicleStatusReportData[]
+}
+
 export interface ReportExportParams {
-  type: "loans" | "payments" | "clients" | "vehicles" | "missing-installments"
+  type: "loans" | "payments" | "clients" | "vehicles" | "vehicle-status" | "missing-installments"
   format: "excel" | "pdf" | "csv"
   filters: any
 }
@@ -207,6 +239,19 @@ class ReportsService {
     if (filters.search) params.append("search", filters.search)
 
     const response = await HttpService.get(`/api/v1/reports/vehicles?${params.toString()}`)
+    return response.data
+  }
+
+  // Vehicle Status Report
+  async getVehicleStatusReport(filters: ClientReportFilters): Promise<VehicleStatusReportSummary> {
+    const params = new URLSearchParams()
+    if (filters.startDate) params.append("startDate", filters.startDate)
+    if (filters.endDate) params.append("endDate", filters.endDate)
+    if (filters.status && filters.status !== "all") params.append("status", filters.status)
+    if (filters.search) params.append("search", filters.search)
+    if (filters.provider && filters.provider !== "all") params.append("provider", filters.provider)
+
+    const response = await HttpService.get(`/api/v1/reports/vehicle-status?${params.toString()}`)
     return response.data
   }
 
