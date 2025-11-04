@@ -147,6 +147,38 @@ export interface VehicleReportSummary {
   items: VehicleReportData[]
 }
 
+export interface VehicleStatusReportData {
+  id: string
+  brand: string
+  model: string
+  plate: string
+  color: string | null
+  cc: number | null
+  engine: string | null
+  chassis: string | null
+  price: number
+  vehicleStatus: string
+  providerId: string | null
+  providerName: string
+  loanStatus: string | null
+  clientId: string | null
+  clientName: string | null
+  clientPhone: string | null
+  clientDocument: string | null
+  contractNumber: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VehicleStatusReportSummary {
+  total: number
+  inCirculation: number
+  inWorkshop: number
+  seized: number
+  totalValue: number
+  items: VehicleStatusReportData[]
+}
+
 export interface MissingInstallmentReportSummary {
   totalClients: number
   totalMissedPayments: number

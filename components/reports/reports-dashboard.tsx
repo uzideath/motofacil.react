@@ -140,6 +140,24 @@ export default function ReportsDashboard() {
     }
   }
 
+  // Export handler for vehicle status with status filter
+  const handleVehicleStatusExport = async (format: "excel" | "pdf" | "csv", statusFilter: string) => {
+    setIsExporting(true)
+    setExportFormat(format.toUpperCase())
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    try {
+      const filters = getFilters()
+      // Override status with the current filter from the table
+      filters.status = statusFilter
+      await exportReport("vehicle-status", format, filters)
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setIsExporting(false)
+      setExportFormat("")
+    }
+  }
+
   // Aggregate report data for summary
   const reportData = {
     loans: loanReport || { total: 0, active: 0, completed: 0, defaulted: 0, totalAmount: 0, totalInterest: 0, items: [] },
@@ -545,7 +563,10 @@ export default function ReportsDashboard() {
                   </CardContent>
                 </Card>
               ) : (
-                <VehicleStatusReportTable data={reportData?.vehicleStatus.items || []} />
+                <VehicleStatusReportTable 
+                  data={reportData?.vehicleStatus.items || []} 
+                  onExport={handleVehicleStatusExport}
+                />
               )}
             </TabsContent>
           </div>

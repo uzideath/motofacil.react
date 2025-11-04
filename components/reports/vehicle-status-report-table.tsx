@@ -22,9 +22,10 @@ import {
 
 interface VehicleStatusReportTableProps {
   data: any[]
+  onExport?: (format: "excel" | "pdf" | "csv", statusFilter: string) => void
 }
 
-export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps) {
+export function VehicleStatusReportTable({ data, onExport }: VehicleStatusReportTableProps) {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -33,6 +34,13 @@ export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps
 
   const itemsPerPage = 10
   const totalPages = Math.ceil(data.length / itemsPerPage)
+
+  // Handle export with current filter
+  const handleExport = (format: "excel" | "pdf" | "csv") => {
+    if (onExport) {
+      onExport(format, statusFilter)
+    }
+  }
 
   // Formatear moneda
   const formatCurrency = (amount: number) => {
@@ -145,10 +153,38 @@ export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps
               Estado operacional de los vehículos y asignación actual
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="flex items-center gap-1">
-            <DownloadIcon className="h-4 w-4" />
-            Exportar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => handleExport("excel")}
+              title="Exportar a Excel"
+            >
+              <DownloadIcon className="h-4 w-4" />
+              Excel
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => handleExport("pdf")}
+              title="Exportar a PDF"
+            >
+              <DownloadIcon className="h-4 w-4" />
+              PDF
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+              onClick={() => handleExport("csv")}
+              title="Exportar a CSV"
+            >
+              <DownloadIcon className="h-4 w-4" />
+              CSV
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-2 mt-4">
           <div className="relative flex-1">
