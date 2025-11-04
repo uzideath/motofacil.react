@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   DownloadIcon,
   SearchIcon,
@@ -26,6 +27,7 @@ interface VehicleStatusReportTableProps {
 export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps) {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [sortBy, setSortBy] = useState("updatedAt")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
@@ -105,11 +107,12 @@ export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps
   const filteredData = data
     .filter(
       (vehicle) =>
-        vehicle.brand.toLowerCase().includes(search.toLowerCase()) ||
-        vehicle.model.toLowerCase().includes(search.toLowerCase()) ||
-        vehicle.plate.toLowerCase().includes(search.toLowerCase()) ||
-        (vehicle.clientName && vehicle.clientName.toLowerCase().includes(search.toLowerCase())) ||
-        (vehicle.providerName && vehicle.providerName.toLowerCase().includes(search.toLowerCase())),
+        (statusFilter === "all" || vehicle.vehicleStatus === statusFilter) &&
+        (vehicle.brand.toLowerCase().includes(search.toLowerCase()) ||
+          vehicle.model.toLowerCase().includes(search.toLowerCase()) ||
+          vehicle.plate.toLowerCase().includes(search.toLowerCase()) ||
+          (vehicle.clientName && vehicle.clientName.toLowerCase().includes(search.toLowerCase())) ||
+          (vehicle.providerName && vehicle.providerName.toLowerCase().includes(search.toLowerCase()))),
     )
     .sort((a, b) => {
       if (sortOrder === "asc") {
@@ -147,7 +150,7 @@ export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps
             Exportar
           </Button>
         </div>
-        <div className="flex items-center mt-4">
+        <div className="flex items-center gap-2 mt-4">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -158,6 +161,17 @@ export function VehicleStatusReportTable({ data }: VehicleStatusReportTableProps
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Estado del vehículo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los estados</SelectItem>
+              <SelectItem value="IN_CIRCULATION">En Circulación</SelectItem>
+              <SelectItem value="IN_WORKSHOP">En Taller</SelectItem>
+              <SelectItem value="SEIZED_BY_PROSECUTOR">Incautado</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col min-h-0">
