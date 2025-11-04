@@ -39,12 +39,22 @@ export function StoreSwitcher() {
     )
   }
 
+  const handleStoreChange = (storeId: string) => {
+    if (storeId === "admin-view") {
+      // Clear selection - go back to admin view
+      localStorage.removeItem("selectedStoreId")
+      window.location.reload()
+    } else {
+      switchStore(storeId)
+    }
+  }
+
   return (
     <div className="flex items-center gap-2 px-2">
       <Building2 className="h-4 w-4 text-muted-foreground" />
       <Select
-        value={currentStore?.id || ""}
-        onValueChange={switchStore}
+        value={currentStore?.id || "admin-view"}
+        onValueChange={handleStoreChange}
       >
         <SelectTrigger className="h-9 w-[200px]">
           <SelectValue placeholder="Select store">
@@ -55,11 +65,23 @@ export function StoreSwitcher() {
                 <span className="truncate">{currentStore.name}</span>
               </div>
             ) : (
-              "All Stores"
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                <span>Admin View</span>
+              </div>
             )}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
+          <SelectItem
+            value="admin-view"
+            className="cursor-pointer font-medium"
+          >
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              <span>Admin View (All Stores)</span>
+            </div>
+          </SelectItem>
           {allStores.map((store) => (
             <SelectItem
               key={store.id}

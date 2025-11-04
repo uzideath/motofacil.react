@@ -10,6 +10,7 @@ interface StoreContextType {
   allStores: Store[]
   isAdmin: boolean
   isEmployee: boolean
+  isAdminViewingAsEmployee: boolean // Admin selected a store
   canAccessStore: (storeId: string) => boolean
   switchStore: (storeId: string) => void // Admin only
   refreshStores: () => Promise<void>
@@ -26,6 +27,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = !!(user?.role === "ADMIN" || user?.roles?.includes("ADMIN"))
   const isEmployee = !!(user?.role === "EMPLOYEE" || (user?.roles && !user?.roles?.includes("ADMIN")))
+  
+  // Admin is viewing as employee when they have selected a specific store
+  const isAdminViewingAsEmployee = isAdmin && currentStore !== null
 
   // Fetch user's store or all stores if admin
   useEffect(() => {
@@ -44,10 +48,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             const stores = await StoreService.getAllStores()
             setAllStores(stores)
             
-            // Set first store as current, or keep previously selected
-            if (!currentStore && stores.length > 0) {
-              setCurrentStore(stores[0])
+            // Restore previously selected store from localStorage
+            const savedStoreId = localStorage.getItem("selectedStoreId")
+            if (savedStoreId) {
+              const savedStore = stores.find(s => s.id === savedStoreId)
+              if (savedStore) {
+                setCurrentStore(savedStore)
+              }
             }
+            // Don't set a default store - admin should see admin view by default
           } catch (error) {
             console.warn("Store API not available yet, using mock data for admin")
             // Set empty for now - backend not ready
@@ -113,6 +122,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCurrentStore(store)
       // Store preference in localStorage
       localStorage.setItem("selectedStoreId", storeId)
+      
+      // Trigger a page reload to refresh all data for the new store
+      window.location.reload()
     }
   }
 
@@ -148,6 +160,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         allStores,
         isAdmin,
         isEmployee,
+        isAdminViewingAsEmployee,
         canAccessStore,
         switchStore,
         refreshStores,

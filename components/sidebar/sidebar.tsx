@@ -48,12 +48,16 @@ import { StoreSwitcher, StoreBadge } from "@/components/common/StoreSwitcher"
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
     const { user, logout } = useAuth()
-    const { isAdmin, isEmployee, currentStore } = useStore()
+    const { isAdmin, isEmployee, isAdminViewingAsEmployee, currentStore } = useStore()
     const pathname = usePathname()
     const router = useRouter()
     const { isPageLoaded, isNavigatingFromLogin, resetNavigation } = useNavigationStore()
     const [shouldRender, setShouldRender] = useState(false)
     const { open } = useSidebar()
+    
+    // Determine if we should show employee view
+    const showEmployeeView = isEmployee || isAdminViewingAsEmployee
+    const showAdminView = isAdmin && !isAdminViewingAsEmployee
 
     // Control sidebar rendering based on navigation state
     useEffect(() => {
@@ -95,7 +99,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         router.push("/login")
     }
 
-    // Main navigation items
+    // Main navigation items - Only for employees
     const mainItems = [
         { path: "/dashboard", label: "Vista General", icon: LayoutDashboard },
         { path: "/usuarios", label: "Usuarios", icon: User2 },
@@ -103,7 +107,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         { path: "/proveedores", label: "Proveedores", icon: BadgeCheck },
     ]
 
-    // Finance items - Core financial operations
+    // Finance items - Core financial operations - Only for employees
     const financeItems = [
         { path: "/arrendamientos", label: "Arrendamientos", icon: HandCoins },
         { path: "/cuotas", label: "Cuotas", icon: BadgeDollarSign },
@@ -112,7 +116,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
         { path: "/calendario-pagos", label: "Calendario", icon: Calendar },
     ]
 
-    // Operations items - Analytics & Tools
+    // Operations items - Analytics & Tools - Only for employees
     const operationsItems = [
         { path: "/flujo-efectivo", label: "Flujo de Efectivo", icon: TrendingUp },
         // { path: "/calculadora", label: "Calculadora", icon: Calculator },
@@ -127,7 +131,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
     //     // { path: "/help", label: "Ayuda", icon: HelpCircle },
     // ]
 
-    // Admin items (only shown if user has access)
+    // Admin items (only shown for admins)
     const adminItems = [
         {
             path: "/admin/stores",
@@ -168,27 +172,42 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                 </div>
             </SidebarHeader>
             <SidebarContent className="px-2 py-3 space-y-1">
-                <NavMain 
-                    items={mainItems} 
-                    pathname={pathname} 
-                    hasAccess={(path) => hasAccess(path, user?.roles || [])} 
-                />
-                
-                <SidebarSeparator className="my-2" />
-                
-                <NavFinance 
-                    items={financeItems} 
-                    pathname={pathname} 
-                    hasAccess={(path) => hasAccess(path, user?.roles || [])} 
-                />
-                
-                <SidebarSeparator className="my-2" />
-                
-                <NavOperations
-                    items={operationsItems}
-                    pathname={pathname}
-                    hasAccess={(path) => hasAccess(path, user?.roles || [])}
-                />
+                {/* Admin with no store selected sees only admin items */}
+                {showAdminView ? (
+                    <>
+                        <NavSecondary
+                            items={adminItems}
+                            pathname={pathname}
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])}
+                            title="Administración"
+                        />
+                    </>
+                ) : showEmployeeView ? (
+                    /* Employees OR Admin with store selected see operational items */
+                    <>
+                        <NavMain 
+                            items={mainItems} 
+                            pathname={pathname} 
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])} 
+                        />
+                        
+                        <SidebarSeparator className="my-2" />
+                        
+                        <NavFinance 
+                            items={financeItems} 
+                            pathname={pathname} 
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])} 
+                        />
+                        
+                        <SidebarSeparator className="my-2" />
+                        
+                        <NavOperations
+                            items={operationsItems}
+                            pathname={pathname}
+                            hasAccess={(path) => hasAccess(path, user?.roles || [])}
+                        />
+                    </>
+                ) : null}
 
                 {/* {secondaryItems.length > 0 && (
                     <>
@@ -202,17 +221,6 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     </>
                 )}
                  */}
-                {user && adminItems.some(item => hasAccess(item.path, user.roles)) && (
-                    <>
-                        <SidebarSeparator className="my-2" />
-                        <NavSecondary
-                            items={adminItems}
-                            pathname={pathname}
-                            hasAccess={(path) => hasAccess(path, user?.roles || [])}
-                            title="Administración"
-                        />
-                    </>
-                )}
             </SidebarContent>
             <SidebarFooter className="border-t p-2 bg-muted/30">
                 <NavUser user={user} onLogout={handleLogout} />

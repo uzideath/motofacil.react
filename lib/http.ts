@@ -48,6 +48,13 @@ HttpService.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
+        
+        // Add selected storeId for admin viewing specific store
+        const selectedStoreId = localStorage.getItem("selectedStoreId")
+        if (selectedStoreId) {
+            config.headers["x-store-id"] = selectedStoreId
+        }
+        
         return config
     },
     (error: AxiosError): Promise<never> => {
