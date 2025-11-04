@@ -82,6 +82,7 @@ export function LoginForm() {
         rememberMe: values.rememberMe,
       })
 
+      // Login successful - set user in context
       login(user)
       setNavigatingFromLogin(true)
 
@@ -90,10 +91,17 @@ export function LoginForm() {
         description: "Has iniciado sesión correctamente.",
       })
 
-      router.push("/dashboard")
-    } catch (error) {
+      // Redirect to home - let the page.tsx handle role-based routing
+      router.push("/")
+    } catch (error: any) {
       console.error("Error al iniciar sesión:", error)
-      setLoginError("Credenciales incorrectas. Por favor, inténtalo de nuevo.")
+      
+      // Only show credentials error if it's actually an auth error
+      const errorMessage = error?.response?.status === 401 || error?.message?.includes("Credenciales")
+        ? "Credenciales incorrectas. Por favor, inténtalo de nuevo."
+        : "Error al iniciar sesión. Por favor, inténtalo de nuevo."
+      
+      setLoginError(errorMessage)
       setIsLoading(false)
     }
   }

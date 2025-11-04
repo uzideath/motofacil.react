@@ -39,15 +39,26 @@ export function decodeJWT(token: string): User | null {
                 .join(""),
         )
         const payload = JSON.parse(jsonPayload)
-        if (!payload.sub || !payload.username || !payload.roles) return null
+        
+        // Minimum required fields
+        if (!payload.sub || !payload.username) return null
+
+        // Handle both old format (roles array) and new format (role field)
+        const roles = payload.roles || (payload.role ? [payload.role] : ["ADMIN"])
+        const primaryRole = payload.role || roles[0] || "ADMIN"
 
         return {
             id: payload.sub,
-            name: payload.name,
+            name: payload.name || payload.username,
             username: payload.username,
-            roles: payload.roles,
+            roles: roles,
+            role: primaryRole,
+            storeId: payload.storeId || null,
+            storeName: payload.storeName || null,
+            storeCode: payload.storeCode || null,
         }
-    } catch {
+    } catch (error) {
+        console.error("Error decoding JWT:", error)
         return null
     }
 }

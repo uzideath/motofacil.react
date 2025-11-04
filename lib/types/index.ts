@@ -1,12 +1,33 @@
 
+export enum StoreStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE",
+    SUSPENDED = "SUSPENDED",
+}
+
+export type Store = {
+    id: string
+    name: string
+    code: string // Short code for the store (e.g., "BOG-01", "MED-02")
+    address: string
+    city: string
+    phone?: string | null
+    nit?: string | null // Tax identification number
+    status: StoreStatus
+    createdAt: string
+    updatedAt: string
+}
+
 type Owner = {
     id: string
     name: string
     username: string
-    role: "ADMIN" | "USER" | "MANAGER" | "MODERATOR"
+    role: "ADMIN" | "EMPLOYEE"
     status: "ACTIVE" | "INACTIVE"
     lastLogin: string
     createdAt: string
+    storeId?: string | null // NULL for ADMIN, REQUIRED for EMPLOYEE
+    store?: Store
     permissions?: any // PermissionsMap
 }
 
@@ -23,6 +44,8 @@ type User = {
     refName: string
     refID: string
     refPhone: string
+    storeId: string
+    store?: Store
     createdAt: string
     updatedAt: string
 }
@@ -44,6 +67,8 @@ export enum VehicleStatus {
 
 type Vehicle = {
     id: string
+    storeId: string
+    store?: Store
     providerId: string
     provider: Provider
     vehicleType: VehicleType
@@ -67,6 +92,8 @@ type Motorcycle = Vehicle
 
 export type Loan = {
     id: string
+    storeId: string
+    store?: Store
     userId: string
     contractNumber: string | null
     vehicleId: string
@@ -126,6 +153,8 @@ type Installment = {
 
 type Expense = {
     id: string
+    storeId: string
+    store?: Store
     amount: number
     date: string
     providerId: string | null
@@ -149,6 +178,8 @@ type Expense = {
 
 type Provider = {
     id: string
+    storeId: string
+    store?: Store
     name: string
     vehicles: Vehicle[]
     motorcylces?: Motorcycle[] // Legacy property for backwards compatibility

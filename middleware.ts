@@ -16,7 +16,8 @@ export function parseJwt(token: string): any {
         .join(""),
     )
     return JSON.parse(jsonPayload)
-  } catch {
+  } catch (error) {
+    console.error("Error parsing JWT in middleware:", error)
     return null
   }
 }
@@ -56,7 +57,7 @@ export function middleware(request: NextRequest) {
       }
     }
 
-    const userRoles: Role[] = decoded?.roles || []
+    const userRoles: Role[] = decoded?.roles || (decoded?.role ? [decoded.role] : ["ADMIN"])
 
     // Check access permissions
     if (!hasAccess(pathname, userRoles) && !isPublicRoute) {

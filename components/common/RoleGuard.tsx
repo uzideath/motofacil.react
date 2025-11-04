@@ -13,7 +13,7 @@ export function RoleGuard({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!isLoading && user && !hasAccess(pathname, user.roles)) {
-            router.replace("/prestamos")
+            router.replace("/dashboard")
         }
     }, [isLoading, user, pathname, router])
 

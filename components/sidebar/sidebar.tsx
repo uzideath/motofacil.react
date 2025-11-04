@@ -3,6 +3,7 @@
 import type * as React from "react"
 import Image from "next/image"
 import { useAuth } from "@/hooks/useAuth"
+import { useStore } from "@/contexts/StoreContext"
 import { usePathname, useRouter } from "next/navigation"
 import { useNavigationStore } from "@/lib/nav"
 import { useState, useEffect } from "react"
@@ -25,6 +26,7 @@ import {
     Calendar,
     TrendingUp,
     Wallet,
+    Building2,
 } from "lucide-react"
 
 import {
@@ -42,9 +44,11 @@ import { NavOperations } from "./operations"
 import { NavSecondary } from "./secondary"
 import { NavUser } from "./user"
 import { hasAccess } from "@/lib/services/route-access"
+import { StoreSwitcher, StoreBadge } from "@/components/common/StoreSwitcher"
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
     const { user, logout } = useAuth()
+    const { isAdmin, isEmployee, currentStore } = useStore()
     const pathname = usePathname()
     const router = useRouter()
     const { isPageLoaded, isNavigatingFromLogin, resetNavigation } = useNavigationStore()
@@ -53,6 +57,18 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Control sidebar rendering based on navigation state
     useEffect(() => {
+        // Don't render on login page
+        if (pathname.startsWith("/login")) {
+            setShouldRender(false)
+            return
+        }
+
+        // If we have a user, render immediately
+        if (user) {
+            setShouldRender(true)
+            return
+        }
+
         // If we're not navigating from login, render sidebar immediately
         if (!isNavigatingFromLogin && user) {
             setShouldRender(true)
@@ -67,10 +83,10 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                 resetNavigation()
             }, 100)
         }
-    }, [isNavigatingFromLogin, isPageLoaded, user, resetNavigation])
+    }, [isNavigatingFromLogin, isPageLoaded, user, resetNavigation, pathname])
 
     // Don't render if conditions aren't met
-    if (!shouldRender || !user || pathname.startsWith("/login")) {
+    if (!user || pathname.startsWith("/login")) {
         return null
     }
 
@@ -111,28 +127,44 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
     //     // { path: "/help", label: "Ayuda", icon: HelpCircle },
     // ]
 
-    // Admin item (only shown if user has access)
-    const adminItem = {
-        path: "/admin/usuarios",
-        label: "Empleados",
-        icon: Users2Icon,
-    }
+    // Admin items (only shown if user has access)
+    const adminItems = [
+        {
+            path: "/admin/stores",
+            label: "Tiendas",
+            icon: Building2,
+        },
+        {
+            path: "/admin/usuarios",
+            label: "Empleados",
+            icon: Users2Icon,
+        },
+    ]
 
     return (
         <Sidebar collapsible="offcanvas" className={cn("border-r", className)} {...props}>
             <SidebarHeader className="border-b py-6 bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-center">
-                    <a href="/dashboard" className="flex items-center justify-center transition-transform hover:scale-105">
-                        {open ? (
-                            <div className="relative h-12 w-40">
-                                <Image src="/motofacil.png" alt="MotoFácil Logo" fill className="object-contain" priority />
-                            </div>
-                        ) : (
-                            <div className="relative h-10 w-10">
-                                <Image src="/motofacil.png" alt="MotoFácil Icon" fill className="object-contain" priority />
-                            </div>
-                        )}
-                    </a>
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-center">
+                        <a href="/dashboard" className="flex items-center justify-center transition-transform hover:scale-105">
+                            {open ? (
+                                <div className="relative h-12 w-40">
+                                    <Image src="/motofacil.png" alt="MotoFácil Logo" fill className="object-contain" priority />
+                                </div>
+                            ) : (
+                                <div className="relative h-10 w-10">
+                                    <Image src="/motofacil.png" alt="MotoFácil Icon" fill className="object-contain" priority />
+                                </div>
+                            )}
+                        </a>
+                    </div>
+                    
+                    {/* Store Switcher for Admin or Store Badge for Employee */}
+                    {open && (
+                        <div className="px-2">
+                            {isAdmin ? <StoreSwitcher /> : <StoreBadge />}
+                        </div>
+                    )}
                 </div>
             </SidebarHeader>
             <SidebarContent className="px-2 py-3 space-y-1">
@@ -170,11 +202,11 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     </>
                 )}
                  */}
-                {user && hasAccess(adminItem.path, user.roles) && (
+                {user && adminItems.some(item => hasAccess(item.path, user.roles)) && (
                     <>
                         <SidebarSeparator className="my-2" />
                         <NavSecondary
-                            items={[adminItem]}
+                            items={adminItems}
                             pathname={pathname}
                             hasAccess={(path) => hasAccess(path, user?.roles || [])}
                             title="Administración"

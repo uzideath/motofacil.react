@@ -14,7 +14,8 @@ function parseJwt(token: string): any {
         .join("")
     )
     return JSON.parse(jsonPayload)
-  } catch {
+  } catch (error) {
+    console.error("Error parsing JWT:", error)
     return null
   }
 }
@@ -28,11 +29,11 @@ export default async function Page() {
   }
 
   const decoded = parseJwt(token)
-  const roles: Role[] = decoded?.roles || []
+  const roles: Role[] = decoded?.roles || (decoded?.role ? [decoded.role] : ["ADMIN"])
 
   if (roles.includes("ADMIN")) {
-    redirect("/usuarios")
+    redirect("/dashboard")
   } else {
-    redirect("/prestamos")
+    redirect("/arrendamientos")
   }
 }

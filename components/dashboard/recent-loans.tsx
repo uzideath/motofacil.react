@@ -91,7 +91,7 @@ export function RecentLoans() {
           </div>
           <div className="ml-4 flex space-x-2">
             <Button variant="outline" size="icon" asChild>
-              <Link href={`/prestamos/${loan.id}`}>
+              <Link href={`/arrendamientos/${loan.id}`}>
                 <Eye className="h-4 w-4" />
                 <span className="sr-only">Ver detalles</span>
               </Link>
@@ -107,7 +107,7 @@ export function RecentLoans() {
       ))}
       <div className="flex justify-center pt-2">
         <Button variant="outline" asChild>
-          <Link href="/prestamos">Ver todos los arrendamientos</Link>
+          <Link href="/arrendamientos">Ver todos los arrendamientos</Link>
         </Button>
       </div>
     </div>

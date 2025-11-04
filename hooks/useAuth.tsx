@@ -4,13 +4,17 @@ import { AuthService, decodeJWT } from "@/lib/services/auth.service"
 import { usePathname } from "next/navigation"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-export type Role = "ADMIN" | "USER"
+export type Role = "ADMIN" | "EMPLOYEE"
 
 export type User = {
   id: string
   name: string
   username: string
   roles: Role[]
+  role: Role // Primary role
+  storeId?: string | null // NULL for ADMIN, REQUIRED for EMPLOYEE
+  storeName?: string | null // Store name for display
+  storeCode?: string | null // Store code for display
   exp?: number
 }
 
