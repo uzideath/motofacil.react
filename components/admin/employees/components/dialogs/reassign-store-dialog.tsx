@@ -64,11 +64,11 @@ export function ReassignStoreDialog({
             <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
               <Store className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">
-                {employee.storeName || "Sin asignar"}
+                {employee.store?.name || "Sin asignar"}
               </span>
-              {employee.storeCode && (
+              {employee.store?.code && (
                 <span className="text-sm text-muted-foreground">
-                  ({employee.storeCode})
+                  ({employee.store.code})
                 </span>
               )}
             </div>

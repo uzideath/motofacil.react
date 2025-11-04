@@ -47,6 +47,9 @@ export function TableHeader({ sortField, sortOrder, onSort }: TableHeaderProps) 
         >
           Estado <SortIcon field="status" />
         </th>
+        <th className="px-4 py-3 text-left text-sm font-medium">
+          Permisos
+        </th>
         <th
           className="px-4 py-3 text-left text-sm font-medium cursor-pointer hover:bg-muted/80"
           onClick={() => onSort("createdAt")}

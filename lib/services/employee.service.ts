@@ -1,4 +1,5 @@
 import { HttpService } from "@/lib/http"
+import { PermissionsMap } from "@/lib/types/permissions"
 
 export interface Employee {
   id: string
@@ -9,6 +10,7 @@ export interface Employee {
   role: string
   storeId: string | null
   status: "ACTIVE" | "INACTIVE"
+  permissions?: PermissionsMap
   createdAt: string
   updatedAt: string
   store?: {
@@ -27,6 +29,7 @@ export interface CreateEmployeeDto {
   role?: "ADMIN" | "EMPLOYEE"
   storeId?: string
   status?: "ACTIVE" | "INACTIVE"
+  permissions?: PermissionsMap
 }
 
 export interface UpdateEmployeeDto {
@@ -38,6 +41,7 @@ export interface UpdateEmployeeDto {
   role?: "ADMIN" | "EMPLOYEE"
   storeId?: string
   status?: "ACTIVE" | "INACTIVE"
+  permissions?: PermissionsMap
 }
 
 export class EmployeeService {

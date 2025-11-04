@@ -1,6 +1,7 @@
 import { Edit, Trash2, RefreshCw, CheckCircle, XCircle, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { PermissionsBadge } from "@/components/admin/components/PermissionsBadge"
 import type { Employee } from "../hooks/useEmployees"
 
 interface TableRowProps {
@@ -65,6 +66,9 @@ export function TableRow({
           )}
           {employee.status === "ACTIVE" ? "Activo" : "Inactivo"}
         </Badge>
+      </td>
+      <td className="px-4 py-3">
+        <PermissionsBadge permissions={employee.permissions} isAdmin={false} />
       </td>
       <td className="px-4 py-3">
         <div className="text-sm text-muted-foreground">

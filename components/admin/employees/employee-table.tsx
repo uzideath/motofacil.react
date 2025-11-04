@@ -52,8 +52,17 @@ export function EmployeeTable() {
 
   // Sorting logic
   const sortedEmployees = [...employees].sort((a, b) => {
-    let aValue = a[sortField]
-    let bValue = b[sortField]
+    let aValue: any
+    let bValue: any
+
+    // Handle nested store.name for storeName sort field
+    if (sortField === "storeName") {
+      aValue = a.store?.name || ""
+      bValue = b.store?.name || ""
+    } else {
+      aValue = a[sortField]
+      bValue = b[sortField]
+    }
 
     // Handle null values
     if (aValue === null || aValue === undefined) aValue = ""

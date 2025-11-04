@@ -19,10 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { EmployeeService } from "@/lib/services/employee.service"
 import { useToast } from "@/components/ui/use-toast"
 import { useStoreManagement } from "@/components/admin/stores/hooks/useStoreManagement"
-import { Store, UserPlus } from "lucide-react"
+import { Store, UserPlus, User, Shield } from "lucide-react"
+import { PermissionsEditor } from "./components/PermissionsEditor"
+import { PermissionsMap } from "@/lib/types/permissions"
 import type { Employee } from "./hooks/useEmployees"
 
 interface EmployeeFormDialogProps {
@@ -38,12 +42,14 @@ interface EmployeeFormData {
   password: string
   storeId: string
   status: "ACTIVE" | "INACTIVE"
+  permissions: PermissionsMap
 }
 
 export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProps) {
   const { toast } = useToast()
   const { stores, isLoading: loadingStores } = useStoreManagement()
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("basic")
   const [formData, setFormData] = useState<EmployeeFormData>({
     username: "",
     name: "",
@@ -52,6 +58,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
     password: "",
     storeId: "",
     status: "ACTIVE",
+    permissions: {},
   })
 
   useEffect(() => {
@@ -64,6 +71,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
         password: "", // Don't pre-fill password on edit
         storeId: employee.storeId || "",
         status: employee.status,
+        permissions: employee.permissions || {},
       })
     }
   }, [employee])
@@ -130,6 +138,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
           storeId: formData.storeId,
           status: formData.status,
           role: "EMPLOYEE",
+          permissions: formData.permissions,
         }
 
         // Only include password if it's being changed
@@ -153,6 +162,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
           storeId: formData.storeId,
           status: formData.status,
           role: "EMPLOYEE" as const,
+          permissions: formData.permissions,
         }
 
         await EmployeeService.createEmployee(createData)
@@ -179,7 +189,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
 
   return (
     <Dialog open onOpenChange={() => onClose(false)}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-4xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
@@ -189,12 +199,26 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
           </div>
           <DialogDescription>
             {employee
-              ? "Actualiza la información del empleado"
-              : "Completa los datos para crear un nuevo empleado"}
+              ? "Actualiza la información del empleado y sus permisos"
+              : "Completa los datos para crear un nuevo empleado y asignar permisos"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Información Básica
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Permisos
+            </TabsTrigger>
+          </TabsList>
+
+          <ScrollArea className="h-[60vh] pr-4">
+            <form onSubmit={handleSubmit} id="employee-form">
+              <TabsContent value="basic" className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="username">
               Nombre de usuario <span className="text-destructive">*</span>
@@ -323,6 +347,20 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
               </SelectContent>
             </Select>
           </div>
+              </TabsContent>
+
+              <TabsContent value="permissions" className="mt-4">
+                <PermissionsEditor
+                  permissions={formData.permissions}
+                  onChange={(permissions) =>
+                    setFormData({ ...formData, permissions })
+                  }
+                  disabled={loading}
+                />
+              </TabsContent>
+            </form>
+          </ScrollArea>
+        </Tabs>
 
           <DialogFooter>
             <Button
@@ -333,7 +371,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" form="employee-form" disabled={loading}>
               {loading
                 ? "Guardando..."
                 : employee
@@ -341,7 +379,6 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
                 : "Crear empleado"}
             </Button>
           </DialogFooter>
-        </form>
       </DialogContent>
     </Dialog>
   )
