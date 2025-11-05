@@ -4,7 +4,7 @@ import { ResetPasswordForm } from "@/components/auth/reset-password-form"
 import { ModeToggle } from "@/components/common/mode-toggle"
 
 export const metadata: Metadata = {
-  title: "Restablecer Contraseña | MotoFácil Atlántico",
+  title: "Restablecer Contraseña | MotoCar de la Costa",
   description: "Restablece tu contraseña del sistema de arrendamientos de motocicletas",
 }
 
@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
               <path d="M2 10h20" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">MotoFácil Atlántico</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">MotoCar de la Costa</h1>
           <p className="text-gray-400 mt-1 text-center">Sistema de gestión de arrendamientos</p>
         </div>
 
@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
 
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            &copy; {new Date().getFullYear()} MotoFácil Atlántico. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} MotoCar de la Costa. Todos los derechos reservados.
           </p>
         </div>
       </div>

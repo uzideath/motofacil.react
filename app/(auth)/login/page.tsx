@@ -5,7 +5,7 @@ import { Suspense } from "react"
 import { Bike, Shield, TrendingUp, Clock } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Login | MotoFácil Atlántico",
+  title: "Login | MotoCar de la Costa",
   description: "Iniciar sesión en el sistema de arrendamientos de motocicletas",
 }
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
                 <Bike className="h-6 w-6 text-primary-foreground" strokeWidth={2.5} />
               </div>
               <span className="font-serif text-2xl font-semibold tracking-tight text-foreground">
-                MotoFácil Atlántico
+                MotoCar de la Costa
               </span>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function LoginPage() {
           </div>
 
           <div className="relative z-20 flex items-center justify-between border-t border-border/50 pt-8">
-            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} MotoFácil Atlántico</p>
+            <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} MotoCar de la Costa</p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="#" className="transition-colors hover:text-foreground">
                 Privacidad
@@ -107,7 +107,7 @@ export default function LoginPage() {
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
                 <Bike className="h-7 w-7 text-primary-foreground" strokeWidth={2.5} />
               </div>
-              <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground">MotoFácil Atlántico</h1>
+              <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground">MotoCar de la Costa</h1>
             </div>
 
             <div className="space-y-3 text-center lg:text-left">
@@ -137,7 +137,7 @@ export default function LoginPage() {
                   Términos
                 </a>
               </div>
-              <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} MotoFácil Atlántico</p>
+              <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} MotoCar de la Costa</p>
             </div>
           </div>
         </div>
