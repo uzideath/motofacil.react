@@ -44,6 +44,7 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
             provider: item.provider
                 ? {
                     id: item.provider.id,
+                    storeId: item.provider.storeId,
                     name: item.provider.name,
                     createdAt: item.provider.createdAt,
                     updatedAt: item.provider.updatedAt,
