@@ -3,6 +3,7 @@
 import { Store } from "@/lib/types"
 import { useAuth } from "@/hooks/useAuth"
 import { StoreService } from "@/lib/services/store.service"
+import { useRouter } from "next/navigation"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 interface StoreContextType {
@@ -21,6 +22,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
   const [currentStore, setCurrentStore] = useState<Store | null>(null)
   const [allStores, setAllStores] = useState<Store[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -123,8 +125,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Store preference in localStorage
       localStorage.setItem("selectedStoreId", storeId)
       
-      // Trigger a page reload to refresh all data for the new store
-      window.location.reload()
+      // Navigate to dashboard to show the selected store
+      router.push("/dashboard")
     }
   }
 

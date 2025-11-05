@@ -17,9 +17,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { RoleGuard } from "@/components/common/RoleGuard"
 import { DashboardProvider, useDashboardContext } from "@/components/dashboard/dashboard-provider"
+import { useStore } from "@/contexts/StoreContext"
+import { Building2 } from "lucide-react"
 
 function DashboardContent() {
     const { data, loading } = useDashboardContext()
+    const { currentStore, isAdmin } = useStore()
     const pendingPaymentsThisWeek = data?.alerts?.pendingPaymentsThisWeek || 0
 
     return (
@@ -27,8 +30,23 @@ function DashboardContent() {
             <div className="bg-primary text-primary-foreground p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Dashboard</h1>
-                        <p className="text-primary-foreground/80 text-sm">Bienvenido de nuevo, Admin</p>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl font-bold">Dashboard</h1>
+                            {currentStore && (
+                                <div className="flex items-center gap-2 bg-primary-foreground/10 border border-primary-foreground/20 rounded-lg px-3 py-1">
+                                    <Building2 className="h-4 w-4" />
+                                    <span className="text-sm font-medium">{currentStore.name}</span>
+                                    {currentStore.code && (
+                                        <Badge variant="outline" className="bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground text-xs">
+                                            {currentStore.code}
+                                        </Badge>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-primary-foreground/80 text-sm mt-1">
+                            {currentStore ? `Vista de tienda ${isAdmin ? '(Admin)' : ''}` : 'Bienvenido de nuevo, Admin'}
+                        </p>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button size="sm" variant="outline" className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hidden lg:flex">

@@ -91,8 +91,13 @@ export function LoginForm() {
         description: "Has iniciado sesión correctamente.",
       })
 
-      // Redirect to home - let the page.tsx handle role-based routing
-      router.push("/")
+      // Role-based redirect
+      if (user.roles.includes("ADMIN")) {
+        router.push("/admin/dashboard")
+      } else {
+        // Employee - show their store
+        router.push("/dashboard")
+      }
     } catch (error: any) {
       console.error("Error al iniciar sesión:", error)
       
