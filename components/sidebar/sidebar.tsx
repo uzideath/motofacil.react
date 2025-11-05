@@ -152,12 +152,12 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
                     <div className="flex items-center justify-center">
                         <a href="/dashboard" className="flex items-center justify-center transition-transform hover:scale-105">
                             {open ? (
-                                <div className="relative h-12 w-40">
-                                    <Image src="/motofacil.png" alt="MotoFácil Logo" fill className="object-contain" priority />
+                                <div className="relative h-20 w-56">
+                                    <Image src="/motocar_logo.png" alt="MotoFácil Logo" fill className="object-contain" priority />
                                 </div>
                             ) : (
-                                <div className="relative h-10 w-10">
-                                    <Image src="/motofacil.png" alt="MotoFácil Icon" fill className="object-contain" priority />
+                                <div className="relative h-14 w-14">
+                                    <Image src="/motocar_logo.png" alt="MotoFácil Icon" fill className="object-contain" priority />
                                 </div>
                             )}
                         </a>

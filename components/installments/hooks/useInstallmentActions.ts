@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { HttpService } from "@/lib/http"
 import { utcToZonedTime, format } from "date-fns-tz"
 import { Installment } from "@/lib/types"
+import { useStore } from "@/contexts/StoreContext"
 
 export function useInstallmentActions(refreshInstallments: () => void) {
     const [isGenerating, setIsGenerating] = useState(false)
@@ -19,6 +20,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
     const [selectedNotes, setSelectedNotes] = useState<string>("")
     const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false)
     const { toast } = useToast()
+    const { currentStore } = useStore()
 
     const handlePrint = async (installment: Installment) => {
         setIsGenerating(true)
@@ -42,6 +44,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             paymentDate: installment.paymentDate, // Actual payment date
             notes: installment.notes,
             receiptNumber: installment.id,
+            storeId: currentStore?.id, // Add storeId
         }
 
 
@@ -125,6 +128,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
                 notes: installment.notes,
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
+                storeId: currentStore?.id, // Add storeId
             }
 
             // Send the request to the whatsapp endpoint
