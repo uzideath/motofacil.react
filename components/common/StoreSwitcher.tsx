@@ -27,7 +27,7 @@ export function StoreSwitcher() {
     return (
       <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-card text-card-foreground shadow-sm">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm font-medium">Loading stores...</span>
+        <span className="text-sm font-medium">Cargando locales...</span>
       </div>
     )
   }
@@ -37,7 +37,7 @@ export function StoreSwitcher() {
     return (
       <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-muted/50 text-muted-foreground">
         <Building2 className="h-4 w-4" />
-        <span className="text-sm font-medium">No stores available</span>
+        <span className="text-sm font-medium">No hay locales disponibles</span>
       </div>
     )
   }
@@ -80,8 +80,8 @@ export function StoreSwitcher() {
               </>
             ) : (
               <>
-                <span className="text-sm font-semibold leading-none">Admin View</span>
-                <span className="text-xs text-muted-foreground">All Stores</span>
+                <span className="text-sm font-semibold leading-none">Vista Admin</span>
+                <span className="text-xs text-muted-foreground">Todos los Locales</span>
               </>
             )}
           </div>
@@ -90,7 +90,7 @@ export function StoreSwitcher() {
       <SelectContent className="w-[280px]">
         <div className="px-2 py-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Store Selection
+            Selección de Local
           </p>
         </div>
         <Separator className="my-1" />
@@ -106,8 +106,8 @@ export function StoreSwitcher() {
               <Building2 className="h-4 w-4" />
             </div>
             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-              <span className="font-semibold text-sm">Admin View</span>
-              <span className="text-xs text-muted-foreground">Manage all stores</span>
+              <span className="font-semibold text-sm">Vista Admin</span>
+              <span className="text-xs text-muted-foreground">Gestionar todos los locales</span>
             </div>
             {!currentStore && (
               <Check className="h-4 w-4 text-primary shrink-0" />
@@ -120,7 +120,7 @@ export function StoreSwitcher() {
             <Separator className="my-1" />
             <div className="px-2 py-1.5">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Available Stores ({allStores.length})
+                Locales Disponibles ({allStores.length})
               </p>
             </div>
           </>
@@ -197,7 +197,7 @@ export function StoreSwitcherCompact() {
               {currentStore?.code || "Admin"}
             </span>
             <span className="text-[10px] text-muted-foreground leading-none truncate w-full">
-              {currentStore?.name || "All Stores"}
+              {currentStore?.name || "Todos los Locales"}
             </span>
           </div>
         </div>
@@ -215,8 +215,8 @@ export function StoreSwitcherCompact() {
               <Building2 className="h-3.5 w-3.5" />
             </div>
             <div className="flex flex-col gap-0.5 flex-1">
-              <span className="font-semibold text-xs">Admin View</span>
-              <span className="text-[10px] text-muted-foreground">All Stores</span>
+              <span className="font-semibold text-xs">Vista Admin</span>
+              <span className="text-[10px] text-muted-foreground">Todos los Locales</span>
             </div>
             {!currentStore && <Check className="h-3.5 w-3.5 text-primary" />}
           </div>
