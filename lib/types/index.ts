@@ -397,3 +397,42 @@ export type CashRegisterDisplay = {
     notes: string
     raw: Closing
 }
+
+export enum NewsType {
+    LOAN_SPECIFIC = "LOAN_SPECIFIC",
+    STORE_WIDE = "STORE_WIDE",
+}
+
+export enum NewsCategory {
+    WORKSHOP = "WORKSHOP",
+    MAINTENANCE = "MAINTENANCE",
+    ACCIDENT = "ACCIDENT",
+    THEFT = "THEFT",
+    DAY_OFF = "DAY_OFF",
+    HOLIDAY = "HOLIDAY",
+    SYSTEM_MAINTENANCE = "SYSTEM_MAINTENANCE",
+    OTHER = "OTHER",
+}
+
+export type News = {
+    id: string
+    type: NewsType
+    category: NewsCategory
+    title: string
+    description: string
+    notes: string | null
+    startDate: string
+    endDate: string | null
+    isActive: boolean
+    autoCalculateInstallments: boolean
+    daysUnavailable: number | null
+    installmentsToSubtract: number | null
+    storeId: string
+    store?: Store
+    loanId: string | null
+    loan?: Loan
+    createdById: string
+    createdBy?: Owner
+    createdAt: string
+    updatedAt: string
+}

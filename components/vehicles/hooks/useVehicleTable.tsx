@@ -44,23 +44,23 @@ export function useVehicleTable() {
         try {
             setLoading(true)
             const token = getAuthToken()
-            
+
             // Build query parameters
             const params = new URLSearchParams()
             params.append("page", currentPage.toString())
             params.append("limit", itemsPerPage.toString())
-            
+
             if (searchTerm) {
                 params.append("search", searchTerm)
             }
-            
+
             if (providerFilter !== "all") {
                 const provider = providers.find(p => p.name === providerFilter)
                 if (provider) {
                     params.append("providerId", provider.id)
                 }
             }
-            
+
             if (vehicleTypeFilter !== "all") {
                 params.append("vehicleType", vehicleTypeFilter)
             }
@@ -146,7 +146,7 @@ export function useVehicleTable() {
             })
             return
         }
-        
+
         const headers = ["Tipo", "Marca", "Modelo", "Placa", "Precio", "Color", "Cilindraje", "GPS", "Motor", "Chasis", "Proveedor"]
         const csvRows = [
             headers.join(","),
@@ -187,10 +187,8 @@ export function useVehicleTable() {
     const getVehicleTypeLabel = (type: VehicleType) => {
         const labels: Record<VehicleType, string> = {
             [VehicleType.MOTORCYCLE]: "Motocicleta",
-            [VehicleType.CAR]: "Automóvil",
-            [VehicleType.TRUCK]: "Camión",
-            [VehicleType.VAN]: "Camioneta",
-            [VehicleType.ATV]: "ATV/Cuatrimoto",
+            [VehicleType.MOTOCAR]: "Motocarro",
+            [VehicleType.MOTOLOAD]: "Motocarguero",
             [VehicleType.OTHER]: "Otro",
         }
         return labels[type] || type
