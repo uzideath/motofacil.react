@@ -31,6 +31,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             iso: new Date(installment.paymentDate).toISOString(),
         })
 
+        // The last payment date should be THIS installment's closing date
+        // Use latePaymentDate if exists (original due date), otherwise paymentDate
+        const lastPaymentDate = installment.latePaymentDate || installment.paymentDate
+
         const payload = {
             name: installment.loan.user.name.trim(),
             identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
@@ -45,6 +49,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             notes: installment.notes,
             receiptNumber: installment.id,
             storeId: currentStore?.id, // Add storeId
+            paidInstallments: installment.loan.paidInstallments, // Payment status
+            remainingInstallments: installment.loan.remainingInstallments, // Payment status
+            totalInstallments: installment.loan.installments, // Payment status
+            lastPaymentDate: lastPaymentDate, // Previous payment date (latePaymentDate if late, otherwise paymentDate)
         }
 
 
@@ -112,6 +120,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
 
             setIsGenerating(true)
 
+            // The last payment date should be THIS installment's closing date
+            // Use latePaymentDate if exists (original due date), otherwise paymentDate
+            const lastPaymentDate = installment.latePaymentDate || installment.paymentDate
+
             // Prepare the receipt data
             const receiptData = {
                 phoneNumber,
@@ -129,6 +141,10 @@ export function useInstallmentActions(refreshInstallments: () => void) {
                 receiptNumber: installment.id,
                 caption: `Recibo de pago - ${installment.loan.user.name}`,
                 storeId: currentStore?.id, // Add storeId
+                paidInstallments: installment.loan.paidInstallments, // Payment status
+                remainingInstallments: installment.loan.remainingInstallments, // Payment status
+                totalInstallments: installment.loan.installments, // Payment status
+                lastPaymentDate: lastPaymentDate, // Previous payment date (latePaymentDate if late, otherwise paymentDate)
             }
 
             // Send the request to the whatsapp endpoint

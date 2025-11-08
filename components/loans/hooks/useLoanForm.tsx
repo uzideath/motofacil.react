@@ -319,6 +319,55 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }, [watchedValues, isOpen])
 
+    // Auto-calculate total amount based on daily payment and loan term
+    useEffect(() => {
+        if (!isOpen || !isMounted.current) return
+
+        // Destructure watchedValues array (in the same order as defined in useWatch)
+        const [
+            totalAmount,
+            downPayment,
+            startDate,
+            endDate,
+            loanTermMonths,
+            interestRate,
+            interestType,
+            paymentFrequency,
+            installmentPaymentAmmount,
+            gpsAmount,
+        ] = watchedValues
+
+        // Only auto-calculate if we have valid payment amount and months
+        if (!installmentPaymentAmmount || !loanTermMonths || loanTermMonths <= 0) return
+
+        // Calculate total installments based on frequency
+        const totalInstallments = getInstallmentsFromMonths(loanTermMonths, paymentFrequency)
+        
+        // Calculate total with interest (what customer will pay)
+        const paymentWithoutGps = installmentPaymentAmmount - (gpsAmount || 0)
+        const totalWithInterest = paymentWithoutGps * totalInstallments
+
+        // Remove interest to get financed amount
+        let financedAmount = totalWithInterest
+        if (interestRate && interestRate > 0) {
+            if (interestType === "FIXED") {
+                // For fixed interest: totalWithInterest = financedAmount * (1 + rate/100)
+                financedAmount = totalWithInterest / (1 + interestRate / 100)
+            } else {
+                // For compound interest: totalWithInterest = financedAmount * (1 + rate/100)^months
+                financedAmount = totalWithInterest / Math.pow(1 + interestRate / 100, loanTermMonths)
+            }
+        }
+
+        // Add down payment to get total vehicle price
+        const calculatedTotal = Math.round(financedAmount + (downPayment || 0))
+
+        // Only update if the value has actually changed (prevent infinite loop)
+        if (calculatedTotal !== totalAmount) {
+            form.setValue("totalAmount", calculatedTotal, { shouldValidate: false })
+        }
+    }, [watchedValues, isOpen])
+
     const filterAvailableOptions = async (allUsers: User[], allVehicles: Vehicle[]) => {
         try {
             const token = document.cookie
