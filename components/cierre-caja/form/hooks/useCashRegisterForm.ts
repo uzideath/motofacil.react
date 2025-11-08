@@ -19,6 +19,7 @@ const initialFormState: FormState = {
     cashFromTransfers: "",
     cashFromCards: "",
     notes: "",
+    closingDate: new Date(),
     submitting: false,
     success: false,
     error: false,
@@ -89,11 +90,23 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         }))
     }
 
+    const handleDateChange = (date: Date) => {
+        setFormState((prev) => ({
+            ...prev,
+            closingDate: date,
+            success: false,
+            error: false,
+        }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setFormState((prev) => ({ ...prev, submitting: true, success: false, error: false }))
 
         try {
+            // Format the closing date to ISO string (YYYY-MM-DD)
+            const closingDateString = formState.closingDate.toISOString().split('T')[0]
+
             const payload: any = {
                 cashInRegister: calculations.cashInRegister,
                 cashFromTransfers: calculations.cashFromTransfers,
@@ -104,9 +117,8 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 createdById: user?.id,
                 provider: currentProvider,
                 providerId: currentProvider?.id,
+                date: closingDateString,
             }
-
-            // Note: closingDate is no longer sent - backend determines it from transactions
 
             await HttpService.post("/api/v1/closing", payload)
 
@@ -151,6 +163,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         isFormValid,
         isReadOnly,
         handleInputChange,
+        handleDateChange,
         handleSubmit,
         resetForm,
         setShowSuccessDialog,

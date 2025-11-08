@@ -4,7 +4,8 @@ import type React from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Banknote, ArrowDownToLine, CreditCard, Info } from "lucide-react"
+import { DatePicker } from "@/components/ui/date-picker"
+import { Banknote, ArrowDownToLine, CreditCard, Info, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { FormState } from "../types"
 
@@ -12,11 +13,27 @@ interface FormInputsProps {
     formState: FormState
     isReadOnly: boolean
     onInputChange: (field: keyof FormState, value: string) => void
+    onDateChange: (date: Date) => void
 }
 
-export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, onInputChange }) => {
+export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, onInputChange, onDateChange }) => {
     return (
         <div className="space-y-6">
+            <div className="space-y-3">
+                <Label htmlFor="closingDate" className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-500" />
+                    Fecha del Cierre
+                </Label>
+                <DatePicker
+                    date={formState.closingDate}
+                    onDateChange={(date) => date && onDateChange(date)}
+                    placeholder="Seleccionar fecha del cierre"
+                />
+                <p className="text-xs text-muted-foreground">
+                    Por defecto, el cierre se registra con la fecha de hoy
+                </p>
+            </div>
+
             <div className="space-y-3">
                 <Label htmlFor="cashInRegister" className="text-sm font-medium flex items-center gap-2">
                     <Banknote className="h-4 w-4 text-emerald-500" />

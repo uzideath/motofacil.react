@@ -35,6 +35,7 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
         isFormValid,
         isReadOnly,
         handleInputChange,
+        handleDateChange,
         handleSubmit,
         resetForm,
         setShowSuccessDialog,
@@ -66,7 +67,12 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                             <ProviderDisplay provider={currentProvider} />
                         </CardHeader>
                         <CardContent className="space-y-6 pt-6">
-                            <FormInputs formState={formState} isReadOnly={isReadOnly} onInputChange={handleInputChange} />
+                            <FormInputs 
+                                formState={formState} 
+                                isReadOnly={isReadOnly} 
+                                onInputChange={handleInputChange}
+                                onDateChange={handleDateChange}
+                            />
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">
                             {closingPermissions.canCreate ? (
