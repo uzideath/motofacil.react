@@ -1,210 +1,186 @@
 "use client"
 
-import { News, NewsType, NewsCategory } from "@/lib/types"
-import { Edit, Trash2, Calendar, User, Building2 } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Newspaper, User, Calendar, FileText, MapPin, Clock, Activity, Settings } from "lucide-react"
+import { NewsTableControls } from "./components/NewsTableControls"
+import { NewsTableDialogs } from "./components/NewsTableDialogs"
+import { NewsTablePagination } from "./components/NewsTablePagination"
+import { NewsTableRow } from "./components/NewsTableRow"
+import { useNewsTable } from "./hooks/useNewsTable"
 
-interface NewsTableProps {
-    news: News[]
-    loading: boolean
-    onEdit: (news: News) => void
-    onDelete: (id: string) => void
-}
-
-const NEWS_TYPE_LABELS: Record<NewsType, string> = {
-    [NewsType.LOAN_SPECIFIC]: "Préstamo Específico",
-    [NewsType.STORE_WIDE]: "Toda la Tienda",
-}
-
-const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
-    [NewsCategory.WORKSHOP]: "Taller",
-    [NewsCategory.MAINTENANCE]: "Mantenimiento",
-    [NewsCategory.ACCIDENT]: "Accidente",
-    [NewsCategory.THEFT]: "Robo",
-    [NewsCategory.DAY_OFF]: "Día Libre",
-    [NewsCategory.HOLIDAY]: "Festivo",
-    [NewsCategory.SYSTEM_MAINTENANCE]: "Mantenimiento del Sistema",
-    [NewsCategory.OTHER]: "Otro",
-}
-
-const getCategoryColor = (category: NewsCategory) => {
-    switch (category) {
-        case NewsCategory.WORKSHOP:
-        case NewsCategory.MAINTENANCE:
-            return "bg-blue-500"
-        case NewsCategory.ACCIDENT:
-        case NewsCategory.THEFT:
-            return "bg-red-500"
-        case NewsCategory.DAY_OFF:
-        case NewsCategory.HOLIDAY:
-            return "bg-green-500"
-        case NewsCategory.SYSTEM_MAINTENANCE:
-            return "bg-yellow-500"
-        default:
-            return "bg-gray-500"
-    }
-}
-
-export function NewsTable({ news, loading, onEdit, onDelete }: NewsTableProps) {
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-12">
-                <div className="text-muted-foreground">Cargando novedades...</div>
-            </div>
-        )
-    }
-
-    if (news.length === 0) {
-        return (
-            <div className="text-center py-12 bg-muted/30 rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No hay novedades registradas</p>
-            </div>
-        )
-    }
+export function NewsTable() {
+    const {
+        news,
+        loading,
+        searchTerm,
+        currentPage,
+        totalItems,
+        totalPages,
+        startIndex,
+        endIndex,
+        deleteDialogOpen,
+        setSearchTerm,
+        setCurrentPage,
+        setDeleteDialogOpen,
+        handleDelete,
+        confirmDelete,
+        refreshData,
+    } = useNewsTable()
 
     return (
-        <div className="border rounded-lg overflow-hidden">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Préstamo/Usuario</TableHead>
-                        <TableHead>Fechas</TableHead>
-                        <TableHead>Días/Cuotas</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {news.map((item) => (
-                        <TableRow key={item.id}>
-                            <TableCell>
-                                <Badge variant={item.type === NewsType.LOAN_SPECIFIC ? "default" : "secondary"}>
-                                    {item.type === NewsType.LOAN_SPECIFIC ? (
-                                        <User className="h-3 w-3 mr-1" />
-                                    ) : (
-                                        <Building2 className="h-3 w-3 mr-1" />
-                                    )}
-                                    {NEWS_TYPE_LABELS[item.type]}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>
-                                <Badge className={getCategoryColor(item.category)}>
-                                    {NEWS_CATEGORY_LABELS[item.category]}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>
-                                <div>
-                                    <p className="font-medium">{item.title}</p>
-                                    <p className="text-sm text-muted-foreground line-clamp-1">
-                                        {item.description}
-                                    </p>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                {item.loan ? (
-                                    <div className="text-sm">
-                                        <p className="font-medium">{item.loan.user.name}</p>
-                                        <p className="text-muted-foreground">
-                                            {item.loan.vehicle?.plate || "N/A"}
-                                        </p>
+        <div className="h-full flex flex-col space-y-4">
+            <NewsTableControls
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                onRefresh={refreshData}
+            />
+
+            <div className="flex-1 rounded-lg border border-border overflow-hidden shadow-sm">
+                <div className="h-full overflow-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted hover:bg-muted">
+                                <TableHead className="text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <FileText className="h-4 w-4" />
+                                        <span>Tipo</span>
                                     </div>
-                                ) : (
-                                    <span className="text-muted-foreground text-sm">—</span>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <div className="text-sm">
-                                    <p>
-                                        {format(new Date(item.startDate), "dd/MM/yyyy", { locale: es })}
-                                    </p>
-                                    {item.endDate && (
-                                        <p className="text-muted-foreground">
-                                            {format(new Date(item.endDate), "dd/MM/yyyy", { locale: es })}
-                                        </p>
-                                    )}
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="text-sm">
-                                    {item.daysUnavailable !== null && (
-                                        <p>{item.daysUnavailable} días</p>
-                                    )}
-                                    {item.installmentsToSubtract !== null && (
-                                        <p className="text-muted-foreground">
-                                            {item.installmentsToSubtract} cuotas
-                                        </p>
-                                    )}
-                                    {item.daysUnavailable === null && item.installmentsToSubtract === null && (
-                                        <span className="text-muted-foreground">—</span>
-                                    )}
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <Badge variant={item.isActive ? "default" : "secondary"}>
-                                    {item.isActive ? "Activa" : "Inactiva"}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="text-right space-x-2">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => onEdit(item)}
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="sm">
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Eliminar novedad?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Esta acción no se puede deshacer. La novedad será eliminada
-                                                permanentemente.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => onDelete(item.id)}>
-                                                Eliminar
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                                </TableHead>
+                                <TableHead className="text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <Activity className="h-4 w-4" />
+                                        <span>Categoría</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <Newspaper className="h-4 w-4" />
+                                        <span>Título</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="hidden md:table-cell text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <User className="h-4 w-4" />
+                                        <span>Cliente / Vehículo</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="hidden lg:table-cell text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <Calendar className="h-4 w-4" />
+                                        <span>Fechas</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="hidden xl:table-cell text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <Clock className="h-4 w-4" />
+                                        <span>Días / Cuotas</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-foreground font-medium">
+                                    <div className="flex items-center gap-1.5">
+                                        <Activity className="h-4 w-4" />
+                                        <span>Estado</span>
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-right text-foreground font-medium">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <Settings className="h-4 w-4" />
+                                        <span>Acciones</span>
+                                    </div>
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                Array.from({ length: 4 }).map((_, index) => (
+                                    <TableRow
+                                        key={`skeleton-${index}`}
+                                        className="border-border hover:bg-muted/50"
+                                    >
+                                        <TableCell>
+                                            <Skeleton className="h-5 w-[100px]" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-5 w-[100px]" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-5 w-[150px]" />
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell">
+                                            <Skeleton className="h-5 w-[120px]" />
+                                        </TableCell>
+                                        <TableCell className="hidden lg:table-cell">
+                                            <Skeleton className="h-5 w-[100px]" />
+                                        </TableCell>
+                                        <TableCell className="hidden xl:table-cell">
+                                            <Skeleton className="h-5 w-[80px]" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton className="h-5 w-[60px]" />
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                {Array.from({ length: 2 }).map((_, i) => (
+                                                    <Skeleton
+                                                        key={`action-skeleton-${index}-${i}`}
+                                                        className="h-8 w-8 rounded-md"
+                                                    />
+                                                ))}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : news.length === 0 ? (
+                                <TableRow className="border-border">
+                                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <Newspaper className="h-10 w-10 text-muted-foreground/30" />
+                                            <p className="text-sm">
+                                                No se encontraron novedades
+                                            </p>
+                                            {searchTerm && (
+                                                <Button
+                                                    variant="link"
+                                                    onClick={() => setSearchTerm("")}
+                                                    className="text-primary"
+                                                >
+                                                    Limpiar búsqueda
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                news.map((item) => (
+                                    <NewsTableRow
+                                        key={item.id}
+                                        news={item}
+                                        onDelete={handleDelete}
+                                        onRefresh={refreshData}
+                                    />
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+
+            <NewsTablePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={setCurrentPage}
+            />
+
+            <NewsTableDialogs
+                deleteDialogOpen={deleteDialogOpen}
+                onDeleteDialogChange={setDeleteDialogOpen}
+                onConfirmDelete={confirmDelete}
+            />
         </div>
     )
 }
