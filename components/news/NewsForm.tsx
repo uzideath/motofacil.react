@@ -35,7 +35,24 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
 import { Loader2 } from "lucide-react"
+
+// Categories for loan-specific news
+const LOAN_CATEGORIES = [
+    NewsCategory.WORKSHOP,
+    NewsCategory.MAINTENANCE,
+    NewsCategory.ACCIDENT,
+    NewsCategory.THEFT,
+]
+
+// Categories for store-wide news
+const STORE_CATEGORIES = [
+    NewsCategory.DAY_OFF,
+    NewsCategory.HOLIDAY,
+    NewsCategory.SYSTEM_MAINTENANCE,
+    NewsCategory.OTHER,
+]
 
 const newsSchema = z.object({
     type: z.nativeEnum(NewsType),
@@ -91,10 +108,10 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
     const daysUnavailable = form.watch("daysUnavailable")
 
     useEffect(() => {
-        if (open && currentStore) {
+        if (open && currentStore && newsType === NewsType.LOAN_SPECIFIC) {
             loadLoans()
         }
-    }, [open, currentStore])
+    }, [open, currentStore, newsType])
 
     useEffect(() => {
         if (news) {
@@ -113,7 +130,20 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 installmentsToSubtract: news.installmentsToSubtract || 0,
             })
         } else {
-            form.reset()
+            form.reset({
+                type: NewsType.LOAN_SPECIFIC,
+                category: NewsCategory.WORKSHOP,
+                title: "",
+                description: "",
+                notes: "",
+                startDate: new Date().toISOString().split("T")[0],
+                endDate: "",
+                isActive: true,
+                loanId: "",
+                autoCalculateInstallments: false,
+                daysUnavailable: 0,
+                installmentsToSubtract: 0,
+            })
         }
     }, [news, open])
 
@@ -127,15 +157,28 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 .find((c) => c.startsWith("authToken="))
                 ?.split("=")[1]
 
-            const response = await HttpService.get<{ data: Loan[] }>(
-                `/api/v1/loans?page=1&limit=1000&storeId=${currentStore.id}`,
+            const response = await HttpService.get<Loan[]>(
+                `/api/v1/loans`,
                 {
                     headers: { Authorization: token ? `Bearer ${token}` : "" },
                 }
             )
-            setLoans(response.data.data || [])
-        } catch (error) {
+            
+            console.log("Loans response:", response)
+            const loansData = Array.isArray(response.data) ? response.data : []
+            setLoans(loansData)
+            
+            toast({
+                title: "Préstamos cargados",
+                description: `${loansData.length} préstamos disponibles`,
+            })
+        } catch (error: any) {
             console.error("Error loading loans:", error)
+            toast({
+                variant: "destructive",
+                title: "Error al cargar préstamos",
+                description: error?.message || "No se pudieron cargar los préstamos",
+            })
         } finally {
             setLoadingLoans(false)
         }
@@ -194,165 +237,139 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="type"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Tipo de Novedad</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un tipo" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value={NewsType.LOAN_SPECIFIC}>
-                                                Préstamo Específico
-                                            </SelectItem>
-                                            <SelectItem value={NewsType.STORE_WIDE}>
-                                                Toda la Tienda
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        {newsType === NewsType.LOAN_SPECIFIC
-                                            ? "Afecta solo a un préstamo específico"
-                                            : "Afecta a toda la tienda"}
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {/* SECTION 1: Type and Basic Info */}
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-lg font-semibold">Información General</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Tipo y detalles básicos de la novedad
+                                </p>
+                            </div>
 
-                        {newsType === NewsType.LOAN_SPECIFIC && (
                             <FormField
                                 control={form.control}
-                                name="loanId"
+                                name="type"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Préstamo</FormLabel>
+                                        <FormLabel>Tipo de Novedad</FormLabel>
                                         <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value}
-                                            disabled={loadingLoans}
+                                            onValueChange={(value) => {
+                                                field.onChange(value)
+                                                // Reset category when type changes
+                                                const defaultCategory = value === NewsType.LOAN_SPECIFIC 
+                                                    ? NewsCategory.WORKSHOP 
+                                                    : NewsCategory.DAY_OFF
+                                                form.setValue("category", defaultCategory)
+                                            }}
+                                            value={field.value}
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona un préstamo" />
+                                                    <SelectValue placeholder="Selecciona un tipo" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {loans.map((loan) => (
-                                                    <SelectItem key={loan.id} value={loan.id}>
-                                                        {loan.user.name} - {loan.vehicle?.plate || "N/A"}
-                                                    </SelectItem>
-                                                ))}
+                                                <SelectItem value={NewsType.LOAN_SPECIFIC}>
+                                                    Préstamo Específico
+                                                </SelectItem>
+                                                <SelectItem value={NewsType.STORE_WIDE}>
+                                                    Toda la Tienda
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        <FormDescription>
+                                            {newsType === NewsType.LOAN_SPECIFIC
+                                                ? "Afecta solo a un préstamo específico (vehículo en taller, accidente, etc.)"
+                                                : "Afecta a toda la tienda (festivos, días libres, mantenimiento del sistema)"}
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                        )}
 
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Categoría</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona una categoría" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value={NewsCategory.WORKSHOP}>Taller</SelectItem>
-                                            <SelectItem value={NewsCategory.MAINTENANCE}>Mantenimiento</SelectItem>
-                                            <SelectItem value={NewsCategory.ACCIDENT}>Accidente</SelectItem>
-                                            <SelectItem value={NewsCategory.THEFT}>Robo</SelectItem>
-                                            <SelectItem value={NewsCategory.DAY_OFF}>Día Libre</SelectItem>
-                                            <SelectItem value={NewsCategory.HOLIDAY}>Festivo</SelectItem>
-                                            <SelectItem value={NewsCategory.SYSTEM_MAINTENANCE}>
-                                                Mantenimiento del Sistema
-                                            </SelectItem>
-                                            <SelectItem value={NewsCategory.OTHER}>Otro</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
+                            {newsType === NewsType.LOAN_SPECIFIC && (
+                                <FormField
+                                    control={form.control}
+                                    name="loanId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Préstamo</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                disabled={loadingLoans}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={
+                                                            loadingLoans 
+                                                                ? "Cargando préstamos..." 
+                                                                : loans.length === 0 
+                                                                    ? "No hay préstamos disponibles"
+                                                                    : "Selecciona un préstamo"
+                                                        } />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {loans.map((loan) => (
+                                                        <SelectItem key={loan.id} value={loan.id}>
+                                                            {loan.user?.name || "Sin nombre"} - {loan.vehicle?.plate || "N/A"}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                {loadingLoans && "Cargando préstamos..."}
+                                                {!loadingLoans && loans.length === 0 && "No hay préstamos activos en esta tienda"}
+                                                {!loadingLoans && loans.length > 0 && `${loans.length} préstamos disponibles`}
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             )}
-                        />
 
-                        <FormField
-                            control={form.control}
-                            name="title"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Título</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Título de la novedad" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Descripción</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Descripción detallada"
-                                            {...field}
-                                            rows={3}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Notas (Opcional)</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Notas adicionales"
-                                            {...field}
-                                            rows={2}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="startDate"
+                                name="category"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Fecha de Inicio</FormLabel>
-                                        <FormControl>
-                                            <Input type="date" {...field} />
-                                        </FormControl>
+                                        <FormLabel>Categoría</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Selecciona una categoría" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {newsType === NewsType.LOAN_SPECIFIC ? (
+                                                    <>
+                                                        <SelectItem value={NewsCategory.WORKSHOP}>Taller</SelectItem>
+                                                        <SelectItem value={NewsCategory.MAINTENANCE}>Mantenimiento</SelectItem>
+                                                        <SelectItem value={NewsCategory.ACCIDENT}>Accidente</SelectItem>
+                                                        <SelectItem value={NewsCategory.THEFT}>Robo</SelectItem>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <SelectItem value={NewsCategory.DAY_OFF}>Día Libre</SelectItem>
+                                                        <SelectItem value={NewsCategory.HOLIDAY}>Festivo</SelectItem>
+                                                        <SelectItem value={NewsCategory.SYSTEM_MAINTENANCE}>
+                                                            Mantenimiento del Sistema
+                                                        </SelectItem>
+                                                        <SelectItem value={NewsCategory.OTHER}>Otro</SelectItem>
+                                                    </>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormDescription>
+                                            {newsType === NewsType.LOAN_SPECIFIC
+                                                ? "Tipo de incidente o situación del vehículo"
+                                                : "Tipo de evento que afecta a toda la tienda"}
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -360,21 +377,118 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
 
                             <FormField
                                 control={form.control}
-                                name="endDate"
+                                name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Fecha de Fin (Opcional)</FormLabel>
+                                        <FormLabel>Título</FormLabel>
                                         <FormControl>
-                                            <Input type="date" {...field} />
+                                            <Input placeholder="Título de la novedad" {...field} />
                                         </FormControl>
                                         <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Descripción</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Descripción detallada"
+                                                {...field}
+                                                rows={3}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="notes"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Notas (Opcional)</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Notas adicionales"
+                                                {...field}
+                                                rows={2}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="startDate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Fecha de Inicio</FormLabel>
+                                            <FormControl>
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="endDate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Fecha de Fin (Opcional)</FormLabel>
+                                            <FormControl>
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <FormField
+                                control={form.control}
+                                name="isActive"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Activa</FormLabel>
+                                            <FormDescription>
+                                                Marcar como activa o inactiva
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
                                     </FormItem>
                                 )}
                             />
                         </div>
 
+                        <Separator />
+
+                        {/* SECTION 2: Loan-Specific Settings (only for loan-specific news) */}
                         {newsType === NewsType.LOAN_SPECIFIC && (
-                            <>
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-lg font-semibold">Configuración de Cuotas</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Define los días y cuotas afectadas por esta novedad
+                                    </p>
+                                </div>
+
                                 <FormField
                                     control={form.control}
                                     name="autoCalculateInstallments"
@@ -385,7 +499,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                     Auto-calcular Cuotas
                                                 </FormLabel>
                                                 <FormDescription>
-                                                    Calcular automáticamente las cuotas a descontar basado en los días no disponibles
+                                                    Calcular automáticamente las cuotas a descontar basado en los días no disponibles y la frecuencia de pago
                                                 </FormDescription>
                                             </div>
                                             <FormControl>
@@ -409,12 +523,16 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        placeholder="0"
                                                         {...field}
                                                         onChange={(e) =>
                                                             field.onChange(parseInt(e.target.value) || 0)
                                                         }
                                                     />
                                                 </FormControl>
+                                                <FormDescription>
+                                                    Número de días que el vehículo no estará disponible
+                                                </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -430,6 +548,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                     <Input
                                                         type="number"
                                                         min="0"
+                                                        placeholder="0"
                                                         disabled={autoCalculate}
                                                         {...field}
                                                         onChange={(e) =>
@@ -439,37 +558,16 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                 </FormControl>
                                                 <FormDescription>
                                                     {autoCalculate
-                                                        ? "Se calculará automáticamente"
-                                                        : "Especificar manualmente"}
+                                                        ? "Se calculará automáticamente según la frecuencia de pago"
+                                                        : "Especificar manualmente el número de cuotas"}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                 </div>
-                            </>
+                            </div>
                         )}
-
-                        <FormField
-                            control={form.control}
-                            name="isActive"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Activa</FormLabel>
-                                        <FormDescription>
-                                            Marcar como activa o inactiva
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
 
                         <div className="flex gap-2 justify-end">
                             <Button type="button" variant="outline" onClick={onClose}>
