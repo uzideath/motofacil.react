@@ -49,6 +49,8 @@ export interface TransactionFiltersState {
   providerFilter: string
   sortField: SortField
   sortDirection: SortDirection
+  startDate?: string
+  endDate?: string
 }
 
 export interface TransactionResponse {

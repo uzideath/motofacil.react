@@ -42,6 +42,7 @@ export function TransactionTable({ token, onSelect }: TransactionTableProps) {
     handleSearchChange,
     handleTypeFilterChange,
     handleProviderFilterChange,
+    handleDateRangeChange,
     handleSort,
     resetFilters,
     handleSelection,
@@ -101,9 +102,12 @@ export function TransactionTable({ token, onSelect }: TransactionTableProps) {
           searchTerm={filters.searchTerm}
           typeFilter={filters.typeFilter}
           providerFilter={filters.providerFilter}
+          startDate={filters.startDate}
+          endDate={filters.endDate}
           onSearchChange={handleSearchChange}
           onTypeFilterChange={handleTypeFilterChange}
           onProviderFilterChange={handleProviderFilterChange}
+          onDateRangeChange={handleDateRangeChange}
           onResetFilters={resetFilters}
           hasActiveFilters={hasActiveFilters}
         />

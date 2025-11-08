@@ -39,6 +39,8 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         providerFilter: "all",
         sortField: null,
         sortDirection: "asc",
+        startDate: undefined,
+        endDate: undefined,
     })
 
     // Throttling ref to prevent excessive updates
@@ -92,7 +94,9 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             filters.searchTerm !== "" ||
             filters.typeFilter !== "all" ||
             filters.providerFilter !== "all" ||
-            filters.sortField !== null,
+            filters.sortField !== null ||
+            filters.startDate !== undefined ||
+            filters.endDate !== undefined,
         [filters],
     )
 
@@ -113,7 +117,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         try {
             setLoading(true)
             setRefreshing(true)
-            const data = await fetchAvailableTransactions(token)
+            const data = await fetchAvailableTransactions(token, filters.startDate, filters.endDate)
             console.log('📦 useTransactions - Fetched transactions:', data);
             setTransactions(data)
         } catch (error) {
@@ -122,7 +126,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             setLoading(false)
             setTimeout(() => setRefreshing(false), 500)
         }
-    }, [token])
+    }, [token, filters.startDate, filters.endDate])
 
     // Initial fetch
     useEffect(() => {
@@ -203,6 +207,11 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         }))
     }, [])
 
+    const handleDateRangeChange = useCallback((startDate?: string, endDate?: string) => {
+        setFilters((prev) => ({ ...prev, startDate, endDate }))
+        setCurrentPage(1)
+    }, [])
+
     const resetFilters = useCallback(() => {
         setFilters({
             searchTerm: "",
@@ -210,6 +219,8 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             providerFilter: "all",
             sortField: null,
             sortDirection: "asc",
+            startDate: undefined,
+            endDate: undefined,
         })
         setCurrentPage(1)
     }, [])
@@ -342,6 +353,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
         handleSearchChange,
         handleTypeFilterChange,
         handleProviderFilterChange,
+        handleDateRangeChange,
         handleSort,
         resetFilters,
         handleSelection,

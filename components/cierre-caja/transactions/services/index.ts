@@ -7,12 +7,27 @@ import { Installment, Expense } from "@/lib/types"
 /**
  * Fetches available transactions (installments and expenses)
  * @param token - Authentication token
+ * @param startDate - Optional start date filter (ISO format)
+ * @param endDate - Optional end date filter (ISO format)
  */
-export const fetchAvailableTransactions = async (token: string): Promise<Transaction[]> => {
+export const fetchAvailableTransactions = async (
+    token: string,
+    startDate?: string,
+    endDate?: string
+): Promise<Transaction[]> => {
     try {
-        console.log('🌐 Service - Fetching all available transactions');
+        console.log('🌐 Service - Fetching available transactions', { startDate, endDate });
 
-        const response = await HttpService.get<TransactionResponse>(API_ENDPOINTS.AVAILABLE_PAYMENTS, {
+        // Build query parameters
+        const params = new URLSearchParams()
+        if (startDate) params.append('startDate', startDate)
+        if (endDate) params.append('endDate', endDate)
+        
+        const url = params.toString() 
+            ? `${API_ENDPOINTS.AVAILABLE_PAYMENTS}?${params.toString()}`
+            : API_ENDPOINTS.AVAILABLE_PAYMENTS
+
+        const response = await HttpService.get<TransactionResponse>(url, {
             headers: { Authorization: token ? `Bearer ${token}` : "" },
         })
 
