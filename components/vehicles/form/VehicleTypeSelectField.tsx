@@ -13,10 +13,8 @@ interface VehicleTypeSelectFieldProps {
 
 const vehicleTypeLabels: Record<VehicleType, string> = {
     [VehicleType.MOTORCYCLE]: "Motocicleta",
-    [VehicleType.CAR]: "Automóvil",
-    [VehicleType.TRUCK]: "Camión",
-    [VehicleType.VAN]: "Furgoneta",
-    [VehicleType.ATV]: "Cuatrimoto",
+    [VehicleType.MOTOCAR]: "Motocarguero",
+    [VehicleType.MOTOLOAD]: "Motocarro",
     [VehicleType.OTHER]: "Otro",
 }
 

@@ -30,6 +30,8 @@ const vehicleSchema = z.object({
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().min(1, { message: "El GPS debe ser un número mayor o igual a 1" }).optional(),
     ),
+    soatDueDate: z.string().optional().or(z.literal("")),
+    technomechDueDate: z.string().optional().or(z.literal("")),
 })
 
 export type VehicleFormValues = z.infer<typeof vehicleSchema>
@@ -59,6 +61,8 @@ export function useVehicleForm({ vehicleId, vehicleData, onCreated, onClose }: U
             color: "",
             cc: undefined,
             gps: undefined,
+            soatDueDate: "",
+            technomechDueDate: "",
         },
         mode: "onChange",
     })
@@ -78,6 +82,8 @@ export function useVehicleForm({ vehicleId, vehicleData, onCreated, onClose }: U
                 color: vehicleData.color ?? "",
                 cc: vehicleData.cc ?? undefined,
                 gps: vehicleData.gps ?? undefined,
+                soatDueDate: vehicleData.soatDueDate ?? "",
+                technomechDueDate: vehicleData.technomechDueDate ?? "",
             })
         }
     }, [vehicleData, form])
@@ -133,6 +139,8 @@ export function useVehicleForm({ vehicleId, vehicleData, onCreated, onClose }: U
                 color: "",
                 cc: undefined,
                 gps: undefined,
+                soatDueDate: "",
+                technomechDueDate: "",
             })
         } catch (error) {
             console.error("Error al guardar vehículo:", error)
@@ -159,6 +167,8 @@ export function useVehicleForm({ vehicleId, vehicleData, onCreated, onClose }: U
             color: "",
             cc: undefined,
             gps: undefined,
+            soatDueDate: "",
+            technomechDueDate: "",
         })
     }
 

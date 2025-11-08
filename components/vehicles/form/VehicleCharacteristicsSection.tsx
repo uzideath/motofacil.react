@@ -64,6 +64,26 @@ export function CharacteristicsSection({ control }: CharacteristicsSectionProps)
                         type="number"
                         required={false}
                     />
+
+                    <VehicleFormField
+                        control={control}
+                        name="soatDueDate"
+                        label="Vencimiento SOAT"
+                        placeholder="Fecha de vencimiento"
+                        description="Fecha de vencimiento del Seguro Obligatorio"
+                        type="date"
+                        required={false}
+                    />
+
+                    <VehicleFormField
+                        control={control}
+                        name="technomechDueDate"
+                        label="Vencimiento Tecnomecánica"
+                        placeholder="Fecha de vencimiento"
+                        description="Fecha de vencimiento de la revisión tecnomecánica"
+                        type="date"
+                        required={false}
+                    />
                 </div>
             </CardContent>
         </Card>

@@ -52,10 +52,8 @@ type User = {
 
 export enum VehicleType {
     MOTORCYCLE = "MOTORCYCLE",
-    CAR = "CAR",
-    TRUCK = "TRUCK",
-    VAN = "VAN",
-    ATV = "ATV",
+    MOTOCAR = "MOTOCAR",
+    MOTOLOAD = "MOTOLOAD",
     OTHER = "OTHER",
 }
 
@@ -82,6 +80,8 @@ type Vehicle = {
     color: string | null
     cc: number | null
     gps: number | null
+    soatDueDate?: string | null
+    technomechDueDate?: string | null
     createdAt: string
     updatedAt: string
     archivedLoansCount?: number

@@ -1,5 +1,5 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tag, Bike, Hash, Palette, Gauge, Cog, Frame, MapPin, Building2, Settings } from "lucide-react"
+import { Tag, Bike, Hash, Palette, Gauge, Cog, Frame, MapPin, Building2, Settings, Shield, Wrench } from "lucide-react"
 
 export function VehicleTableHeaders() {
     return (
@@ -37,14 +37,14 @@ export function VehicleTableHeaders() {
                 </TableHead>
                 <TableHead className="text-foreground font-medium">
                     <div className="flex items-center gap-2">
-                        <Cog className="h-4 w-4" />
-                        <span>Motor</span>
+                        <Shield className="h-4 w-4" />
+                        <span>SOAT</span>
                     </div>
                 </TableHead>
                 <TableHead className="text-foreground font-medium">
                     <div className="flex items-center gap-2">
-                        <Frame className="h-4 w-4" />
-                        <span>Chasis</span>
+                        <Wrench className="h-4 w-4" />
+                        <span>Tecnomecánica</span>
                     </div>
                 </TableHead>
                 <TableHead className="text-foreground font-medium">

@@ -42,40 +42,44 @@ export function VehicleTableRow({
             </TableCell>
             <TableCell>{moto.color ?? "—"}</TableCell>
             <TableCell>{moto.cc ? `${moto.cc} cc` : "—"}</TableCell>
-            <TableCell className="font-mono text-xs">
-                {moto.engine ? (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger className="cursor-default">
-                                <span className="bg-muted px-2 py-1 rounded border border-border">
-                                    {moto.engine}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Número de motor</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+            <TableCell className="text-xs">
+                {moto.soatDueDate ? (
+                    <Badge 
+                        variant="outline" 
+                        className={
+                            new Date(moto.soatDueDate) < new Date()
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-300"
+                                : new Date(moto.soatDueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300"
+                        }
+                    >
+                        {new Date(moto.soatDueDate).toLocaleDateString('es-CO')}
+                    </Badge>
                 ) : (
-                    "—"
+                    <Badge variant="outline" className="text-muted-foreground">
+                        No registrado
+                    </Badge>
                 )}
             </TableCell>
-            <TableCell className="font-mono text-xs">
-                {moto.chassis ? (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger className="cursor-default">
-                                <span className="bg-muted px-2 py-1 rounded border border-border">
-                                    {moto.chassis}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Número de chasis</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+            <TableCell className="text-xs">
+                {moto.technomechDueDate ? (
+                    <Badge 
+                        variant="outline" 
+                        className={
+                            new Date(moto.technomechDueDate) < new Date()
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-300"
+                                : new Date(moto.technomechDueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300"
+                                : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300"
+                        }
+                    >
+                        {new Date(moto.technomechDueDate).toLocaleDateString('es-CO')}
+                    </Badge>
                 ) : (
-                    "—"
+                    <Badge variant="outline" className="text-muted-foreground">
+                        No registrado
+                    </Badge>
                 )}
             </TableCell>
             <TableCell>
