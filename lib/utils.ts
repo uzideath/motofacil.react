@@ -96,3 +96,32 @@ export const formatProviderName = (provider: string | undefined): string => {
       return provider
   }
 }
+
+/**
+ * Calculates the partial installment debt information
+ * @param remainingInstallments - The remaining fractional installments (e.g., 1.5)
+ * @param installmentAmount - The amount per installment
+ * @returns Object with full installments, partial amount, and total debt
+ */
+export function calculatePartialInstallmentDebt(
+  remainingInstallments: number,
+  installmentAmount: number
+): {
+  fullInstallments: number
+  partialInstallmentAmount: number
+  partialInstallmentPercentage: number
+  totalDebt: number
+} {
+  const fullInstallments = Math.floor(remainingInstallments)
+  const fractionalPart = remainingInstallments - fullInstallments
+  const partialInstallmentAmount = fractionalPart * installmentAmount
+  const partialInstallmentPercentage = fractionalPart * 100
+  const totalDebt = remainingInstallments * installmentAmount
+
+  return {
+    fullInstallments,
+    partialInstallmentAmount,
+    partialInstallmentPercentage,
+    totalDebt
+  }
+}

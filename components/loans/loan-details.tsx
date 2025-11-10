@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { formatCurrency, formatDate, getInterest } from "@/lib/utils"
+import { formatCurrency, formatDate, getInterest, calculatePartialInstallmentDebt } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { CreditCard, DollarSign, Percent } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -401,7 +401,31 @@ export function LoanDetails({
                     </div>
                     <p className="text-xl font-bold text-amber-400">{formatCurrency(loan.debtRemaining || 0)}</p>
                     <div className="text-xs text-blue-200/60 mt-1">
-                      <span>{loan.remainingInstallments || 0} cuotas pendientes</span>
+                      {(() => {
+                        const partialDebt = calculatePartialInstallmentDebt(
+                          loan.remainingInstallments || 0,
+                          loan.installmentPaymentAmmount || 0
+                        )
+                        
+                        if (partialDebt.fullInstallments > 0 && partialDebt.partialInstallmentAmount > 0) {
+                          return (
+                            <>
+                              <span>{partialDebt.fullInstallments} cuotas completas</span>
+                              <span className="block mt-0.5">
+                                + {formatCurrency(partialDebt.partialInstallmentAmount)} ({partialDebt.partialInstallmentPercentage.toFixed(1)}% de cuota)
+                              </span>
+                            </>
+                          )
+                        } else if (partialDebt.partialInstallmentAmount > 0 && partialDebt.fullInstallments === 0) {
+                          return (
+                            <span>
+                              {formatCurrency(partialDebt.partialInstallmentAmount)} ({partialDebt.partialInstallmentPercentage.toFixed(1)}% de cuota)
+                            </span>
+                          )
+                        } else {
+                          return <span>{partialDebt.fullInstallments} cuotas pendientes</span>
+                        }
+                      })()}
                     </div>
                   </div>
 

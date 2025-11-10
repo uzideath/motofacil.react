@@ -11,7 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { formatCurrency, formatDate, cn } from "@/lib/utils"
+import { formatCurrency, formatDate, cn, calculatePartialInstallmentDebt } from "@/lib/utils"
 import {
     User,
     Bike,
@@ -242,6 +242,16 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     />
                 </div>
             </TableCell>
+            <TableCell className="hidden lg:table-cell font-medium">
+                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                    <DollarSign className="h-4 w-4" />
+                    {formatCurrency(loan.totalPaid)}
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <Percent className="h-3 w-3" />
+                    {((loan.totalPaid / loan.totalAmount) * 100).toFixed(1)}% del total
+                </div>
+            </TableCell>
             <TableCell className="hidden xl:table-cell">
                 <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-primary">
@@ -265,9 +275,41 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <Wallet className="h-4 w-4" />
                     {formatCurrency(loan.debtRemaining)}
                 </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <Percent className="h-3 w-3" />
-                    Interés: {loan.interestRate}%
+                <div className="text-xs text-muted-foreground mt-1">
+                    {(() => {
+                        const partialDebt = calculatePartialInstallmentDebt(
+                            loan.remainingInstallments || 0,
+                            loan.installmentPaymentAmmount || 0
+                        )
+                        
+                        if (partialDebt.fullInstallments > 0 && partialDebt.partialInstallmentAmount > 0) {
+                            return (
+                                <div className="space-y-0.5">
+                                    <div className="flex items-center gap-1">
+                                        <Percent className="h-3 w-3" />
+                                        {partialDebt.fullInstallments} cuotas + {partialDebt.partialInstallmentPercentage.toFixed(0)}%
+                                    </div>
+                                    <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                        ({formatCurrency(partialDebt.partialInstallmentAmount)} parcial)
+                                    </div>
+                                </div>
+                            )
+                        } else if (partialDebt.partialInstallmentAmount > 0 && partialDebt.fullInstallments === 0) {
+                            return (
+                                <div className="flex items-center gap-1">
+                                    <Percent className="h-3 w-3" />
+                                    {partialDebt.partialInstallmentPercentage.toFixed(0)}% de cuota ({formatCurrency(partialDebt.partialInstallmentAmount)})
+                                </div>
+                            )
+                        } else {
+                            return (
+                                <div className="flex items-center gap-1">
+                                    <Percent className="h-3 w-3" />
+                                    {partialDebt.fullInstallments} cuotas
+                                </div>
+                            )
+                        }
+                    })()}
                 </div>
             </TableCell>
             <TableCell>{getStatusBadge(loan.status, loan.archived)}</TableCell>

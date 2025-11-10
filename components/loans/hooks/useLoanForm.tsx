@@ -59,19 +59,8 @@ const calculateInstallmentsFromDates = (startDate: string, endDate: string, freq
     
     switch (frequency) {
         case "DAILY":
-            // Count business days (Monday-Saturday, excluding Sundays)
-            let businessDays = 0
-            const currentDate = new Date(start)
-            
-            while (currentDate <= end) {
-                // If it's not Sunday (0 = Sunday), count it
-                if (currentDate.getDay() !== 0) {
-                    businessDays++
-                }
-                currentDate.setDate(currentDate.getDate() + 1)
-            }
-            
-            return Math.max(1, businessDays)
+            // Count all days (including Sundays) - no exclusions
+            return Math.max(1, diffDays)
         case "WEEKLY":
             return Math.ceil(diffDays / 7)
         case "BIWEEKLY":
@@ -256,42 +245,15 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         }
     }
 
-    // Helper function to add business days (excluding Sundays)
-    const addBusinessDaysToDate = (startDate: Date, daysToAdd: number): Date => {
-        let currentDate = new Date(startDate)
-        let addedDays = 0
-
-        while (addedDays < daysToAdd) {
-            currentDate.setDate(currentDate.getDate() + 1)
-            // If it's not Sunday (0 = Sunday), count it
-            if (currentDate.getDay() !== 0) {
-                addedDays++
-            }
-        }
-
-        return currentDate
-    }
-
-    // Calculate end date helper function
+    // Calculate end date helper function - adds months directly
     const calculateEndDateFromStart = (startDateStr: string, paymentFreq: string, termMonths: number): string => {
         const start = new Date(startDateStr)
         let calculatedEndDate: Date
 
-        if (paymentFreq === "DAILY") {
-            const businessDays = termMonths * 30
-            calculatedEndDate = addBusinessDaysToDate(start, businessDays)
-        } else if (paymentFreq === "WEEKLY") {
-            const weeks = termMonths * 4
-            calculatedEndDate = new Date(start)
-            calculatedEndDate.setDate(calculatedEndDate.getDate() + (weeks * 7))
-        } else if (paymentFreq === "BIWEEKLY") {
-            const biweeks = termMonths * 2
-            calculatedEndDate = new Date(start)
-            calculatedEndDate.setDate(calculatedEndDate.getDate() + (biweeks * 14))
-        } else {
-            calculatedEndDate = new Date(start)
-            calculatedEndDate.setMonth(calculatedEndDate.getMonth() + termMonths)
-        }
+        // For all frequencies, calculate based on the term in months
+        // This provides a consistent end date regardless of payment frequency
+        calculatedEndDate = new Date(start)
+        calculatedEndDate.setMonth(calculatedEndDate.getMonth() + termMonths)
 
         return calculatedEndDate.toISOString().split('T')[0]
     }
@@ -365,6 +327,30 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
         // Only update if the value has actually changed (prevent infinite loop)
         if (calculatedTotal !== totalAmount) {
             form.setValue("totalAmount", calculatedTotal, { shouldValidate: false })
+        }
+    }, [watchedValues, isOpen])
+
+    // Auto-calculate end date when start date or loan term changes
+    useEffect(() => {
+        if (!isOpen || !isMounted.current) return
+
+        const [
+            totalAmount,
+            downPayment,
+            startDate,
+            endDate,
+            loanTermMonths,
+            interestRate,
+            interestType,
+            paymentFrequency,
+            installmentPaymentAmmount,
+            gpsAmount,
+        ] = watchedValues
+
+        // Only auto-calculate end date if we have start date and loan term, but no end date
+        if (startDate && loanTermMonths && loanTermMonths > 0 && !endDate) {
+            const calculatedEndDate = calculateEndDateFromStart(startDate, paymentFrequency, loanTermMonths)
+            form.setValue("endDate", calculatedEndDate, { shouldValidate: false })
         }
     }, [watchedValues, isOpen])
 
