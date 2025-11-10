@@ -59,7 +59,7 @@ const calculateInstallmentsFromDates = (startDate: string, endDate: string, freq
     
     switch (frequency) {
         case "DAILY":
-            // Count all days (including Sundays)
+            // Count all days (Monday-Sunday, 7 days a week)
             return Math.max(1, diffDays)
         case "WEEKLY":
             return Math.ceil(diffDays / 7)
