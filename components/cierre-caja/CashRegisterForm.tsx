@@ -12,6 +12,7 @@ import { formatCurrency, cn } from "@/lib/utils"
 import { ChartsTab } from "./form/components/ChartsTab"
 import { FormInputs } from "./form/components/FormInput"
 import { ProviderDisplay } from "./form/components/ProviderDisplay"
+import { CashCalculator } from "./form/components/CashCalculator"
 import { SuccessDialog } from "./form/components/SuccessDialog"
 import { SummaryTab } from "./form/components/SummaryTab"
 import { TransactionsTab } from "./form/components/TransactionsTab"
@@ -36,6 +37,7 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
         isReadOnly,
         handleInputChange,
         handleDateChange,
+        handleCashCountChange,
         handleSubmit,
         resetForm,
         setShowSuccessDialog,
@@ -73,6 +75,15 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                                 onInputChange={handleInputChange}
                                 onDateChange={handleDateChange}
                             />
+                            
+                            {calculations.cashInRegister > 0 && (
+                                <div className="pt-6 border-t border-border">
+                                    <CashCalculator
+                                        expectedCash={calculations.cashInRegister}
+                                        onCashCountChange={handleCashCountChange}
+                                    />
+                                </div>
+                            )}
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">
                             {closingPermissions.canCreate ? (
@@ -91,6 +102,12 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                                     {!isFormValid && incomes.length === 0 && (
                                         <p className="text-xs text-amber-600 mt-2 text-center">
                                             Seleccione al menos una transacción para continuar
+                                        </p>
+                                    )}
+                                    
+                                    {!isFormValid && incomes.length > 0 && calculations.cashInRegister > 0 && !formState.cashCountValid && (
+                                        <p className="text-xs text-amber-600 mt-2 text-center">
+                                            El conteo de efectivo debe coincidir con el esperado para continuar
                                         </p>
                                     )}
                                 </>

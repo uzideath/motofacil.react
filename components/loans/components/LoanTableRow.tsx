@@ -66,6 +66,32 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
     const contractPermissions = useResourcePermissions(Resource.CONTRACT)
 
     const getStatusBadge = (status: string, archived: boolean) => {
+        // Handle specific archived types first
+        switch (status) {
+            case "ARCHIVED_BY_DEFAULT":
+                return (
+                    <Badge className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        <span>Archivado por Mora</span>
+                    </Badge>
+                )
+            case "ARCHIVED_BY_THEFT":
+                return (
+                    <Badge className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Finalizado por Robo</span>
+                    </Badge>
+                )
+            case "ARCHIVED_BY_PROSECUTOR":
+                return (
+                    <Badge className="bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-1">
+                        <Gavel className="h-3 w-3" />
+                        <span>Archivado por Fiscalía</span>
+                    </Badge>
+                )
+        }
+
+        // Handle generic archived status
         if (archived) {
             return (
                 <Badge className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1">
@@ -75,6 +101,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
             )
         }
 
+        // Handle active statuses
         switch (status) {
             case "ACTIVE":
                 return (
@@ -87,14 +114,14 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 return (
                     <Badge className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
-                        <span>Completado</span>
+                        <span>Finalizado</span>
                     </Badge>
                 )
             case "DEFAULTED":
                 return (
                     <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1">
                         <XCircle className="h-3 w-3" />
-                        <span>Incumplido</span>
+                        <span>En Mora</span>
                     </Badge>
                 )
             case "PENDING":

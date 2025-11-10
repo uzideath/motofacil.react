@@ -129,9 +129,35 @@ export function MissingInstallmentsReportTable({ data, onExport, includeArchived
       case "ACTIVE":
         return "default"
       case "DEFAULTED":
+      case "ARCHIVED_BY_DEFAULT":
         return "destructive"
+      case "ARCHIVED_BY_THEFT":
+      case "ARCHIVED_BY_PROSECUTOR":
+      case "COMPLETED":
+        return "secondary"
       default:
         return "secondary"
+    }
+  }
+
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "ACTIVE":
+        return "Activo"
+      case "COMPLETED":
+        return "Finalizado"
+      case "DEFAULTED":
+        return "En Mora"
+      case "ARCHIVED_BY_DEFAULT":
+        return "Archivado por Mora"
+      case "ARCHIVED_BY_THEFT":
+        return "Finalizado por Robo"
+      case "ARCHIVED_BY_PROSECUTOR":
+        return "Archivado por Fiscalía"
+      case "PENDING":
+        return "Pendiente"
+      default:
+        return status
     }
   }
 
@@ -597,7 +623,7 @@ export function MissingInstallmentsReportTable({ data, onExport, includeArchived
                         
                         <TableCell>
                           <Badge variant={getStatusBadgeVariant(item.loanStatus)} className="text-xs">
-                            {item.loanStatus === "ACTIVE" ? "Activo" : "Mora"}
+                            {getStatusLabel(item.loanStatus)}
                           </Badge>
                         </TableCell>
                       </TableRow>

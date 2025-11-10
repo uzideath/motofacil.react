@@ -4,6 +4,19 @@ import type { SelectedTransaction as TransactionSelectedTransaction } from "../t
 // Re-export the SelectedTransaction from transactions to ensure consistency
 export type SelectedTransaction = TransactionSelectedTransaction
 
+export type DenominationCount = {
+    bills_100000: number
+    bills_50000: number
+    bills_20000: number
+    bills_10000: number
+    bills_5000: number
+    bills_2000: number
+    bills_1000: number
+    coins_500: number
+    coins_200: number
+    coins_100: number
+}
+
 export type FormState = {
     cashInRegister: string
     cashFromTransfers: string
@@ -14,6 +27,10 @@ export type FormState = {
     success: boolean
     error: boolean
     errorMessage: string
+    // Cash calculator fields
+    cashCounted: number
+    cashCountValid: boolean
+    denominationCounts: DenominationCount | null
 }
 
 export type CashRegisterFormProps = {

@@ -321,6 +321,21 @@ enum LoanStatus {
     COMPLETED = "COMPLETED",
     DEFAULTED = "DEFAULTED",
     ARCHIVED = "ARCHIVED",
+    ARCHIVED_BY_DEFAULT = "ARCHIVED_BY_DEFAULT",      // Archivado por mora
+    ARCHIVED_BY_THEFT = "ARCHIVED_BY_THEFT",          // Finalizado por robo
+    ARCHIVED_BY_PROSECUTOR = "ARCHIVED_BY_PROSECUTOR", // Archivado por fiscalía
+}
+
+// Loan Status Labels in Spanish
+export const LOAN_STATUS_LABELS: Record<LoanStatus, string> = {
+    [LoanStatus.PENDING]: "Pendiente",
+    [LoanStatus.ACTIVE]: "Activo",
+    [LoanStatus.COMPLETED]: "Finalizado",
+    [LoanStatus.DEFAULTED]: "En Mora",
+    [LoanStatus.ARCHIVED]: "Archivado",
+    [LoanStatus.ARCHIVED_BY_DEFAULT]: "Archivado por Mora",
+    [LoanStatus.ARCHIVED_BY_THEFT]: "Finalizado por Robo",
+    [LoanStatus.ARCHIVED_BY_PROSECUTOR]: "Archivado por Fiscalía",
 }
 
 export enum Providers {

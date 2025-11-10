@@ -24,6 +24,9 @@ const initialFormState: FormState = {
     success: false,
     error: false,
     errorMessage: "",
+    cashCounted: 0,
+    cashCountValid: false,
+    denominationCounts: null,
 }
 
 export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[], closingDate?: Date) => {
@@ -50,8 +53,10 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
     }, [formState, totalExpected, totalExpenses])
 
     const isFormValid = useMemo(() => {
-        return !formState.submitting && incomes.length > 0 && calculations.hasAnyValue
-    }, [formState.submitting, incomes.length, calculations.hasAnyValue])
+        const hasCashTransactions = calculations.cashInRegister > 0
+        const cashCountMatches = !hasCashTransactions || formState.cashCountValid
+        return !formState.submitting && incomes.length > 0 && calculations.hasAnyValue && cashCountMatches
+    }, [formState.submitting, formState.cashCountValid, incomes.length, calculations.hasAnyValue, calculations.cashInRegister])
 
     const isReadOnly = incomes.length > 0
 
@@ -99,6 +104,17 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         }))
     }
 
+    const handleCashCountChange = (totalCounted: number, isValid: boolean, counts: any) => {
+        setFormState((prev) => ({
+            ...prev,
+            cashCounted: totalCounted,
+            cashCountValid: isValid,
+            denominationCounts: counts,
+            success: false,
+            error: false,
+        }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setFormState((prev) => ({ ...prev, submitting: true, success: false, error: false }))
@@ -118,6 +134,9 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 provider: currentProvider,
                 providerId: currentProvider?.id,
                 date: closingDateString,
+                // Cash denomination counts
+                denominationCounts: formState.denominationCounts,
+                cashCounted: formState.cashCounted,
             }
 
             await HttpService.post("/api/v1/closing", payload)
@@ -164,6 +183,7 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         isReadOnly,
         handleInputChange,
         handleDateChange,
+        handleCashCountChange,
         handleSubmit,
         resetForm,
         setShowSuccessDialog,

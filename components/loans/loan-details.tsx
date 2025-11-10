@@ -91,6 +91,12 @@ export function LoanDetails({
         return "bg-green-500"
       case "DEFAULTED":
         return "bg-red-500"
+      case "ARCHIVED_BY_DEFAULT":
+        return "bg-red-600"
+      case "ARCHIVED_BY_THEFT":
+        return "bg-purple-600"
+      case "ARCHIVED_BY_PROSECUTOR":
+        return "bg-gray-600"
       default:
         return "bg-gray-500"
     }
@@ -102,9 +108,15 @@ export function LoanDetails({
       case "ACTIVE":
         return "Activo"
       case "COMPLETED":
-        return "Completado"
+        return "Finalizado"
       case "DEFAULTED":
-        return "Incumplido"
+        return "En Mora"
+      case "ARCHIVED_BY_DEFAULT":
+        return "Archivado por Mora"
+      case "ARCHIVED_BY_THEFT":
+        return "Finalizado por Robo"
+      case "ARCHIVED_BY_PROSECUTOR":
+        return "Archivado por Fiscalía"
       default:
         return status
     }
