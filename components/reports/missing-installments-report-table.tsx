@@ -588,7 +588,7 @@ export function MissingInstallmentsReportTable({ data, onExport, includeArchived
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-medium">{progress}%</span>
                               <span className="text-muted-foreground">
-                                {item.paidInstallments}/{item.totalInstallments}
+                                {item.paidInstallments.toFixed(2)}/{item.totalInstallments}
                               </span>
                             </div>
                             <Progress value={progress} className="h-1.5" />

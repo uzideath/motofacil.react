@@ -108,6 +108,12 @@ export function LoanTable() {
                     </TableHead>
                     <TableHead className="hidden xl:table-cell text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
+                        <DollarSign className="h-4 w-4" />
+                        <span>Total Abonado</span>
+                      </div>
+                    </TableHead>
+                    <TableHead className="hidden xl:table-cell text-foreground font-medium">
+                      <div className="flex items-center gap-1.5">
                         <Wallet className="h-4 w-4" />
                         <span>Deuda Restante</span>
                       </div>
@@ -157,6 +163,9 @@ export function LoanTable() {
                         <TableCell className="hidden xl:table-cell">
                           <Skeleton className="h-5 w-[100px]" />
                         </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <Skeleton className="h-5 w-[100px]" />
+                        </TableCell>
                         <TableCell>
                           <Skeleton className="h-5 w-[80px]" />
                         </TableCell>
@@ -174,7 +183,7 @@ export function LoanTable() {
                     ))
                   ) : currentItems.length === 0 ? (
                     <TableRow className="border-border">
-                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <DollarSign className="h-10 w-10 text-muted-foreground/30" />
                           <p className="text-sm">

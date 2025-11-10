@@ -371,7 +371,7 @@ export function LoanDetails({
                       <p className="text-sm font-medium text-blue-200/80">Progreso de Pagos</p>
                     </div>
                     <p className="text-xl font-bold text-white">
-                      {loan.paidInstallments || 0} / {loan.installments || 0}
+                      {(loan.paidInstallments || 0).toFixed(2)} / {loan.installments || 0}
                     </p>
                     <div className="mt-2">
                       <Progress 
@@ -401,7 +401,12 @@ export function LoanDetails({
                     </div>
                     <p className="text-xl font-bold text-amber-400">{formatCurrency(loan.debtRemaining || 0)}</p>
                     <div className="text-xs text-blue-200/60 mt-1">
-                      <span>{loan.remainingInstallments || 0} cuotas pendientes</span>
+                      <span>{(loan.remainingInstallments || 0).toFixed(2)} cuotas pendientes</span>
+                      {loan.remainingInstallments && loan.remainingInstallments < 1 && loan.remainingInstallments > 0 && (
+                        <span className="block text-amber-300 mt-1">
+                          (Deuda parcial: {formatCurrency(loan.debtRemaining || 0)})
+                        </span>
+                      )}
                     </div>
                   </div>
 

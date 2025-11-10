@@ -59,19 +59,8 @@ const calculateInstallmentsFromDates = (startDate: string, endDate: string, freq
     
     switch (frequency) {
         case "DAILY":
-            // Count business days (Monday-Saturday, excluding Sundays)
-            let businessDays = 0
-            const currentDate = new Date(start)
-            
-            while (currentDate <= end) {
-                // If it's not Sunday (0 = Sunday), count it
-                if (currentDate.getDay() !== 0) {
-                    businessDays++
-                }
-                currentDate.setDate(currentDate.getDate() + 1)
-            }
-            
-            return Math.max(1, businessDays)
+            // Count all days (including Sundays)
+            return Math.max(1, diffDays)
         case "WEEKLY":
             return Math.ceil(diffDays / 7)
         case "BIWEEKLY":

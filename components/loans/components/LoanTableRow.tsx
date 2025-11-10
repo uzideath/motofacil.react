@@ -226,7 +226,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <div className="text-sm flex items-center gap-1.5">
                         <CalendarDays className="h-4 w-4 text-primary" />
                         <span className="font-medium">
-                            {loan.paidInstallments} / {loan.installments}
+                            {loan.paidInstallments.toFixed(2)} / {loan.installments}
                         </span>
                     </div>
                 </div>
@@ -258,6 +258,15 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                             </span>
                         </div>
                     )}
+                </div>
+            </TableCell>
+            <TableCell className="hidden xl:table-cell font-medium">
+                <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                    <DollarSign className="h-4 w-4" />
+                    {formatCurrency(loan.totalPaid || 0)}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                    {loan.installments ? ((loan.paidInstallments / loan.installments) * 100).toFixed(1) : 0}% pagado
                 </div>
             </TableCell>
             <TableCell className="hidden xl:table-cell font-medium">
