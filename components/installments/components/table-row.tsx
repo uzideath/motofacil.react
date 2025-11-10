@@ -88,6 +88,11 @@ export function InstallmentRow({
                         <Calendar className="mr-2 h-4 w-4" />
                         {formatSpanishDate(installment.latePaymentDate)}
                     </div>
+                ) : installment.isAdvance && installment.advancePaymentDate ? (
+                    <div className="flex items-center text-blue-400">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.advancePaymentDate)}
+                    </div>
                 ) : (
                     <div className="flex items-center text-muted-foreground">
                         <Calendar className="mr-2 h-4 w-4" />
@@ -115,6 +120,14 @@ export function InstallmentRow({
                     >
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         <span>Atrasada</span>
+                    </Badge>
+                ) : installment.isAdvance ? (
+                    <Badge
+                        variant="default"
+                        className="bg-blue-500/80 hover:bg-blue-500/70 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-xs font-medium"
+                    >
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        <span>Adelantado</span>
                     </Badge>
                 ) : (
                     <Badge

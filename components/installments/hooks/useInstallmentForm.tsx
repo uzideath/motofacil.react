@@ -24,6 +24,8 @@ const installmentSchema = z
         }),
         isLate: z.boolean().default(false),
         latePaymentDate: z.date().optional(),
+        isAdvance: z.boolean().default(false),
+        advancePaymentDate: z.date().optional(),
         paymentDate: z.date().optional(),
         notes: z.string().optional(),
         attachmentUrl: z.string().optional(),
@@ -39,6 +41,18 @@ const installmentSchema = z
         {
             message: "Debe seleccionar una fecha de pago cuando el pago es atrasado",
             path: ["latePaymentDate"],
+        },
+    )
+    .refine(
+        (data) => {
+            if (data.isAdvance && !data.advancePaymentDate) {
+                return false
+            }
+            return true
+        },
+        {
+            message: "Debe seleccionar una fecha de vencimiento cuando el pago es adelantado",
+            path: ["advancePaymentDate"],
         },
     )
 
@@ -104,6 +118,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
     const amount = form.watch("amount")
     const gps = form.watch("gps")
     const isLate = form.watch("isLate")
+    const isAdvance = form.watch("isAdvance")
 
     // Load installment data for editing
     useEffect(() => {
@@ -523,6 +538,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         amount,
         gps,
         isLate,
+        isAdvance,
         lastInstallmentInfo,
 
         // Actions

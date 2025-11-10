@@ -50,6 +50,7 @@ export function InstallmentForm({
     form,
     gps,
     isLate,
+    isAdvance,
     lastInstallmentInfo,
     handleLoanChange,
     handleFileChange,
@@ -93,7 +94,7 @@ export function InstallmentForm({
                     onLoanChange={handleLoanChange}
                   />
 
-                  <PaymentDetailsCard control={form.control} isLate={isLate} />
+                  <PaymentDetailsCard control={form.control} isLate={isLate} isAdvance={isAdvance} />
 
                   <FileAttachmentSection
                     selectedFile={selectedFile}

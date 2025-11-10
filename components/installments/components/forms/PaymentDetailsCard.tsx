@@ -16,9 +16,10 @@ import type { Control } from "react-hook-form"
 interface PaymentDetailsCardProps {
     control: Control<any>
     isLate: boolean
+    isAdvance: boolean
 }
 
-export function PaymentDetailsCard({ control, isLate }: PaymentDetailsCardProps) {
+export function PaymentDetailsCard({ control, isLate, isAdvance }: PaymentDetailsCardProps) {
     return (
         <Card className="border-primary/20 shadow-sm">
             <CardHeader className="pb-3">
@@ -134,62 +135,122 @@ export function PaymentDetailsCard({ control, isLate }: PaymentDetailsCardProps)
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={control}
-                    name="isLate"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={(checked) => {
-                                        field.onChange(checked)
-                                    }}
-                                />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                                <FormLabel className="cursor-pointer">Pago atrasado</FormLabel>
-                                <FormDescription className="text-xs">Marcar si el pago se realizó fuera de fecha</FormDescription>
-                            </div>
-                        </FormItem>
-                    )}
-                />
-                {isLate && (
+                <div className="space-y-4">
                     <FormField
                         control={control}
-                        name="latePaymentDate"
+                        name="isLate"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Fecha a la que pertenece esta cuota</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button
-                                                variant={"outline"}
-                                                className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                            >
-                                                {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <CalendarComponent
-                                            mode="single"
-                                            selected={field.value || undefined}
-                                            onSelect={(date) => {
-                                                field.onChange(date)
-                                            }}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                <FormDescription>Fecha de vencimiento original de esta cuota</FormDescription>
-                                <FormMessage />
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={(checked) => {
+                                            field.onChange(checked)
+                                        }}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel className="cursor-pointer">Pago atrasado</FormLabel>
+                                    <FormDescription className="text-xs">Marcar si el pago se realizó fuera de fecha</FormDescription>
+                                </div>
                             </FormItem>
                         )}
                     />
-                )}
+                    {isLate && (
+                        <FormField
+                            control={control}
+                            name="latePaymentDate"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Fecha a la que pertenece esta cuota</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                                >
+                                                    {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                                mode="single"
+                                                selected={field.value || undefined}
+                                                onSelect={(date) => {
+                                                    field.onChange(date)
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormDescription>Fecha de vencimiento original de esta cuota</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
+                <div className="space-y-4">
+                    <FormField
+                        control={control}
+                        name="isAdvance"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 bg-blue-50/50 dark:bg-blue-950/20">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={(checked) => {
+                                            field.onChange(checked)
+                                        }}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel className="cursor-pointer text-blue-600 dark:text-blue-400">Pago adelantado</FormLabel>
+                                    <FormDescription className="text-xs">Marcar si el pago es para una fecha futura</FormDescription>
+                                </div>
+                            </FormItem>
+                        )}
+                    />
+                    {isAdvance && (
+                        <FormField
+                            control={control}
+                            name="advancePaymentDate"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Fecha de vencimiento futura</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                                >
+                                                    {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                                mode="single"
+                                                selected={field.value || undefined}
+                                                onSelect={(date) => {
+                                                    field.onChange(date)
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormDescription>Fecha futura a la que corresponde este pago adelantado</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
                 <FormField
                     control={control}
                     name="notes"
