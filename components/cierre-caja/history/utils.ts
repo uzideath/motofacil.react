@@ -16,7 +16,15 @@ const parseUTCDate = (dateString: string): Date => {
 
 export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[] => {
     return data.map((item) => {
-        const totalIncome = item.payments.reduce((acc, p) => acc + p.amount + p.gps, 0)
+        // Calculate base vehicle payments (without GPS)
+        const totalBasePayments = item.payments.reduce((acc, p) => acc + p.amount, 0)
+        
+        // Calculate GPS payments separately
+        const totalGpsPayments = item.payments.reduce((acc, p) => acc + p.gps, 0)
+        
+        // Total income is the sum of both
+        const totalIncome = totalBasePayments + totalGpsPayments
+        
         const totalExpense = item.expense.reduce((acc, e) => acc + e.amount, 0)
         const balance = totalIncome - totalExpense
         
@@ -37,6 +45,8 @@ export const transformCashRegisterData = (data: Closing[]): CashRegisterDisplay[
             date: format(closingDate, "dd/MM/yyyy", { locale: es }), // Show closing date (no timezone shift)
             time: format(createdAt, "dd/MM/yyyy HH:mm", { locale: es }), // Show full registration date and time
             user: item.createdBy?.name || "N/A",
+            totalBasePayments,
+            totalGpsPayments,
             totalIncome,
             totalExpense,
             balance,

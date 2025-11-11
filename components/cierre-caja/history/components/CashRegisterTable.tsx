@@ -148,8 +148,20 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 </TableHead>
                                 <TableHead className="text-right">
                                     <div className="flex items-center justify-end">
+                                        <ArrowUpToLine className="h-4 w-4 mr-2 text-emerald-500" />
+                                        Recaudo Base
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    <div className="flex items-center justify-end">
+                                        <ArrowUpToLine className="h-4 w-4 mr-2 text-blue-500" />
+                                        Recaudo GPS
+                                    </div>
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    <div className="flex items-center justify-end">
                                         <ArrowUpToLine className="h-4 w-4 mr-2 text-green-500" />
-                                        Ingresos
+                                        Total Ingresos
                                     </div>
                                 </TableHead>
                                 <TableHead className="text-right">
@@ -170,7 +182,7 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                         </TableHeader>
                         <TableBody>
                             <TableRow>
-                                <TableCell colSpan={10} className="text-center py-10">
+                                <TableCell colSpan={12} className="text-center py-10">
                                     <div className="flex flex-col items-center justify-center text-muted-foreground">
                                         <Search className="h-10 w-10 mb-2 opacity-20" />
                                         <p className="text-lg font-medium">No se encontraron registros de cierre de caja</p>
@@ -235,10 +247,49 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 </div>
                             </TableHead>
                             <TableHead className="text-right">
-                                <div className="flex items-center justify-end">
-                                    <ArrowUpToLine className="h-4 w-4 mr-2 text-green-500" />
-                                    Ingresos
-                                </div>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center justify-end cursor-help">
+                                                <ArrowUpToLine className="h-4 w-4 mr-2 text-emerald-500" />
+                                                Recaudo Base
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Recaudo de cuotas de vehículos (sin GPS)</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </TableHead>
+                            <TableHead className="text-right">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center justify-end cursor-help">
+                                                <ArrowUpToLine className="h-4 w-4 mr-2 text-blue-500" />
+                                                Recaudo GPS
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Recaudo de GPS por separado</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </TableHead>
+                            <TableHead className="text-right">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center justify-end cursor-help">
+                                                <ArrowUpToLine className="h-4 w-4 mr-2 text-green-500" />
+                                                Total Ingresos
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p className="text-xs">Suma de recaudo base + GPS</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </TableHead>
                             <TableHead className="text-right">
                                 <div className="flex items-center justify-end">
@@ -305,7 +356,13 @@ export const CashRegisterTable: React.FC<CashRegisterTableProps> = ({
                                 <TableCell>
                                     <ProviderBadge provider={r.provider!} />
                                 </TableCell>
-                                <TableCell className="text-right font-medium text-green-500">
+                                <TableCell className="text-right font-medium text-emerald-600 dark:text-emerald-400">
+                                    {formatCurrency(r.totalBasePayments)}
+                                </TableCell>
+                                <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                    {formatCurrency(r.totalGpsPayments)}
+                                </TableCell>
+                                <TableCell className="text-right font-semibold text-green-600 dark:text-green-400">
                                     {formatCurrency(r.totalIncome)}
                                 </TableCell>
                                 <TableCell className="text-right font-medium text-red-500">

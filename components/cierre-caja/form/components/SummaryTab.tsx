@@ -26,14 +26,39 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ calculations, incomes, e
             </CardHeader>
 
             <CardContent className="pt-6">
+                {/* Income Breakdown */}
+                <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-2 border-emerald-200 dark:border-emerald-800">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Desglose de Recaudos
+                    </h3>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                            <p className="text-xs text-muted-foreground mb-1">Recaudo Base Vehículos</p>
+                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                {formatCurrency(incomes.reduce((acc, i) => acc + i.amount, 0))}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">{incomes.length} pago{incomes.length !== 1 ? 's' : ''}</p>
+                        </div>
+                        <div className="text-center border-l border-r border-emerald-300 dark:border-emerald-700">
+                            <p className="text-xs text-muted-foreground mb-1">Recaudo GPS</p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                {formatCurrency(incomes.reduce((acc, i) => acc + i.gps, 0))}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">Adicional</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-xs text-muted-foreground mb-1">Total Ingresos</p>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {formatCurrency(calculations.totalExpected)}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">Base + GPS</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Totales */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <SummaryCard
-                        title="Total Ingresos"
-                        amount={calculations.totalExpected}
-                        color="emerald"
-                        count={incomes.length}
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <SummaryCard
                         title="Total Egresos"
                         amount={calculations.totalExpenses}

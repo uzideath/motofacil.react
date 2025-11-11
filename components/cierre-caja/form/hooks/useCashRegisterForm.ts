@@ -48,9 +48,18 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         }
     }, [formState, totalExpected, totalExpenses])
 
+    const expectedCash = useMemo(() => {
+        return incomes.filter((i) => i.paymentMethod === "CASH").reduce((acc, i) => acc + i.amount, 0)
+    }, [incomes])
+
+    const cashMatches = useMemo(() => {
+        const cashInRegister = Number.parseFloat(formState.cashInRegister) || 0
+        return Math.abs(cashInRegister - expectedCash) < 1 // Tolerance of 1 peso
+    }, [formState.cashInRegister, expectedCash])
+
     const isFormValid = useMemo(() => {
-        return !formState.submitting && incomes.length > 0 && calculations.hasAnyValue
-    }, [formState.submitting, incomes.length, calculations.hasAnyValue])
+        return !formState.submitting && incomes.length > 0 && calculations.hasAnyValue && cashMatches
+    }, [formState.submitting, incomes.length, calculations.hasAnyValue, cashMatches])
 
     const isReadOnly = incomes.length > 0
 
@@ -150,6 +159,8 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
         calculations,
         isFormValid,
         isReadOnly,
+        expectedCash,
+        cashMatches,
         handleInputChange,
         handleSubmit,
         resetForm,

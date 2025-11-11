@@ -7,6 +7,8 @@ import type { Closing } from "@/lib/types"
 
 interface FinancialSummaryCardProps {
     cashRegister: Closing
+    totalBasePayments: number
+    totalGpsPayments: number
     totalIncome: number
     totalExpense: number
     balance: number
@@ -14,6 +16,8 @@ interface FinancialSummaryCardProps {
 
 export const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
     cashRegister,
+    totalBasePayments,
+    totalGpsPayments,
     totalIncome,
     totalExpense,
     balance,
@@ -70,20 +74,38 @@ export const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
                     </div>
                 </div>
                 <Separator />
-                <div className="grid grid-cols-3 gap-2">
-                    <div>
-                        <p className="text-xs text-muted-foreground">Total Ingresos</p>
-                        <p className="font-medium text-green-600">{formatCurrency(totalIncome)}</p>
+                <div className="space-y-3">
+                    {/* Breakdown of collections */}
+                    <div className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-lg space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recaudos</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <p className="text-xs text-muted-foreground">Recaudo Base Vehículos</p>
+                                <p className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalBasePayments)}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-muted-foreground">Recaudo GPS</p>
+                                <p className="font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(totalGpsPayments)}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs text-muted-foreground">Total Egresos</p>
-                        <p className="font-medium text-red-600">{formatCurrency(totalExpense)}</p>
-                    </div>
-                    <div>
-                        <p className="text-xs text-muted-foreground">Balance</p>
-                        <p className={`font-medium ${balance >= 0 ? "text-blue-600" : "text-amber-600"}`}>
-                            {formatCurrency(balance)}
-                        </p>
+                    
+                    {/* Totals */}
+                    <div className="grid grid-cols-3 gap-2 pt-2">
+                        <div>
+                            <p className="text-xs text-muted-foreground">Total Ingresos</p>
+                            <p className="font-medium text-green-600">{formatCurrency(totalIncome)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Total Egresos</p>
+                            <p className="font-medium text-red-600">{formatCurrency(totalExpense)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground">Balance</p>
+                            <p className={`font-medium ${balance >= 0 ? "text-blue-600" : "text-amber-600"}`}>
+                                {formatCurrency(balance)}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </CardContent>

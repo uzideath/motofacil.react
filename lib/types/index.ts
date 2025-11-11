@@ -344,12 +344,18 @@ export enum ExpenseCategory {
     OTHER = "OTHER",
 }
 
-enum LoanStatus {
+export enum LoanStatus {
     PENDING = "PENDING",
     ACTIVE = "ACTIVE",
     COMPLETED = "COMPLETED",
     DEFAULTED = "DEFAULTED",
     ARCHIVED = "ARCHIVED",
+    ARCHIVED_BY_DEFAULT = "ARCHIVED_BY_DEFAULT",
+    ARCHIVED_BY_THEFT = "ARCHIVED_BY_THEFT",
+    ARCHIVED_BY_PROSECUTOR = "ARCHIVED_BY_PROSECUTOR",
+    RESTARTED_BY_DEFAULT = "RESTARTED_BY_DEFAULT",
+    COMPLETED_BY_THEFT = "COMPLETED_BY_THEFT",
+    COMPLETED_BY_PROSECUTOR = "COMPLETED_BY_PROSECUTOR",
 }
 
 export enum Providers {
@@ -387,6 +393,8 @@ export type CashRegisterDisplay = {
     time: string
     user: string
     provider?: Provider
+    totalBasePayments: number
+    totalGpsPayments: number
     totalIncome: number
     totalExpense: number
     balance: number

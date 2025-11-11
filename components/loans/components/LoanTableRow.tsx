@@ -45,6 +45,7 @@ import { InstallmentForm } from "../../installments/components/forms/installment
 import { LoanForm } from "../LoanForm"
 import { UpdateVehicleStatusDialog } from "./UpdateVehicleStatusDialog"
 import { ArchivedLoansDialog } from "./ArchivedLoansDialog"
+import { ChangeLoanStatusDialog } from "./ChangeLoanStatusDialog"
 import { Loan } from "@/lib/types"
 import { useResourcePermissions } from "@/hooks/useResourcePermissions"
 import { Resource } from "@/lib/types/permissions"
@@ -87,7 +88,28 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 return (
                     <Badge className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
-                        <span>Completado</span>
+                        <span>Finalizado</span>
+                    </Badge>
+                )
+            case "RESTARTED_BY_DEFAULT":
+                return (
+                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Reiniciado por mora</span>
+                    </Badge>
+                )
+            case "COMPLETED_BY_THEFT":
+                return (
+                    <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        <span>Finalizado por Robo</span>
+                    </Badge>
+                )
+            case "COMPLETED_BY_PROSECUTOR":
+                return (
+                    <Badge className="bg-purple-500 hover:bg-purple-600 text-white flex items-center gap-1">
+                        <Gavel className="h-3 w-3" />
+                        <span>Finalizado por fiscalía</span>
                     </Badge>
                 )
             case "DEFAULTED":
@@ -99,7 +121,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 )
             case "PENDING":
                 return (
-                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white flex items-center gap-1">
+                    <Badge className="bg-gray-500 hover:bg-gray-600 text-white flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
                         <span>Pendiente</span>
                     </Badge>
@@ -378,10 +400,22 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                                     >
                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                             <Activity className="mr-2 h-4 w-4" />
-                                            Actualizar estado
+                                            Actualizar estado vehículo
                                         </DropdownMenuItem>
                                     </UpdateVehicleStatusDialog>
                                 )}
+                                
+                                {/* Change loan status */}
+                                <ChangeLoanStatusDialog
+                                    loanId={loan.id}
+                                    currentStatus={loan.status}
+                                    onStatusChanged={onStatusUpdated || (() => {})}
+                                >
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                        Cambiar estado contrato
+                                    </DropdownMenuItem>
+                                </ChangeLoanStatusDialog>
                             </>
                         )}
 

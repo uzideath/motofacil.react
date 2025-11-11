@@ -27,7 +27,7 @@ type Props = {
 }
 
 export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) {
-    const { totalIncome, totalExpense, balance, formatMethod, getInitials } = useCashRegisterDetail(cashRegister)
+    const { totalBasePayments, totalGpsPayments, totalIncome, totalExpense, balance, formatMethod, getInitials } = useCashRegisterDetail(cashRegister)
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -39,6 +39,8 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                     <GeneralInfoCard cashRegister={cashRegister} getInitials={getInitials} />
                     <FinancialSummaryCard
                         cashRegister={cashRegister}
+                        totalBasePayments={totalBasePayments}
+                        totalGpsPayments={totalGpsPayments}
                         totalIncome={totalIncome}
                         totalExpense={totalExpense}
                         balance={balance}
@@ -189,6 +191,45 @@ export function CashRegisterDetailModal({ open, onClose, cashRegister }: Props) 
                                             })}
                                         </TableBody>
                                     </Table>
+                                </div>
+                                
+                                {/* Payment Totals Summary */}
+                                <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 p-4 border-t-2 border-slate-200 dark:border-slate-700">
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="text-center">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                                                Recaudo Base Vehículos
+                                            </p>
+                                            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                                {formatCurrency(totalBasePayments)}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {cashRegister.payments.length} pago{cashRegister.payments.length !== 1 ? 's' : ''}
+                                            </p>
+                                        </div>
+                                        <div className="text-center border-l border-r border-slate-300 dark:border-slate-600">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                                                Recaudo GPS
+                                            </p>
+                                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                                {formatCurrency(totalGpsPayments)}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Componente adicional
+                                            </p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                                                Total Recaudado
+                                            </p>
+                                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                                {formatCurrency(totalIncome)}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Base + GPS
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}

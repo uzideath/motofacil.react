@@ -19,6 +19,7 @@ export function useLoanTable() {
     const [loanToDelete, setLoanToDelete] = useState<string | null>(null)
     const [loanToArchive, setLoanToArchive] = useState<{ id: string; archived: boolean } | null>(null)
     const [showArchived, setShowArchived] = useState(false)
+    const [statusFilter, setStatusFilter] = useState<string>("all")
 
     const { toast } = useToast()
 
@@ -234,6 +235,9 @@ export function useLoanTable() {
     const filteredLoans = loans.filter((loan) => {
         // Filter by archived status
         if (loan.archived !== showArchived) return false
+
+        // Filter by status
+        if (statusFilter !== "all" && loan.status !== statusFilter) return false
 
         // Filter by search term
         const userMatch = loan.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -490,6 +494,7 @@ export function useLoanTable() {
         loanToDelete,
         loanToArchive,
         showArchived,
+        statusFilter,
         filteredLoans,
         totalItems,
         totalPages,
@@ -505,6 +510,7 @@ export function useLoanTable() {
         setDeleteDialogOpen,
         setArchiveDialogOpen,
         setShowArchived,
+        setStatusFilter,
         handleDelete,
         handleArchive,
         confirmDelete,

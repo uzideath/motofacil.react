@@ -34,6 +34,8 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
         calculations,
         isFormValid,
         isReadOnly,
+        expectedCash,
+        cashMatches,
         handleInputChange,
         handleSubmit,
         resetForm,
@@ -66,7 +68,12 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                             <ProviderDisplay provider={currentProvider} />
                         </CardHeader>
                         <CardContent className="space-y-6 pt-6">
-                            <FormInputs formState={formState} isReadOnly={isReadOnly} onInputChange={handleInputChange} />
+                            <FormInputs 
+                                formState={formState} 
+                                isReadOnly={isReadOnly} 
+                                onInputChange={handleInputChange}
+                                expectedCash={expectedCash}
+                            />
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">
                             {closingPermissions.canCreate ? (
@@ -86,6 +93,15 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                                         <p className="text-xs text-amber-600 mt-2 text-center">
                                             Seleccione al menos una transacción para continuar
                                         </p>
+                                    )}
+                                    
+                                    {!isFormValid && incomes.length > 0 && !cashMatches && (
+                                        <Alert className="mt-3 border-destructive bg-destructive/10">
+                                            <AlertCircle className="h-4 w-4 text-destructive" />
+                                            <AlertDescription className="text-destructive text-sm">
+                                                El efectivo contado debe coincidir con el esperado del sistema para registrar el cierre.
+                                            </AlertDescription>
+                                        </Alert>
                                     )}
                                 </>
                             ) : (

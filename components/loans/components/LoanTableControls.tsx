@@ -18,6 +18,8 @@ interface LoanTableControlsProps {
     onPageChange: (page: number) => void
     showArchived: boolean
     onShowArchivedChange: (value: boolean) => void
+    statusFilter: string
+    onStatusFilterChange: (value: string) => void
     onRefresh?: () => void
     onExportCSV?: () => void
 }
@@ -30,6 +32,8 @@ export function LoanTableControls({
     onPageChange,
     showArchived,
     onShowArchivedChange,
+    statusFilter,
+    onStatusFilterChange,
     onRefresh,
     onExportCSV,
 }: LoanTableControlsProps) {
@@ -49,6 +53,26 @@ export function LoanTableControls({
                         onChange={(e) => onSearchChange(e.target.value)}
                     />
                 </div>
+
+                <Select
+                    value={statusFilter}
+                    onValueChange={(value) => {
+                        onStatusFilterChange(value)
+                        onPageChange(1)
+                    }}
+                >
+                    <SelectTrigger className="w-[200px] border-border focus:border-primary">
+                        <SelectValue placeholder="Filtrar por estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">- Todos -</SelectItem>
+                        <SelectItem value="ACTIVE">Activo</SelectItem>
+                        <SelectItem value="COMPLETED">Finalizado</SelectItem>
+                        <SelectItem value="RESTARTED_BY_DEFAULT">Reiniciado por mora</SelectItem>
+                        <SelectItem value="COMPLETED_BY_THEFT">Finalizado por Robo de vehículo</SelectItem>
+                        <SelectItem value="COMPLETED_BY_PROSECUTOR">Contrato finalizado por fiscalía</SelectItem>
+                    </SelectContent>
+                </Select>
 
                 <div className="flex items-center gap-2">
                     <Button

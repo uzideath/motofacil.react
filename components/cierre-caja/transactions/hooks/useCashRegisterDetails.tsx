@@ -6,11 +6,21 @@ import type { Closing } from "@/lib/types"
 
 export function useCashRegisterDetail(cashRegister: Closing) {
     const calculations = useMemo(() => {
-        const totalIncome = cashRegister.payments.reduce((acc, p) => acc + p.amount + p.gps, 0)
+        // Calculate base vehicle payments (without GPS)
+        const totalBasePayments = cashRegister.payments.reduce((acc, p) => acc + p.amount, 0)
+        
+        // Calculate GPS payments separately
+        const totalGpsPayments = cashRegister.payments.reduce((acc, p) => acc + p.gps, 0)
+        
+        // Total income is the sum of both
+        const totalIncome = totalBasePayments + totalGpsPayments
+        
         const totalExpense = cashRegister.expense.reduce((acc, e) => acc + e.amount, 0)
         const balance = totalIncome - totalExpense
 
         return {
+            totalBasePayments,
+            totalGpsPayments,
             totalIncome,
             totalExpense,
             balance,

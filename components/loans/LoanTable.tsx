@@ -21,6 +21,7 @@ export function LoanTable() {
     deleteDialogOpen,
     archiveDialogOpen,
     showArchived,
+    statusFilter,
     totalItems,
     totalPages,
     startIndex,
@@ -33,6 +34,7 @@ export function LoanTable() {
     setDeleteDialogOpen,
     setArchiveDialogOpen,
     setShowArchived,
+    setStatusFilter,
     handleDelete,
     handleArchive,
     confirmDelete,
@@ -52,6 +54,8 @@ export function LoanTable() {
         onPageChange={setCurrentPage}
         showArchived={showArchived}
         onShowArchivedChange={setShowArchived}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         onRefresh={refreshData}
         onExportCSV={exportToCSV}
       />
