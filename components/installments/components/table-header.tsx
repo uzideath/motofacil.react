@@ -75,6 +75,12 @@ export function InstallmentTableHeader({ sortField, sortDirection, onSort }: Tab
                         Fecha Vencimiento
                     </div>
                 </TableHead>
+                <TableHead className="hidden xl:table-cell text-foreground font-medium text-center">
+                    <div className="flex items-center justify-center">
+                        <Clock className="mr-2 h-4 w-4" />
+                        Días
+                    </div>
+                </TableHead>
                 <TableHead className="text-foreground font-medium">
                     <div className="flex items-center">
                         <CreditCard className="mr-2 h-4 w-4" />

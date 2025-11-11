@@ -44,6 +44,29 @@ export function InstallmentRow({
         }
     }
 
+    // Calculate days difference for late or advance payments
+    const calculateDays = () => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        
+        if (installment.isLate && installment.latePaymentDate) {
+            const dueDate = new Date(installment.latePaymentDate)
+            dueDate.setHours(0, 0, 0, 0)
+            const diffTime = today.getTime() - dueDate.getTime()
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+            return diffDays // Positive for late
+        } else if (installment.advancePaymentDate) {
+            const advanceDate = new Date(installment.advancePaymentDate)
+            advanceDate.setHours(0, 0, 0, 0)
+            const diffTime = advanceDate.getTime() - today.getTime()
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+            return -diffDays // Negative for advance
+        }
+        return 0 // On time
+    }
+
+    const days = calculateDays()
+
     return (
         <TableRow className="border-border hover:bg-muted/50 transition-colors duration-150">
             <TableCell className="font-medium text-foreground">
@@ -84,9 +107,14 @@ export function InstallmentRow({
             </TableCell>
             <TableCell className="hidden lg:table-cell text-foreground">
                 {installment.isLate && installment.latePaymentDate ? (
-                    <div className="flex items-center text-red-400">
+                    <div className="flex items-center text-red-400 font-medium">
                         <Calendar className="mr-2 h-4 w-4" />
                         {formatSpanishDate(installment.latePaymentDate)}
+                    </div>
+                ) : installment.advancePaymentDate ? (
+                    <div className="flex items-center text-blue-400 font-medium">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formatSpanishDate(installment.advancePaymentDate)}
                     </div>
                 ) : (
                     <div className="flex items-center text-muted-foreground">
@@ -95,12 +123,21 @@ export function InstallmentRow({
                     </div>
                 )}
             </TableCell>
-            {/* <TableCell className="hidden xl:table-cell text-foreground">
-                <div className="flex items-center text-sm">
-                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                    {formatSpanishDate(installment.createdAt)}
-                </div>
-            </TableCell> */}
+            <TableCell className="hidden xl:table-cell text-center">
+                {days !== 0 ? (
+                    <div className={`flex items-center justify-center font-bold ${
+                        days > 0 ? 'text-red-400' : 'text-blue-400'
+                    }`}>
+                        <Clock className="mr-2 h-4 w-4" />
+                        {days > 0 ? `+${days}` : days}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center text-muted-foreground">
+                        <Clock className="mr-2 h-4 w-4" />
+                        0
+                    </div>
+                )}
+            </TableCell>
             <TableCell className="text-foreground">
                 <div className="flex items-center whitespace-nowrap">
                     {getIcon(installment.paymentMethod)}
@@ -115,6 +152,14 @@ export function InstallmentRow({
                     >
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         <span>Atrasada</span>
+                    </Badge>
+                ) : installment.advancePaymentDate ? (
+                    <Badge
+                        variant="default"
+                        className="bg-blue-500/80 hover:bg-blue-500/70 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 text-xs font-medium"
+                    >
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        <span>Adelantada</span>
                     </Badge>
                 ) : (
                     <Badge

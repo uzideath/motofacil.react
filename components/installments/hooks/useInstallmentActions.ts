@@ -32,8 +32,11 @@ export function useInstallmentActions(refreshInstallments: () => void) {
         })
 
         // The last payment date should be THIS installment's closing date
-        // Use latePaymentDate if exists (original due date), otherwise paymentDate
-        const lastPaymentDate = installment.latePaymentDate || installment.paymentDate
+        // Use latePaymentDate if exists (original due date), advancePaymentDate for advance, otherwise paymentDate
+        const lastPaymentDate = installment.latePaymentDate || installment.advancePaymentDate || installment.paymentDate
+        
+        // Determine if it's an advance payment (has advancePaymentDate and not late)
+        const isAdvance = !installment.isLate && !!installment.advancePaymentDate
 
         const payload = {
             name: installment.loan.user.name.trim(),
@@ -42,6 +45,8 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             amount: installment.amount,
             isLate: installment.isLate, // Include isLate flag
             latePaymentDate: installment.latePaymentDate, // Include late payment date
+            isAdvance: isAdvance, // Include isAdvance flag
+            advancePaymentDate: installment.advancePaymentDate, // Include advance payment date
             gps: installment.gps,
             total: installment.amount + (installment.gps || 0),
             date: installment.paymentDate, // Actual payment date
@@ -52,7 +57,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             paidInstallments: installment.loan.paidInstallments, // Payment status
             remainingInstallments: installment.loan.remainingInstallments, // Payment status
             totalInstallments: installment.loan.installments, // Payment status
-            lastPaymentDate: lastPaymentDate, // Previous payment date (latePaymentDate if late, otherwise paymentDate)
+            lastPaymentDate: lastPaymentDate, // Previous payment date (latePaymentDate if late, advancePaymentDate if advance, otherwise paymentDate)
         }
 
 

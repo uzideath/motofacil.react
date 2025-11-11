@@ -133,6 +133,8 @@ type Installment = {
     paymentDate: string
     isLate: boolean
     latePaymentDate: string | null
+    advancePaymentDate: string | null
+    dueDate: string | null
     notes: string | null
     attachmentUrl: string | null
     createdById: string

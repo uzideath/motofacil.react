@@ -32,6 +32,7 @@ interface PaymentStatusSectionProps {
         amount: number
         paymentDate: string
         latePaymentDate: string | null
+        advancePaymentDate: string | null
         paymentMethod: string
         isLate: boolean
     }>
@@ -74,8 +75,30 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
         }
     })()
 
+    // Check if last payment was in advance
+    const lastPaymentIsAdvance = payments.length > 0 && payments[0].advancePaymentDate
+    const daysInAdvance = (() => {
+        if (!lastPaymentIsAdvance || !payments[0].advancePaymentDate) return null
+        try {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            const advanceDate = new Date(payments[0].advancePaymentDate)
+            advanceDate.setHours(0, 0, 0, 0)
+            const diffTime = advanceDate.getTime() - today.getTime()
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+            return diffDays
+        } catch {
+            return null
+        }
+    })()
+
     const getPaymentStatus = () => {
         if (!lastInstallmentInfo) return { status: "unknown", text: "Sin información", color: "gray" }
+
+        // Check for advance payment first
+        if (lastPaymentIsAdvance && daysInAdvance !== null && daysInAdvance > 0) {
+            return { status: "advance", text: `${-daysInAdvance} días (adelantado)`, color: "blue" }
+        }
 
         const daysSince = effectiveDaysSinceLastPayment
 
@@ -86,7 +109,7 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
         } else if (daysSince === 1) {
             return { status: "due", text: "Vence hoy", color: "yellow" }
         } else {
-            return { status: "overdue", text: `${daysSince} días atrasado`, color: "red" }
+            return { status: "overdue", text: `+${daysSince} días atrasado`, color: "red" }
         }
     }
 
@@ -94,6 +117,8 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
 
     const getStatusIcon = () => {
         switch (paymentStatus.status) {
+            case "advance":
+                return <CheckCircle className="h-4 w-4" />
             case "current":
                 return <CheckCircle className="h-4 w-4" />
             case "due":
@@ -107,6 +132,8 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
 
     const getStatusBadgeVariant = () => {
         switch (paymentStatus.status) {
+            case "advance":
+                return "default" // Blue (we'll customize with className)
             case "current":
                 return "default" // Green
             case "due":
@@ -116,6 +143,13 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
             default:
                 return "outline" // Gray
         }
+    }
+
+    const getStatusBadgeClassName = () => {
+        if (paymentStatus.status === "advance") {
+            return "bg-blue-500 hover:bg-blue-600 text-white"
+        }
+        return ""
     }
 
     // Get last 5 payments for history
@@ -131,7 +165,7 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                         <Calendar className="h-5 w-5 text-primary" />
                         Estado de Pagos
                     </span>
-                    <Badge variant={getStatusBadgeVariant()} className="text-sm font-semibold px-3 py-1">
+                    <Badge variant={getStatusBadgeVariant()} className={`text-sm font-semibold px-3 py-1 ${getStatusBadgeClassName()}`}>
                         {getStatusIcon()}
                         <span className="ml-1">{paymentStatus.text}</span>
                     </Badge>
@@ -167,10 +201,14 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                         </h4>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                             {recentPayments.map((payment, index) => {
-                                // Use latePaymentDate if it exists (for late payments), otherwise use paymentDate
+                                // Determine the display date: latePaymentDate for late, advancePaymentDate for advance, otherwise paymentDate
                                 const displayDate = payment.latePaymentDate 
                                     ? toColombianTime(payment.latePaymentDate)
-                                    : toColombianTime(payment.paymentDate)
+                                    : payment.advancePaymentDate
+                                        ? toColombianTime(payment.advancePaymentDate)
+                                        : toColombianTime(payment.paymentDate)
+                                
+                                const isAdvance = !payment.isLate && !!payment.advancePaymentDate
                                 
                                 return (
                                     <div
@@ -179,13 +217,20 @@ export function PaymentStatusSection({ lastInstallmentInfo, payments }: PaymentS
                                             }`}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${payment.isLate ? "bg-red-500" : "bg-green-500"}`} />
+                                            <div className={`w-2 h-2 rounded-full ${
+                                                payment.isLate ? "bg-red-500" : isAdvance ? "bg-blue-500" : "bg-green-500"
+                                            }`} />
                                             <span className="font-medium">
                                                 {format(displayDate, "dd/MM/yyyy", { locale: es })}
                                             </span>
                                             {payment.isLate && (
                                                 <Badge variant="destructive" className="text-xs px-1 py-0">
                                                     Tardío
+                                                </Badge>
+                                            )}
+                                            {isAdvance && (
+                                                <Badge className="text-xs px-1 py-0 bg-blue-500 hover:bg-blue-600">
+                                                    Adelantado
                                                 </Badge>
                                             )}
                                         </div>
