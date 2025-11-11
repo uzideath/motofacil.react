@@ -1,13 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Banknote, ArrowDownToLine, CreditCard, Info, Calculator } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import type { FormState } from "../types"
 import { CashCalculator } from "./CashCalculator"
 
@@ -16,14 +16,28 @@ interface FormInputsProps {
     isReadOnly: boolean
     onInputChange: (field: keyof FormState, value: string) => void
     expectedCash: number
+    hasSelectedTransactions: boolean
 }
 
-export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, onInputChange, expectedCash }) => {
+export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, onInputChange, expectedCash, hasSelectedTransactions }) => {
+    // Show calculator only when there are selected transactions with CASH
     const [showCalculator, setShowCalculator] = useState(false)
 
     const handleCashCountChange = (total: number) => {
         onInputChange("cashInRegister", total.toString())
     }
+
+    // Auto-show calculator when transactions are selected with cash
+    const shouldShowCalculator = hasSelectedTransactions && expectedCash > 0
+
+    // Auto-open calculator when cash transactions are selected
+    useEffect(() => {
+        if (shouldShowCalculator) {
+            setShowCalculator(true)
+        } else {
+            setShowCalculator(false)
+        }
+    }, [shouldShowCalculator])
 
     return (
         <div className="space-y-6">
@@ -33,17 +47,29 @@ export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, o
                         <Banknote className="h-4 w-4 text-emerald-500" />
                         Efectivo en Caja
                     </Label>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowCalculator(!showCalculator)}
-                        className="h-7 text-xs"
-                    >
-                        <Calculator className="h-3 w-3 mr-1" />
-                        {showCalculator ? "Ocultar" : "Calculadora"}
-                    </Button>
+                    {shouldShowCalculator && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCalculator(!showCalculator)}
+                            className="h-7 text-xs"
+                        >
+                            <Calculator className="h-3 w-3 mr-1" />
+                            {showCalculator ? "Ocultar" : "Calculadora"}
+                        </Button>
+                    )}
                 </div>
+                {expectedCash > 0 && (
+                    <div className="flex items-center justify-between p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-md border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                            Transacciones en efectivo seleccionadas:
+                        </span>
+                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                            {formatCurrency(expectedCash)}
+                        </span>
+                    </div>
+                )}
                 <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                     <Input
@@ -60,7 +86,7 @@ export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, o
                     />
                 </div>
                 
-                {showCalculator && !isReadOnly && (
+                {shouldShowCalculator && showCalculator && (
                     <div className="mt-4">
                         <CashCalculator
                             expectedCash={expectedCash}
@@ -72,10 +98,17 @@ export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, o
             </div>
 
             <div className="space-y-3">
-                <Label htmlFor="cashFromTransfers" className="text-sm font-medium flex items-center gap-2">
-                    <ArrowDownToLine className="h-4 w-4 text-blue-500" />
-                    Transferencias
-                </Label>
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="cashFromTransfers" className="text-sm font-medium flex items-center gap-2">
+                        <ArrowDownToLine className="h-4 w-4 text-blue-500" />
+                        Transferencias
+                    </Label>
+                    {formState.cashFromTransfers && parseFloat(formState.cashFromTransfers) > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                            Siempre visible con monto
+                        </span>
+                    )}
+                </div>
                 <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                     <Input

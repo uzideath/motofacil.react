@@ -73,6 +73,7 @@ export function CashRegisterForm({ token, selectedTransactions, closingDate }: C
                                 isReadOnly={isReadOnly} 
                                 onInputChange={handleInputChange}
                                 expectedCash={expectedCash}
+                                hasSelectedTransactions={selectedTransactions.length > 0}
                             />
                         </CardContent>
                         <CardFooter className="pt-2 pb-6 flex flex-col">

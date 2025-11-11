@@ -32,7 +32,7 @@ export function CashCalculator({ expectedCash, onCashCountChange, currentValue }
         const total = billCounts.reduce((sum, bill) => sum + (bill.denomination * bill.quantity), 0)
         setCalculatedTotal(total)
         onCashCountChange(total)
-    }, [billCounts, onCashCountChange])
+    }, [billCounts]) // Remove onCashCountChange from dependencies to prevent infinite loop
 
     const handleQuantityChange = (denomination: number, value: string) => {
         const quantity = parseInt(value) || 0

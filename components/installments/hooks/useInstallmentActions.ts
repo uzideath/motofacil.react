@@ -42,6 +42,7 @@ export function useInstallmentActions(refreshInstallments: () => void) {
             name: installment.loan.user.name.trim(),
             identification: installment.loan.vehicle?.plate || installment.loan.motorcycle?.plate || "N/A",
             concept: "Monto",
+            contractCode: installment.loan.contractNumber || installment.loanId, // Add contract number
             amount: installment.amount,
             isLate: installment.isLate, // Include isLate flag
             latePaymentDate: installment.latePaymentDate, // Include late payment date

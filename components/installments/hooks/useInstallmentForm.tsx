@@ -89,6 +89,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
     const amount = form.watch("amount")
     const gps = form.watch("gps")
     const dueDate = form.watch("dueDate")
+    const paymentMethod = form.watch("paymentMethod")
 
     // Load installment data for editing
     useEffect(() => {
@@ -155,10 +156,13 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
 
     // Calculate payment breakdown
     useEffect(() => {
-        if (selectedLoan && amount) {
-            calculatePaymentBreakdown(selectedLoan, amount, gps)
+        if (selectedLoan) {
+            // Always show breakdown for TRANSACTION method, or when amount is entered
+            if (paymentMethod === "TRANSACTION" || amount) {
+                calculatePaymentBreakdown(selectedLoan, amount, gps)
+            }
         }
-    }, [selectedLoan, amount, gps, dueDate])
+    }, [selectedLoan, amount, gps, dueDate, paymentMethod])
 
     // Load loans when dialog opens
     useEffect(() => {
