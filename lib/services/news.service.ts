@@ -1,5 +1,5 @@
 import { HttpService } from "../http";
-import { News, NewsType, NewsCategory } from "../types";
+import { News, NewsType, NewsCategory, VehicleType } from "../types";
 
 export interface CreateNewsDto {
     type: NewsType;
@@ -12,6 +12,7 @@ export interface CreateNewsDto {
     isActive?: boolean;
     loanId?: string;
     storeId: string;
+    vehicleType?: VehicleType;
     autoCalculateInstallments?: boolean;
     daysUnavailable?: number;
     installmentsToSubtract?: number;
@@ -26,6 +27,7 @@ export interface UpdateNewsDto {
     startDate?: string;
     endDate?: string;
     isActive?: boolean;
+    vehicleType?: VehicleType;
     autoCalculateInstallments?: boolean;
     daysUnavailable?: number;
     installmentsToSubtract?: number;
@@ -36,6 +38,7 @@ export interface QueryNewsDto {
     category?: NewsCategory;
     loanId?: string;
     storeId?: string;
+    vehicleType?: VehicleType;
     isActive?: boolean;
     page?: number;
     limit?: number;

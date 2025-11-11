@@ -435,6 +435,7 @@ export type News = {
     autoCalculateInstallments: boolean
     daysUnavailable: number | null
     installmentsToSubtract: number | null
+    vehicleType: VehicleType | null
     storeId: string
     store?: Store
     loanId: string | null

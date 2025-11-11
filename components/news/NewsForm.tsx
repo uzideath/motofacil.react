@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { News, NewsType, NewsCategory, Loan } from "@/lib/types"
+import { News, NewsType, NewsCategory, Loan, VehicleType } from "@/lib/types"
 import { NewsService, CreateNewsDto } from "@/lib/services/news.service"
 import { HttpService } from "@/lib/http"
 import { useStore } from "@/contexts/StoreContext"
@@ -64,6 +64,7 @@ const newsSchema = z.object({
     endDate: z.string().optional(),
     isActive: z.boolean().default(true),
     loanId: z.string().optional(),
+    vehicleType: z.nativeEnum(VehicleType).optional(),
     autoCalculateInstallments: z.boolean().default(false),
     daysUnavailable: z.number().min(0).optional(),
     installmentsToSubtract: z.number().min(0).optional(),
@@ -97,6 +98,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
             endDate: "",
             isActive: true,
             loanId: "",
+            vehicleType: undefined,
             autoCalculateInstallments: false,
             daysUnavailable: 0,
             installmentsToSubtract: 0,
@@ -125,6 +127,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 endDate: news.endDate ? new Date(news.endDate).toISOString().split("T")[0] : "",
                 isActive: news.isActive,
                 loanId: news.loanId || "",
+                vehicleType: news.vehicleType || undefined,
                 autoCalculateInstallments: news.autoCalculateInstallments,
                 daysUnavailable: news.daysUnavailable || 0,
                 installmentsToSubtract: news.installmentsToSubtract || 0,
@@ -140,6 +143,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 endDate: "",
                 isActive: true,
                 loanId: "",
+                vehicleType: undefined,
                 autoCalculateInstallments: false,
                 daysUnavailable: 0,
                 installmentsToSubtract: 0,
@@ -194,6 +198,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                 ...values,
                 storeId: currentStore.id,
                 loanId: values.type === NewsType.LOAN_SPECIFIC ? values.loanId : undefined,
+                vehicleType: values.type === NewsType.STORE_WIDE ? values.vehicleType : undefined,
                 endDate: values.endDate || undefined,
                 notes: values.notes || undefined,
                 daysUnavailable: values.daysUnavailable || undefined,
@@ -323,6 +328,43 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                 {loadingLoans && "Cargando préstamos..."}
                                                 {!loadingLoans && loans.length === 0 && "No hay préstamos activos en esta tienda"}
                                                 {!loadingLoans && loans.length > 0 && `${loans.length} préstamos disponibles`}
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
+                            {newsType === NewsType.STORE_WIDE && (
+                                <FormField
+                                    control={form.control}
+                                    name="vehicleType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tipo de Vehículo (Opcional)</FormLabel>
+                                            <Select
+                                                onValueChange={(value) => {
+                                                    // Allow clearing the selection
+                                                    field.onChange(value === "all" ? undefined : value)
+                                                }}
+                                                value={field.value || "all"}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Todos los vehículos" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Todos los tipos de vehículos</SelectItem>
+                                                    <SelectItem value={VehicleType.MOTORCYCLE}>Motocicleta</SelectItem>
+                                                    <SelectItem value={VehicleType.MOTOCAR}>Motocar</SelectItem>
+                                                    <SelectItem value={VehicleType.MOTOLOAD}>Motocarga</SelectItem>
+                                                    <SelectItem value={VehicleType.OTHER}>Otro</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                Si no seleccionas un tipo específico, la novedad afectará a todos los préstamos activos en la tienda.
+                                                Si seleccionas un tipo, solo afectará a los préstamos con ese tipo de vehículo.
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
