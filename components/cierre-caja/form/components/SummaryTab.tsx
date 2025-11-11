@@ -36,14 +36,14 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ calculations, incomes, e
                         <div className="text-center">
                             <p className="text-xs text-muted-foreground mb-1">Recaudo Base Vehículos</p>
                             <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                                {formatCurrency(incomes.reduce((acc, i) => acc + i.amount, 0))}
+                                {formatCurrency(incomes.reduce((acc, i) => acc + (i.baseAmount || i.amount), 0))}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">{incomes.length} pago{incomes.length !== 1 ? 's' : ''}</p>
                         </div>
                         <div className="text-center border-l border-r border-emerald-300 dark:border-emerald-700">
                             <p className="text-xs text-muted-foreground mb-1">Recaudo GPS</p>
                             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                {formatCurrency(incomes.reduce((acc, i) => acc + i.gps, 0))}
+                                {formatCurrency(incomes.reduce((acc, i) => acc + (i.gpsAmount || 0), 0))}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">Adicional</p>
                         </div>

@@ -26,6 +26,8 @@ export interface Transaction {
 export interface SelectedTransaction {
   id: string
   amount: number
+  baseAmount?: number
+  gpsAmount?: number
   paymentMethod: PaymentMethod
   type: TransactionType
   description: string

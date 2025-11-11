@@ -147,6 +147,8 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             (transaction) => ({
                 id: transaction.id,
                 amount: transaction.amount,
+                baseAmount: transaction.baseAmount,
+                gpsAmount: transaction.gpsAmount,
                 type: transaction.type,
                 description: transaction.description,
                 date: transaction.date,
