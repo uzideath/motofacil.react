@@ -14,33 +14,19 @@ import { utcToZonedTime } from "date-fns-tz"
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const COLOMBIA_TZ = "America/Bogota"
 
-const installmentSchema = z
-    .object({
-        loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
-        amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
-        gps: z.coerce.number(),
-        paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {
-            required_error: "Debe seleccionar un método de pago",
-        }),
-        isLate: z.boolean().default(false),
-        latePaymentDate: z.date().optional(),
-        paymentDate: z.date().optional(),
-        notes: z.string().optional(),
-        attachmentUrl: z.string().optional(),
-        createdById: z.string().optional(),
-    })
-    .refine(
-        (data) => {
-            if (data.isLate && !data.latePaymentDate) {
-                return false
-            }
-            return true
-        },
-        {
-            message: "Debe seleccionar una fecha de pago cuando el pago es atrasado",
-            path: ["latePaymentDate"],
-        },
-    )
+const installmentSchema = z.object({
+    loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
+    amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
+    gps: z.coerce.number(),
+    paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {
+        required_error: "Debe seleccionar un método de pago",
+    }),
+    dueDate: z.date().optional().nullable(),
+    paymentDate: z.date().optional(),
+    notes: z.string().optional(),
+    attachmentUrl: z.string().optional(),
+    createdById: z.string().optional(),
+})
 
 type InstallmentFormValues = z.infer<typeof installmentSchema>
 
@@ -92,8 +78,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             loanId: loanId || "",
             amount: 0,
             gps: 0,
-            isLate: false,
-            latePaymentDate: undefined,
+            dueDate: null,
             paymentDate: new Date(),
             notes: "",
             attachmentUrl: "",
@@ -103,7 +88,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
 
     const amount = form.watch("amount")
     const gps = form.watch("gps")
-    const isLate = form.watch("isLate")
+    const dueDate = form.watch("dueDate")
 
     // Load installment data for editing
     useEffect(() => {
@@ -112,7 +97,6 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             form.setValue("loanId", installment.loanId)
             form.setValue("amount", installment.amount)
             form.setValue("gps", installment.gps || 0)
-            form.setValue("isLate", installment.isLate || false)
             form.setValue("paymentMethod", installment.paymentMethod || "CASH")
             form.setValue("notes", installment.notes || "")
             form.setValue("attachmentUrl", installment.attachmentUrl || "")
@@ -149,9 +133,13 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 setSelectedLoan(tempLoan)
             }
 
-            if (installment.latePaymentDate) {
-                form.setValue("latePaymentDate", new Date(installment.latePaymentDate))
+            // Load dueDate from either new dueDate field or legacy latePaymentDate
+            if (installment.dueDate) {
+                form.setValue("dueDate", new Date(installment.dueDate))
+            } else if (installment.latePaymentDate) {
+                form.setValue("dueDate", new Date(installment.latePaymentDate))
             }
+            
             if (installment.paymentDate) {
                 form.setValue("paymentDate", new Date(installment.paymentDate))
             }
@@ -170,14 +158,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         if (selectedLoan && amount) {
             calculatePaymentBreakdown(selectedLoan, amount, gps)
         }
-    }, [selectedLoan, amount, gps, isLate])
-
-    // Initialize late payment date
-    useEffect(() => {
-        if (isLate && !form.getValues("latePaymentDate")) {
-            form.setValue("latePaymentDate", new Date())
-        }
-    }, [isLate, form])
+    }, [selectedLoan, amount, gps, dueDate])
 
     // Load loans when dialog opens
     useEffect(() => {
@@ -436,19 +417,44 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 form.setValue("attachmentUrl", filePreview)
             }
 
+            // Determine if payment is late or advance based on dueDate
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            
+            let isLate = false
+            let isAdvance = false
+            
+            if (values.dueDate) {
+                const due = new Date(values.dueDate)
+                due.setHours(0, 0, 0, 0)
+                
+                if (due < today) {
+                    isLate = true
+                } else if (due > today) {
+                    isAdvance = true
+                }
+            }
+
             const payload: Record<string, any> = {
                 loanId: values.loanId,
                 amount: values.amount,
                 gps: values.gps,
                 paymentMethod: values.paymentMethod,
-                isLate: values.isLate,
+                isLate: isLate,
+                isAdvance: isAdvance,
                 notes: values.notes || "",
                 attachmentUrl: values.attachmentUrl || "",
                 createdById: values.createdById || user?.id,
             }
 
-            if (values.isLate && values.latePaymentDate) {
-                payload.latePaymentDate = values.latePaymentDate.toISOString()
+            if (values.dueDate) {
+                payload.dueDate = values.dueDate.toISOString()
+                // For backward compatibility, also send latePaymentDate if late
+                if (isLate) {
+                    payload.latePaymentDate = values.dueDate.toISOString()
+                } else if (isAdvance) {
+                    payload.advancePaymentDate = values.dueDate.toISOString()
+                }
             }
 
             // Always include paymentDate for both create and update
@@ -457,7 +463,9 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             console.log('📅 Payment submission payload:', {
                 isEditing,
                 paymentDate: payload.paymentDate,
-                latePaymentDate: payload.latePaymentDate,
+                dueDate: payload.dueDate,
+                isLate,
+                isAdvance,
                 fullPayload: payload
             })
 
@@ -505,6 +513,23 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         }
     }
 
+    // Calculate payment status based on dueDate
+    const getPaymentStatus = () => {
+        if (!dueDate) return { isLate: false, isAdvance: false }
+        
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const due = new Date(dueDate)
+        due.setHours(0, 0, 0, 0)
+        
+        return {
+            isLate: due < today,
+            isAdvance: due > today
+        }
+    }
+    
+    const paymentStatus = getPaymentStatus()
+
     return {
         // State
         open,
@@ -522,7 +547,9 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         form,
         amount,
         gps,
-        isLate,
+        isLate: paymentStatus.isLate,
+        isAdvance: paymentStatus.isAdvance,
+        dueDate,
         lastInstallmentInfo,
 
         // Actions

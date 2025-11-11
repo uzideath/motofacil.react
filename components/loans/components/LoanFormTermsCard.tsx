@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calculator, Calendar, Clock, Percent, Navigation, CalendarDays } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calculator, Calendar, Clock, Percent, Navigation, CalendarDays, X } from "lucide-react"
 import type { Control } from "react-hook-form"
 
 interface LoanFormTermsCardProps {
@@ -54,18 +55,34 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                             <FormItem>
                                 <FormLabel>Fecha de Finalización (Opcional)</FormLabel>
                                 <FormControl>
-                                    <div className="relative">
-                                        <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            type="date"
-                                            className="pl-9"
-                                            {...field}
-                                        />
+                                    <div className="relative flex gap-2">
+                                        <div className="relative flex-1">
+                                            <CalendarDays className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                type="date"
+                                                className="pl-9"
+                                                value={field.value || ""}
+                                                onChange={(e) => {
+                                                    field.onChange(e.target.value || null)
+                                                }}
+                                            />
+                                        </div>
+                                        {field.value && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-10 w-10 shrink-0"
+                                                onClick={() => field.onChange(null)}
+                                                title="Limpiar fecha"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </FormControl>
                                 <FormDescription className="text-xs">
                                     Si no se proporciona, se calculará automáticamente
-                                    {formValues.paymentFrequency === "DAILY" && " (excluye domingos)"}
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -88,14 +105,11 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                                 const value = parseFormattedNumber(e.target.value)
                                                 field.onChange(value)
                                             }}
-                                            readOnly={!!(formValues.startDate && formValues.endDate)}
                                         />
                                     </div>
                                 </FormControl>
                                 <FormDescription className="text-xs">
-                                    {formValues.startDate && formValues.endDate 
-                                        ? "Calculado automáticamente desde las fechas" 
-                                        : "Duración total del préstamo en meses"}
+                                    Duración total del préstamo en meses
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -122,7 +136,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                     </SelectContent>
                                 </Select>
                                 <FormDescription className="text-xs">
-                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días (lunes a sábado)"}
+                                    {formValues.paymentFrequency === "DAILY" && "Pagos todos los días"}
                                     {formValues.paymentFrequency === "WEEKLY" && "Pagos una vez por semana"}
                                     {formValues.paymentFrequency === "BIWEEKLY" && "Pagos cada dos semanas"}
                                     {formValues.paymentFrequency === "MONTHLY" && "Pagos una vez al mes"}
@@ -138,17 +152,9 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                                         if (start >= end) return 0
                                                         
                                                         if (frequency === "DAILY") {
-                                                            let businessDays = 0
-                                                            const currentDate = new Date(start)
-                                                            
-                                                            while (currentDate <= end) {
-                                                                if (currentDate.getDay() !== 0) {
-                                                                    businessDays++
-                                                                }
-                                                                currentDate.setDate(currentDate.getDate() + 1)
-                                                            }
-                                                            
-                                                            return businessDays
+                                                            const diffTime = Math.abs(end.getTime() - start.getTime())
+                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+                                                            return diffDays
                                                         } else {
                                                             const diffTime = Math.abs(end.getTime() - start.getTime())
                                                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))

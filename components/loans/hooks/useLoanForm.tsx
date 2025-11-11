@@ -14,7 +14,7 @@ const loanSchema = z.object({
     totalAmount: z.coerce.number().min(1, { message: "El precio total debe ser mayor a cero." }),
     downPayment: z.coerce.number().min(0, { message: "El pago inicial no puede ser negativo." }),
     startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    endDate: z.string().nullable().optional(),
     loanTermMonths: z.coerce.number().min(1, { message: "El plazo del préstamo debe ser al menos 1 mes." }),
     interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
     interestType: z.enum(["FIXED", "COMPOUND"]),
@@ -148,7 +148,7 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             totalAmount: 4000000,
             downPayment: 0,
             startDate: new Date().toISOString().split('T')[0],
-            endDate: "",
+            endDate: null,
             loanTermMonths: 18,
             interestRate: 12,
             interestType: "FIXED",
@@ -347,10 +347,14 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             gpsAmount,
         ] = watchedValues
 
-        // Only auto-calculate end date if we have start date and loan term, but no end date
-        if (startDate && loanTermMonths && loanTermMonths > 0 && !endDate) {
+        // Auto-calculate end date if we have start date and loan term
+        // Only skip if endDate is explicitly null (user cleared it manually)
+        if (startDate && loanTermMonths && loanTermMonths > 0 && endDate !== null) {
             const calculatedEndDate = calculateEndDateFromStart(startDate, paymentFrequency, loanTermMonths)
-            form.setValue("endDate", calculatedEndDate, { shouldValidate: false })
+            // Only update if the calculated date is different from current value
+            if (calculatedEndDate !== endDate) {
+                form.setValue("endDate", calculatedEndDate, { shouldValidate: false })
+            }
         }
     }, [watchedValues, isOpen])
 
@@ -524,8 +528,10 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
             if (values.startDate) {
                 submissionValues.startDate = new Date(`${values.startDate}T00:00:00`).toISOString()
             }
-            if (endDateToUse) {
+            if (endDateToUse && endDateToUse !== "" && endDateToUse !== null) {
                 submissionValues.endDate = new Date(`${endDateToUse}T00:00:00`).toISOString()
+            } else {
+                submissionValues.endDate = null
             }
 
             // Remove fields that are not part of the API
