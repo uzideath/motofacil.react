@@ -10,7 +10,6 @@ import { useProviders } from "@/components/providers/hooks/useProviders"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { DateRange } from "react-day-picker"
 import { format } from "date-fns"
-import { utcToZonedTime } from "date-fns-tz"
 
 interface TransactionFiltersProps {
     searchTerm: string
@@ -45,10 +44,10 @@ export const TransactionFilters = React.memo(function TransactionFilters({
     const dateRange = useMemo<DateRange | undefined>(() => {
         if (!startDate && !endDate) return undefined
         
-        const colombiaTimeZone = 'America/Bogota'
         return {
-            from: startDate ? utcToZonedTime(new Date(startDate), colombiaTimeZone) : undefined,
-            to: endDate ? utcToZonedTime(new Date(endDate), colombiaTimeZone) : undefined,
+            // Parse the date string as local date (not UTC) to avoid timezone shifts
+            from: startDate ? new Date(startDate + 'T00:00:00') : undefined,
+            to: endDate ? new Date(endDate + 'T00:00:00') : undefined,
         }
     }, [startDate, endDate])
 
@@ -59,7 +58,8 @@ export const TransactionFilters = React.memo(function TransactionFilters({
             return
         }
 
-        // Convert to ISO string format for the API (Colombia timezone)
+        // Format dates to yyyy-MM-dd in local time (not UTC) to prevent day shift
+        // This ensures that clicking Nov 7 gives us "2025-11-07", not "2025-11-06"
         const start = range.from ? format(range.from, 'yyyy-MM-dd') : undefined
         const end = range.to ? format(range.to, 'yyyy-MM-dd') : undefined
         

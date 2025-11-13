@@ -1,43 +1,14 @@
 import type { Transaction, TransactionFiltersState, TransactionSummary } from "../constants/types"
 
-/**
- * Checks if a date is today in Colombian time (America/Bogota timezone)
- */
-function isToday(date: Date): boolean {
-  const colombianTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
-  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
-  
-  return (
-    colombianTime.getFullYear() === today.getFullYear() &&
-    colombianTime.getMonth() === today.getMonth() &&
-    colombianTime.getDate() === today.getDate()
-  )
-}
-
-/**
- * Checks if a date is today or in the future in Colombian time (America/Bogota timezone)
- */
-function isTodayOrFuture(date: Date): boolean {
-  const colombianTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
-  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
-  
-  // Set time to start of day for both dates to compare dates only
-  colombianTime.setHours(0, 0, 0, 0)
-  today.setHours(0, 0, 0, 0)
-  
-  // Return true if the transaction date is today or in the future
-  return colombianTime >= today
-}
-
 export function filterAndSortTransactions(
   transactions: Transaction[],
   filters: TransactionFiltersState,
 ): Transaction[] {
+  console.log('🔍 Frontend Filter - Input transactions:', transactions.length)
   let filtered = [...transactions]
 
-  // CRITICAL: Only show transactions from today and future dates (Colombian time)
-  // Exclude past transactions before today
-  filtered = filtered.filter((transaction) => isTodayOrFuture(transaction.date))
+  // Note: Date filtering is now handled by the backend based on the selected date range
+  // No need to filter by date here - show all transactions returned by the API
 
   // Apply search filter
   if (filters.searchTerm) {
@@ -48,16 +19,19 @@ export function filterAndSortTransactions(
         transaction.reference?.toLowerCase().includes(searchLower) ||
         transaction.amount.toString().includes(searchLower),
     )
+    console.log('   After search filter:', filtered.length)
   }
 
   // Apply type filter
   if (filters.typeFilter !== "all") {
     filtered = filtered.filter((transaction) => transaction.type === filters.typeFilter)
+    console.log('   After type filter:', filtered.length)
   }
 
   // Apply provider filter
   if (filters.providerFilter !== "all") {
     filtered = filtered.filter((transaction) => transaction.provider?.name === filters.providerFilter)
+    console.log('   After provider filter:', filtered.length)
   }
 
   // Apply sorting
@@ -96,6 +70,7 @@ export function filterAndSortTransactions(
     })
   }
 
+  console.log('✅ Frontend Filter - Output transactions:', filtered.length)
   return filtered
 }
 

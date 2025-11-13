@@ -7,8 +7,8 @@ import { Installment, Expense } from "@/lib/types"
 /**
  * Fetches available transactions (installments and expenses)
  * @param token - Authentication token
- * @param startDate - Optional start date filter (ISO format)
- * @param endDate - Optional end date filter (ISO format)
+ * @param startDate - Optional start date filter (ISO format). If not provided, defaults to today.
+ * @param endDate - Optional end date filter (ISO format). If not provided, defaults to today.
  */
 export const fetchAvailableTransactions = async (
     token: string,
@@ -16,16 +16,23 @@ export const fetchAvailableTransactions = async (
     endDate?: string
 ): Promise<Transaction[]> => {
     try {
-        console.log('🌐 Service - Fetching available transactions', { startDate, endDate });
-
-        // Build query parameters
-        const params = new URLSearchParams()
-        if (startDate) params.append('startDate', startDate)
-        if (endDate) params.append('endDate', endDate)
+        // Default to today's date if no dates are provided
+        const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+        const effectiveStartDate = startDate || today
+        const effectiveEndDate = endDate || today
         
-        const url = params.toString() 
-            ? `${API_ENDPOINTS.AVAILABLE_PAYMENTS}?${params.toString()}`
-            : API_ENDPOINTS.AVAILABLE_PAYMENTS
+        console.log('🌐 Service - Fetching available transactions', { 
+            startDate: effectiveStartDate, 
+            endDate: effectiveEndDate,
+            isDefault: !startDate && !endDate ? '(defaulting to today)' : ''
+        });
+
+        // Build query parameters - always include dates (defaulting to today)
+        const params = new URLSearchParams()
+        params.append('startDate', effectiveStartDate)
+        params.append('endDate', effectiveEndDate)
+        
+        const url = `${API_ENDPOINTS.AVAILABLE_PAYMENTS}?${params.toString()}`
 
         const response = await HttpService.get<TransactionResponse>(url, {
             headers: { Authorization: token ? `Bearer ${token}` : "" },
