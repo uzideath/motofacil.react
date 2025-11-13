@@ -153,7 +153,19 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
                             <span className="text-sm font-semibold text-amber-700 dark:text-amber-500">
                                 {formatSpanishDate(transaction.latePaymentDate)}
                             </span>
-                            <span className="text-xs text-amber-600/70 dark:text-amber-500/70">Vencimiento</span>
+                            <span className="text-xs text-amber-600/70 dark:text-amber-500/70">Atrasado</span>
+                        </div>
+                    </div>
+                ) : transaction.isAdvance && transaction.advancePaymentDate ? (
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md bg-blue-100 dark:bg-blue-950/50 ring-2 ring-blue-200 dark:ring-blue-900">
+                            <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-500" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-blue-700 dark:text-blue-500">
+                                {formatSpanishDate(transaction.advancePaymentDate)}
+                            </span>
+                            <span className="text-xs text-blue-600/70 dark:text-blue-500/70">Adelantado</span>
                         </div>
                     </div>
                 ) : (

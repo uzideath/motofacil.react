@@ -58,10 +58,12 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
         // IMPORTANT: The logic for dates is:
         // - paymentDate = the actual date when payment was made/registered
         // - latePaymentDate = the original due date (when isLate = true)
+        // - advancePaymentDate = the future due date (when isAdvance = true)
         // 
-        // For closings, we need to track BOTH dates:
+        // For closings, we need to track ALL dates:
         // - date: actual payment date (for display and grouping by payment date)
-        // - latePaymentDate: due date (for validation - can't mix different due dates)
+        // - latePaymentDate: past due date (for late payments)
+        // - advancePaymentDate: future due date (for advance payments)
         const actualPaymentDate = installment.paymentDate;
 
         return {
@@ -80,6 +82,8 @@ const mapInstallmentsToTransactions = (installments: Installment[]): Transaction
             date: new Date(actualPaymentDate),
             isLate: installment.isLate,
             latePaymentDate: installment.latePaymentDate ? new Date(installment.latePaymentDate) : null,
+            isAdvance: installment.isAdvance,
+            advancePaymentDate: installment.advancePaymentDate ? new Date(installment.advancePaymentDate) : null,
             createdBy: installment.createdBy,
         }
     })

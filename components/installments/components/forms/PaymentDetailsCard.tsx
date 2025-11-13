@@ -11,15 +11,26 @@ import { Textarea } from "@/components/ui/textarea"
 import { DollarSign, CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import type { Control } from "react-hook-form"
+import type { Control, UseFormSetValue } from "react-hook-form"
 
 interface PaymentDetailsCardProps {
     control: Control<any>
-    isLate: boolean
-    isAdvance: boolean
+    hasDueDate: boolean
+    setValue: UseFormSetValue<any>
 }
 
-export function PaymentDetailsCard({ control, isLate, isAdvance }: PaymentDetailsCardProps) {
+export function PaymentDetailsCard({ control, hasDueDate, setValue }: PaymentDetailsCardProps) {
+    // Determine if it's a late or advance payment based on dates
+    const paymentDate = control._formValues?.paymentDate
+    const latePaymentDate = control._formValues?.latePaymentDate
+    const advancePaymentDate = control._formValues?.advancePaymentDate
+    
+    const isLate = hasDueDate && latePaymentDate && paymentDate && 
+        new Date(latePaymentDate).setHours(0, 0, 0, 0) < new Date(paymentDate).setHours(0, 0, 0, 0)
+    
+    const isAdvance = hasDueDate && advancePaymentDate && paymentDate && 
+        new Date(advancePaymentDate).setHours(0, 0, 0, 0) > new Date(paymentDate).setHours(0, 0, 0, 0)
+
     return (
         <Card className="border-primary/20 shadow-sm">
             <CardHeader className="pb-3">
@@ -138,7 +149,7 @@ export function PaymentDetailsCard({ control, isLate, isAdvance }: PaymentDetail
                 <div className="space-y-4">
                     <FormField
                         control={control}
-                        name="isLate"
+                        name="hasDueDate"
                         render={({ field }) => (
                             <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                                 <FormControl>
@@ -150,104 +161,110 @@ export function PaymentDetailsCard({ control, isLate, isAdvance }: PaymentDetail
                                     />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                    <FormLabel className="cursor-pointer">Pago atrasado</FormLabel>
-                                    <FormDescription className="text-xs">Marcar si el pago se realizó fuera de fecha</FormDescription>
+                                    <FormLabel className="cursor-pointer">Asignar fecha de vencimiento</FormLabel>
+                                    <FormDescription className="text-xs">
+                                        Marcar si esta cuota corresponde a una fecha específica (pasada o futura)
+                                    </FormDescription>
                                 </div>
                             </FormItem>
                         )}
                     />
-                    {isLate && (
+                    {hasDueDate && (
                         <FormField
                             control={control}
                             name="latePaymentDate"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Fecha a la que pertenece esta cuota</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                                >
-                                                    {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <CalendarComponent
-                                                mode="single"
-                                                selected={field.value || undefined}
-                                                onSelect={(date) => {
-                                                    field.onChange(date)
-                                                }}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormDescription>Fecha de vencimiento original de esta cuota</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
-                </div>
-                <div className="space-y-4">
-                    <FormField
-                        control={control}
-                        name="isAdvance"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 bg-blue-50/50 dark:bg-blue-950/20">
-                                <FormControl>
-                                    <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={(checked) => {
-                                            field.onChange(checked)
-                                        }}
-                                    />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                    <FormLabel className="cursor-pointer text-blue-600 dark:text-blue-400">Pago adelantado</FormLabel>
-                                    <FormDescription className="text-xs">Marcar si el pago es para una fecha futura</FormDescription>
-                                </div>
-                            </FormItem>
-                        )}
-                    />
-                    {isAdvance && (
-                        <FormField
-                            control={control}
-                            name="advancePaymentDate"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Fecha de vencimiento futura</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                                >
-                                                    {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <CalendarComponent
-                                                mode="single"
-                                                selected={field.value || undefined}
-                                                onSelect={(date) => {
-                                                    field.onChange(date)
-                                                }}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormDescription>Fecha futura a la que corresponde este pago adelantado</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                            render={({ field }) => {
+                                const paymentDate = control._formValues?.paymentDate
+                                const lateDate = control._formValues?.latePaymentDate
+                                const advanceDate = control._formValues?.advancePaymentDate
+                                const dueDate = lateDate || advanceDate
+                                
+                                // Determine if it's late or advance based on dates
+                                let dateType: 'late' | 'advance' | 'same' = 'same'
+                                if (paymentDate && dueDate) {
+                                    const paymentTime = new Date(paymentDate).setHours(0, 0, 0, 0)
+                                    const dueTime = new Date(dueDate).setHours(0, 0, 0, 0)
+                                    
+                                    if (dueTime < paymentTime) {
+                                        dateType = 'late'
+                                    } else if (dueTime > paymentTime) {
+                                        dateType = 'advance'
+                                    }
+                                }
+
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Fecha de vencimiento</FormLabel>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <FormControl>
+                                                    <Button
+                                                        variant={"outline"}
+                                                        className={`w-full pl-3 text-left font-normal ${!dueDate && "text-muted-foreground"}`}
+                                                    >
+                                                        {dueDate ? (
+                                                            format(dueDate, "PPP", { locale: es })
+                                                        ) : (
+                                                            <span>Seleccionar fecha de vencimiento</span>
+                                                        )}
+                                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                    </Button>
+                                                </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                                <CalendarComponent
+                                                    mode="single"
+                                                    selected={dueDate || undefined}
+                                                    onSelect={(date) => {
+                                                        if (date) {
+                                                            const paymentTime = paymentDate ? new Date(paymentDate).setHours(0, 0, 0, 0) : new Date().setHours(0, 0, 0, 0)
+                                                            const dueTime = new Date(date).setHours(0, 0, 0, 0)
+                                                            
+                                                            console.log('🎯 Date selected:', {
+                                                                selectedDate: date,
+                                                                paymentDate,
+                                                                paymentTime: new Date(paymentTime),
+                                                                dueTime: new Date(dueTime),
+                                                                isFuture: dueTime >= paymentTime
+                                                            })
+                                                            
+                                                            // Set the appropriate field based on whether it's past or future
+                                                            if (dueTime >= paymentTime) {
+                                                                // Future or same date - use advancePaymentDate
+                                                                console.log('✅ Setting advancePaymentDate:', date)
+                                                                setValue('latePaymentDate', undefined)
+                                                                setValue('advancePaymentDate', date)
+                                                            } else {
+                                                                // Past date - use latePaymentDate
+                                                                console.log('⚠️ Setting latePaymentDate:', date)
+                                                                setValue('advancePaymentDate', undefined)
+                                                                setValue('latePaymentDate', date)
+                                                            }
+                                                        }
+                                                    }}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                        <FormDescription>
+                                            {dateType === 'late' && (
+                                                <span className="text-amber-600 dark:text-amber-400">
+                                                    ⚠️ Pago atrasado - Fecha de vencimiento original de esta cuota
+                                                </span>
+                                            )}
+                                            {dateType === 'advance' && (
+                                                <span className="text-blue-600 dark:text-blue-400">
+                                                    ✓ Pago adelantado - Fecha futura a la que corresponde este pago
+                                                </span>
+                                            )}
+                                            {dateType === 'same' && (
+                                                <span>Fecha a la que corresponde esta cuota</span>
+                                            )}
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )
+                            }}
                         />
                     )}
                 </div>

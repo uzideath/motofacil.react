@@ -17,6 +17,8 @@ export interface Transaction {
   date: Date // Actual payment date
   isLate?: boolean // Whether this is a late payment
   latePaymentDate?: Date | null // Original due date (for late payments)
+  isAdvance?: boolean // Whether this is an advance payment
+  advancePaymentDate?: Date | null // Future due date (for advance payments)
   createdBy?: {
     id: string
     username: string
@@ -34,6 +36,8 @@ export interface SelectedTransaction {
   reference: string
   isLate?: boolean
   latePaymentDate?: Date | null
+  isAdvance?: boolean
+  advancePaymentDate?: Date | null
 }
 
 export type TransactionType = "income" | "expense"

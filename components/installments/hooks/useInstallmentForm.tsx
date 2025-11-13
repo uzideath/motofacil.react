@@ -22,9 +22,8 @@ const installmentSchema = z
         paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {
             required_error: "Debe seleccionar un método de pago",
         }),
-        isLate: z.boolean().default(false),
+        hasDueDate: z.boolean().default(false),
         latePaymentDate: z.date().optional(),
-        isAdvance: z.boolean().default(false),
         advancePaymentDate: z.date().optional(),
         paymentDate: z.date().optional(),
         notes: z.string().optional(),
@@ -33,26 +32,14 @@ const installmentSchema = z
     })
     .refine(
         (data) => {
-            if (data.isLate && !data.latePaymentDate) {
+            if (data.hasDueDate && !data.latePaymentDate && !data.advancePaymentDate) {
                 return false
             }
             return true
         },
         {
-            message: "Debe seleccionar una fecha de pago cuando el pago es atrasado",
+            message: "Debe seleccionar una fecha de vencimiento",
             path: ["latePaymentDate"],
-        },
-    )
-    .refine(
-        (data) => {
-            if (data.isAdvance && !data.advancePaymentDate) {
-                return false
-            }
-            return true
-        },
-        {
-            message: "Debe seleccionar una fecha de vencimiento cuando el pago es adelantado",
-            path: ["advancePaymentDate"],
         },
     )
 
@@ -106,8 +93,9 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             loanId: loanId || "",
             amount: 0,
             gps: 0,
-            isLate: false,
+            hasDueDate: false,
             latePaymentDate: undefined,
+            advancePaymentDate: undefined,
             paymentDate: new Date(),
             notes: "",
             attachmentUrl: "",
@@ -117,8 +105,17 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
 
     const amount = form.watch("amount")
     const gps = form.watch("gps")
-    const isLate = form.watch("isLate")
-    const isAdvance = form.watch("isAdvance")
+    const hasDueDate = form.watch("hasDueDate")
+    const paymentDate = form.watch("paymentDate")
+    const latePaymentDate = form.watch("latePaymentDate")
+    const advancePaymentDate = form.watch("advancePaymentDate")
+    
+    // Calculate if it's late or advance based on dates
+    const isLate = hasDueDate && latePaymentDate && paymentDate && 
+        new Date(latePaymentDate).setHours(0, 0, 0, 0) < new Date(paymentDate).setHours(0, 0, 0, 0)
+    
+    const isAdvance = hasDueDate && advancePaymentDate && paymentDate && 
+        new Date(advancePaymentDate).setHours(0, 0, 0, 0) > new Date(paymentDate).setHours(0, 0, 0, 0)
 
     // Load installment data for editing
     useEffect(() => {
@@ -127,7 +124,11 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             form.setValue("loanId", installment.loanId)
             form.setValue("amount", installment.amount)
             form.setValue("gps", installment.gps || 0)
-            form.setValue("isLate", installment.isLate || false)
+            
+            // Set hasDueDate based on whether latePaymentDate or advancePaymentDate exists
+            const hasDate = !!(installment.latePaymentDate || installment.advancePaymentDate)
+            form.setValue("hasDueDate", hasDate)
+            
             form.setValue("paymentMethod", installment.paymentMethod || "CASH")
             form.setValue("notes", installment.notes || "")
             form.setValue("attachmentUrl", installment.attachmentUrl || "")
@@ -167,6 +168,9 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
             if (installment.latePaymentDate) {
                 form.setValue("latePaymentDate", new Date(installment.latePaymentDate))
             }
+            if (installment.advancePaymentDate) {
+                form.setValue("advancePaymentDate", new Date(installment.advancePaymentDate))
+            }
             if (installment.paymentDate) {
                 form.setValue("paymentDate", new Date(installment.paymentDate))
             }
@@ -185,14 +189,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         if (selectedLoan && amount) {
             calculatePaymentBreakdown(selectedLoan, amount, gps)
         }
-    }, [selectedLoan, amount, gps, isLate])
-
-    // Initialize late payment date
-    useEffect(() => {
-        if (isLate && !form.getValues("latePaymentDate")) {
-            form.setValue("latePaymentDate", new Date())
-        }
-    }, [isLate, form])
+    }, [selectedLoan, amount, gps])
 
     // Load loans when dialog opens
     useEffect(() => {
@@ -456,14 +453,27 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
                 amount: values.amount,
                 gps: values.gps,
                 paymentMethod: values.paymentMethod,
-                isLate: values.isLate,
                 notes: values.notes || "",
                 attachmentUrl: values.attachmentUrl || "",
                 createdById: values.createdById || user?.id,
             }
 
-            if (values.isLate && values.latePaymentDate) {
+            // Determine if it's late or advance based on the date comparison
+            const paymentDateValue = values.paymentDate ? new Date(values.paymentDate).setHours(0, 0, 0, 0) : new Date().setHours(0, 0, 0, 0)
+            
+            if (values.latePaymentDate) {
+                const lateDateValue = new Date(values.latePaymentDate).setHours(0, 0, 0, 0)
+                payload.isLate = lateDateValue < paymentDateValue
+                payload.isAdvance = false
                 payload.latePaymentDate = values.latePaymentDate.toISOString()
+            } else if (values.advancePaymentDate) {
+                const advanceDateValue = new Date(values.advancePaymentDate).setHours(0, 0, 0, 0)
+                payload.isLate = false
+                payload.isAdvance = true
+                payload.advancePaymentDate = values.advancePaymentDate.toISOString()
+            } else {
+                payload.isLate = false
+                payload.isAdvance = false
             }
 
             // Always include paymentDate for both create and update
@@ -537,8 +547,7 @@ export function useInstallmentForm({ loanId, installment, onSaved }: UseInstallm
         form,
         amount,
         gps,
-        isLate,
-        isAdvance,
+        hasDueDate,
         lastInstallmentInfo,
 
         // Actions
