@@ -85,7 +85,7 @@ export function useProviders() {
     const updateProvider = async (id: string, name: string) => {
         try {
             const token = getAuthToken()
-            const response = await HttpService.put(
+            const response = await HttpService.patch(
                 `/api/v1/providers/${id}`,
                 { name },
                 {
