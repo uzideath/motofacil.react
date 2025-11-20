@@ -39,6 +39,11 @@ export function LoanFormSummaryCard({
                         <p className="text-base font-semibold text-green-600 dark:text-green-400">
                             {formatCurrency(formValues.downPayment || 0)}
                         </p>
+                        {formValues.downPayment > 0 && loanSummary.paymentAmount > 0 && (
+                            <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-1">
+                                ≈ {Math.floor(formValues.downPayment / loanSummary.paymentAmount)} cuotas
+                            </p>
+                        )}
                     </div>
                     <div>
                         <p className="text-xs font-medium text-blue-600/70 dark:text-blue-400/70 mb-1">Monto Financiado:</p>
@@ -91,6 +96,11 @@ export function LoanFormSummaryCard({
                                 </span>
                             )}
                         </p>
+                        {loanSummary.downPaymentInstallments > 0 && (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                Ya cubiertos con pago inicial: {loanSummary.downPaymentInstallments} cuotas
+                            </p>
+                        )}
                     </div>
                 </div>
             </CardContent>

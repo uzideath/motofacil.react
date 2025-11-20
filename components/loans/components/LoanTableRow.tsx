@@ -267,6 +267,11 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         </span>
                     </div>
                 </div>
+                {loan.downPayment > 0 && loan.installmentPaymentAmmount > 0 && (
+                    <div className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+                        Inicial: {Math.floor(loan.downPayment / loan.installmentPaymentAmmount)} cuotas cubiertas
+                    </div>
+                )}
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-1.5">
                     <div
                         className={cn(
