@@ -71,6 +71,7 @@ export function LoanTableControls({
                         <SelectItem value="RESTARTED_BY_DEFAULT">Reiniciado por mora</SelectItem>
                         <SelectItem value="COMPLETED_BY_THEFT">Finalizado por Robo de vehículo</SelectItem>
                         <SelectItem value="COMPLETED_BY_PROSECUTOR">Contrato finalizado por fiscalía</SelectItem>
+                        <SelectItem value="IMMOBILIZED_BY_TRAFFIC">Inmovilizado por tránsito</SelectItem>
                     </SelectContent>
                 </Select>
 

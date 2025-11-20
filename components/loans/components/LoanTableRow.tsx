@@ -112,6 +112,13 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                         <span>Finalizado por fiscalía</span>
                     </Badge>
                 )
+            case "IMMOBILIZED_BY_TRAFFIC":
+                return (
+                    <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white flex items-center gap-1">
+                        <Activity className="h-3 w-3" />
+                        <span>Inmovilizado por tránsito</span>
+                    </Badge>
+                )
             case "DEFAULTED":
                 return (
                     <Badge className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1">

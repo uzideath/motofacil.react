@@ -42,6 +42,7 @@ export function ChangeLoanStatusDialog({ loanId, currentStatus, onStatusChanged,
         { value: LoanStatus.RESTARTED_BY_DEFAULT, label: "Reiniciado por mora" },
         { value: LoanStatus.COMPLETED_BY_THEFT, label: "Finalizado por Robo de vehículo" },
         { value: LoanStatus.COMPLETED_BY_PROSECUTOR, label: "Contrato finalizado por fiscalía" },
+        { value: LoanStatus.IMMOBILIZED_BY_TRAFFIC, label: "Inmovilizado por tránsito" },
     ]
 
     const handleSubmit = async () => {
