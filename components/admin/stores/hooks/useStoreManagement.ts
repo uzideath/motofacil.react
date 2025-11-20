@@ -26,10 +26,10 @@ export function useStoreManagement(): UseStoreManagementReturn {
       const data = await StoreService.getAllStores()
       setStores(data)
     } catch (error: any) {
-      console.error("Error al cargar tiendas:", error)
+      console.error("Error al cargar puntos:", error)
       const errorMessage = error?.response?.status === 404 
-        ? "La API de gestión de tiendas aún no está disponible. Podrás crear tiendas cuando el backend esté listo."
-        : "Error al cargar tiendas. Es posible que la API del backend aún no esté lista."
+        ? "La API de gestión de puntos aún no está disponible. Podrás crear puntos cuando el backend esté listo."
+        : "Error al cargar puntos. Es posible que la API del backend aún no esté lista."
       
       setLoadError(errorMessage)
       setStores([])
@@ -43,13 +43,13 @@ export function useStoreManagement(): UseStoreManagementReturn {
       await StoreService.createStore(data)
       toast({
         title: "Éxito",
-        description: "Tienda creada correctamente",
+        description: "Punto creado correctamente",
       })
       await loadStores()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error al crear la tienda",
+        description: "Error al crear el punto",
         variant: "destructive",
       })
       throw error
@@ -61,13 +61,13 @@ export function useStoreManagement(): UseStoreManagementReturn {
       await StoreService.updateStore(id, data)
       toast({
         title: "Éxito",
-        description: "Tienda actualizada correctamente",
+        description: "Punto actualizado correctamente",
       })
       await loadStores()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error al actualizar la tienda",
+        description: "Error al actualizar el punto",
         variant: "destructive",
       })
       throw error
@@ -83,13 +83,13 @@ export function useStoreManagement(): UseStoreManagementReturn {
       await StoreService.deleteStore(store.id)
       toast({
         title: "Éxito",
-        description: "Tienda eliminada correctamente",
+        description: "Punto eliminado correctamente",
       })
       await loadStores()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error al eliminar la tienda",
+        description: "Error al eliminar el punto",
         variant: "destructive",
       })
       throw error

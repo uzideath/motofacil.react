@@ -26,7 +26,7 @@ export function OverviewStats({ data }: OverviewStatsProps) {
       {/* Main Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Tiendas"
+          title="Total Puntos"
           value={data.totalStores}
           subtitle={`${data.activeStores} activas`}
           icon={Building2}
@@ -37,7 +37,7 @@ export function OverviewStats({ data }: OverviewStatsProps) {
         <StatCard
           title="Vehículos Total"
           value={data.totalVehicles}
-          subtitle="En todas las tiendas"
+          subtitle="En todos los puntos"
           icon={Car}
           iconColor="text-purple-600"
           gradientFrom="from-purple-500/20"
@@ -84,9 +84,9 @@ export function OverviewStats({ data }: OverviewStatsProps) {
           gradientTo="to-indigo-500/5"
         />
         <StatCard
-          title="Promedio por Tienda"
+          title="Promedio por punto"
           value={averageVehiclesPerStore}
-          subtitle="Vehículos por tienda"
+          subtitle="Vehículos por punto"
           icon={Activity}
           iconColor="text-pink-600"
           gradientFrom="from-pink-500/20"

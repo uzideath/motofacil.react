@@ -8,7 +8,7 @@ export default function AdminEmployeesPage() {
       <PageHeader
         icon={Users}
         title="Gestión de Empleados"
-        subtitle="Administra los empleados y asignaciones de tienda"
+        subtitle="Administra los empleados y asignaciones de punto"
         badgeIcon={Shield}
         badgeLabel="Admin"
         badgeColor="purple"

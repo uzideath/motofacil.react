@@ -30,7 +30,7 @@ export function DeleteDialog({ store, isOpen, onOpenChange, onConfirm, isDeletin
                 <AlertDialogHeader>
                     <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Se eliminará permanentemente la tienda{" "}
+                        Esta acción no se puede deshacer. Se eliminará permanentemente el punto{" "}
                         <span className="font-semibold">{store.name}</span> (código: {store.code}).
                     </AlertDialogDescription>
                 </AlertDialogHeader>

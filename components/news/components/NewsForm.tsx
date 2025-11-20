@@ -274,14 +274,14 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                     Préstamo Específico
                                                 </SelectItem>
                                                 <SelectItem value={NewsType.STORE_WIDE}>
-                                                    Toda la Tienda
+                                                    Todo el punto
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormDescription>
                                             {newsType === NewsType.LOAN_SPECIFIC
                                                 ? "Afecta solo a un préstamo específico (vehículo en taller, accidente, etc.)"
-                                                : "Afecta a toda la tienda (festivos, días libres, mantenimiento del sistema)"}
+                                                : "Afecta a todo el punto (festivos, días libres, mantenimiento del sistema)"}
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
@@ -321,7 +321,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                             </Select>
                                             <FormDescription>
                                                 {loadingLoans && "Cargando préstamos..."}
-                                                {!loadingLoans && loans.length === 0 && "No hay préstamos activos en esta tienda"}
+                                                {!loadingLoans && loans.length === 0 && "No hay préstamos activos en este punto"}
                                                 {!loadingLoans && loans.length > 0 && `${loans.length} préstamos disponibles`}
                                             </FormDescription>
                                             <FormMessage />
@@ -368,7 +368,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                         <FormDescription>
                                             {newsType === NewsType.LOAN_SPECIFIC
                                                 ? "Tipo de incidente o situación del vehículo"
-                                                : "Tipo de evento que afecta a toda la tienda"}
+                                                : "Tipo de evento que afecta a todo el punto"}
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>

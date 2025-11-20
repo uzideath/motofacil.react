@@ -85,7 +85,7 @@ export function TableRow({
             variant="ghost"
             size="sm"
             onClick={() => onReassign(employee)}
-            title="Reasignar tienda"
+            title="Reasignar punto"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>

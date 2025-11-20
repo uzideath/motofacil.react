@@ -22,8 +22,8 @@ export default function StoreManagementPage() {
     <div className="flex-1 w-full overflow-hidden flex flex-col">
       <PageHeader
         icon={Building2}
-        title="Gestión de Tiendas"
-        subtitle="Administración de tiendas y sucursales"
+        title="Gestión de puntos"
+        subtitle="Administración de puntos y sucursales"
         badgeIcon={StoreIcon}
         badgeLabel="Admin"
         badgeColor="purple"

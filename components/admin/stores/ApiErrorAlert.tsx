@@ -20,7 +20,7 @@ export function ApiErrorAlert({ error, onRetry }: ApiErrorAlertProps) {
           </p>
           <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
             Puedes seguir usando esta interfaz - una vez que los endpoints del
-            backend estén desplegados, podrás crear y gestionar tiendas aquí.
+            backend estén desplegados, podrás crear y gestionar puntos aquí.
           </p>
           <Button
             variant="outline"

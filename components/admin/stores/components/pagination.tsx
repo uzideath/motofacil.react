@@ -47,7 +47,7 @@ export function Pagination({
 
             <div className="flex items-center justify-center text-sm text-muted-foreground">
                 <p>
-                    Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} de {totalItems} tiendas
+                    Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} de {totalItems} puntos
                 </p>
             </div>
 

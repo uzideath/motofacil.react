@@ -120,7 +120,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Debes seleccionar una tienda",
+        description: "Debes seleccionar un punto",
       })
       return
     }
@@ -301,7 +301,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
 
           <div className="space-y-2">
             <Label htmlFor="store">
-              Tienda <span className="text-destructive">*</span>
+              Punto <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.storeId}
@@ -311,7 +311,7 @@ export function EmployeeFormDialog({ employee, onClose }: EmployeeFormDialogProp
               disabled={loading || loadingStores}
             >
               <SelectTrigger id="store">
-                <SelectValue placeholder="Selecciona una tienda" />
+                <SelectValue placeholder="Selecciona un punto" />
               </SelectTrigger>
               <SelectContent>
                 {stores.map((store) => (

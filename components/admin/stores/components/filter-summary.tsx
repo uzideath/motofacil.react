@@ -46,7 +46,7 @@ export function FilterSummary({ statusFilter, totalFiltered, totalItems }: Filte
                 {getStatusLabel(statusFilter)}
             </Badge>
             <span className="ml-2">
-                Mostrando {totalFiltered} de {totalItems} tiendas
+                Mostrando {totalFiltered} de {totalItems} puntos
             </span>
         </div>
     )

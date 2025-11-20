@@ -149,15 +149,15 @@ export function StoreTable({ onRefresh }: StoreTableProps) {
         try {
             if (editingStore) {
                 await updateStore(editingStore.id, data as UpdateStoreDto)
-                setSuccessMessage("Tienda actualizada correctamente")
+                setSuccessMessage("Punto actualizado correctamente")
             } else {
                 await createStore(data as CreateStoreDto)
-                setSuccessMessage("Tienda creada correctamente")
+                setSuccessMessage("Punto creada correctamente")
             }
             setIsSuccessDialogOpen(true)
             setIsFormOpen(false)
         } catch (error) {
-            console.error("Error al guardar la tienda:", error)
+            console.error("Error al guardar el punto:", error)
         }
     }
 
@@ -187,7 +187,7 @@ export function StoreTable({ onRefresh }: StoreTableProps) {
                             onClick={handleOpenCreateDialog}
                         >
                             <PlusCircle className="h-4 w-4" />
-                            Nueva Tienda
+                            Nuevo Punto
                         </Button>
                     }
                 />

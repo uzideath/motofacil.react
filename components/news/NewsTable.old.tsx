@@ -35,7 +35,7 @@ interface NewsTableProps {
 
 const NEWS_TYPE_LABELS: Record<NewsType, string> = {
     [NewsType.LOAN_SPECIFIC]: "Préstamo Específico",
-    [NewsType.STORE_WIDE]: "Toda la Tienda",
+    [NewsType.STORE_WIDE]: "Todo el punto",
 }
 
 const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {

@@ -11,7 +11,7 @@ export default function NewsPage() {
         return (
             <div className="container mx-auto p-6">
                 <div className="text-center py-12">
-                    <p className="text-muted-foreground">Selecciona una tienda para continuar</p>
+                    <p className="text-muted-foreground">Selecciona un punto para continuar</p>
                 </div>
             </div>
         )

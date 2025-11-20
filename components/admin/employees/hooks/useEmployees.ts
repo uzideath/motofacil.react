@@ -108,7 +108,7 @@ export function useEmployees(filter: EmployeeFilter = "all") {
       
       toast({
         title: "Empleado reasignado",
-        description: "El empleado ha sido reasignado a la nueva tienda correctamente.",
+        description: "El empleado ha sido reasignado al nuevo punto correctamente.",
       })
       
       // Refresh employee list

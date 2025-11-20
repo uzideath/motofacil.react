@@ -50,17 +50,17 @@ export function ReassignStoreDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />
-            <DialogTitle>Reasignar empleado a tienda</DialogTitle>
+            <DialogTitle>Reasignar empleado a punto</DialogTitle>
           </div>
           <DialogDescription>
-            Selecciona la nueva tienda para el empleado{" "}
+            Selecciona el nuevo punto para el empleado{" "}
             <span className="font-semibold">{employee.name}</span>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Tienda actual</Label>
+            <Label>Punto actual</Label>
             <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
               <Store className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">
@@ -75,14 +75,14 @@ export function ReassignStoreDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="store">Nueva tienda</Label>
+            <Label htmlFor="store">Nuevo punto</Label>
             <Select
               value={selectedStoreId}
               onValueChange={setSelectedStoreId}
               disabled={isLoading}
             >
               <SelectTrigger id="store">
-                <SelectValue placeholder="Selecciona una tienda" />
+                <SelectValue placeholder="Selecciona un punto" />
               </SelectTrigger>
               <SelectContent>
                 {availableStores.map((store) => (

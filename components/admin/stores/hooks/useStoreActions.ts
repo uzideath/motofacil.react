@@ -27,18 +27,18 @@ export function useStoreActions(refreshStores: () => void) {
         try {
             await onDeleteFn(deleteConfirmation)
             toast({
-                title: "Tienda eliminada",
-                description: "La tienda se ha eliminado correctamente",
+                title: "Punto eliminado",
+                description: "El punto se ha eliminado correctamente",
                 variant: "default",
             })
             refreshStores()
             setDeleteConfirmation(null)
         } catch (error) {
-            console.error("Error al eliminar la tienda:", error)
+            console.error("Error al eliminar el punto:", error)
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "No se pudo eliminar la tienda",
+                description: "No se pudo eliminar el punto",
             })
         } finally {
             setIsDeleting(false)

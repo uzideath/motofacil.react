@@ -8,7 +8,7 @@ export default function AdminDashboardPage() {
       <PageHeader
         icon={LayoutDashboard}
         title="Panel Administrativo"
-        subtitle="Vista general de todas las tiendas y métricas del sistema"
+        subtitle="Vista general de todas las puntos y métricas del sistema"
         badgeIcon={Shield}
         badgeLabel="Admin"
         badgeColor="purple"

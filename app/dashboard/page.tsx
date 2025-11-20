@@ -45,7 +45,7 @@ function DashboardContent() {
                             )}
                         </div>
                         <p className="text-primary-foreground/80 text-sm mt-1">
-                            {currentStore ? `Vista de tienda ${isAdmin ? '(Admin)' : ''}` : 'Bienvenido de nuevo, Admin'}
+                            {currentStore ? `Vista de punto ${isAdmin ? '(Admin)' : ''}` : 'Bienvenido de nuevo, Admin'}
                         </p>
                     </div>
                     <div className="flex items-center space-x-2">

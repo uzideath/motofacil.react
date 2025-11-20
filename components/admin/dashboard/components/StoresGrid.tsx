@@ -26,9 +26,9 @@ export function StoresGrid({ stores }: StoresGridProps) {
                 <StoreIcon className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <CardTitle className="text-2xl">Tiendas</CardTitle>
+                <CardTitle className="text-2xl">puntos</CardTitle>
                 <CardDescription className="text-sm">
-                  Vista detallada de cada tienda y sus métricas en tiempo real
+                  Vista detallada de cada punto y sus métricas en tiempo real
                 </CardDescription>
               </div>
             </div>

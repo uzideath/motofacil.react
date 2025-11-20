@@ -137,7 +137,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
     const adminItems = [
         {
             path: "/admin/stores",
-            label: "Tiendas",
+            label: "Puntos",
             icon: Building2,
         },
         {

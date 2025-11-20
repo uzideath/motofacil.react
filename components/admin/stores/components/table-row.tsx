@@ -95,7 +95,7 @@ export function StoreTableRow({ store, onEdit, onDelete }: StoreTableRowProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => onEdit(store)}
-                        title="Editar tienda"
+                        title="Editar punto"
                     >
                         <Edit className="h-4 w-4" />
                     </Button>
@@ -103,7 +103,7 @@ export function StoreTableRow({ store, onEdit, onDelete }: StoreTableRowProps) {
                         variant="destructive"
                         size="sm"
                         onClick={() => onDelete(store)}
-                        title="Eliminar tienda"
+                        title="Eliminar punto"
                     >
                         <Trash2 className="h-4 w-4" />
                     </Button>

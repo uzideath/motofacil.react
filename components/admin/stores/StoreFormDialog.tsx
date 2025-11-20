@@ -85,19 +85,19 @@ export function StoreFormDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {store ? "Editar Tienda" : "Crear Nueva Tienda"}
+            {store ? "Editar punto" : "Crear Nuevo punto"}
           </DialogTitle>
           <DialogDescription>
             {store
-              ? "Actualizar información de la tienda"
-              : "Agregar una nueva tienda al sistema"}
+              ? "Actualizar información del punto"
+              : "Agregar un nuevo punto al sistema"}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="code">Código de Tienda</Label>
+              <Label htmlFor="code">Código de punto</Label>
               <Input
                 id="code"
                 placeholder="ej., BOG-01"
@@ -109,10 +109,10 @@ export function StoreFormDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="name">Nombre de Tienda</Label>
+              <Label htmlFor="name">Nombre de punto</Label>
               <Input
                 id="name"
-                placeholder="ej., Tienda Bogotá 1"
+                placeholder="ej., punto Bogotá 1"
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
                 required
