@@ -49,13 +49,13 @@ export function LoanForm({ children, loanId, loanData, onSaved }: LoanFormProps)
             <DialogHeader>
               <DialogTitle className="text-xl flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
-                {loanId ? "Editar Préstamo" : "Nuevo Préstamo"}
+                {loanId ? "Editar contrato" : "Nuevo contrato"}
               </DialogTitle>
               <DialogDescription>
-                Complete el formulario para {loanId ? "actualizar el" : "crear un nuevo"} préstamo.
+                Complete el formulario para {loanId ? "actualizar el" : "crear un nuevo"} contrato.
                 {!loanId && (
                   <span className="block text-sm text-muted-foreground mt-1">
-                    Solo se muestran clientes y vehículos disponibles (no asignados a préstamos activos).
+                    Solo se muestran clientes y vehículos disponibles (no asignados a contratos activos).
                   </span>
                 )}
               </DialogDescription>

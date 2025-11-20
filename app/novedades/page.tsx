@@ -24,7 +24,7 @@ export default function NewsPage() {
                 <div>
                     <h1 className="text-3xl font-bold">Novedades</h1>
                     <p className="text-muted-foreground">
-                        Gestiona novedades generales y específicas de préstamos
+                        Gestiona novedades generales y específicas de contratos
                     </p>
                 </div>
             </div>

@@ -22,7 +22,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
             <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                     <Calculator className="h-4 w-4 text-primary" />
-                    Términos del Préstamo
+                    Términos del contrato
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -43,7 +43,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                         />
                                     </div>
                                 </FormControl>
-                                <FormDescription className="text-xs">Fecha de inicio del préstamo</FormDescription>
+                                <FormDescription className="text-xs">Fecha de inicio del contrato</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -93,7 +93,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                         name="loanTermMonths"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Plazo del Préstamo (meses)</FormLabel>
+                                <FormLabel>Plazo del contrato (meses)</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -109,7 +109,7 @@ export function LoanFormTermsCard({ control, formValues, formatNumber, parseForm
                                     </div>
                                 </FormControl>
                                 <FormDescription className="text-xs">
-                                    Duración total del préstamo en meses
+                                    Duración total del contrato en meses
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>

@@ -34,7 +34,7 @@ interface NewsTableProps {
 }
 
 const NEWS_TYPE_LABELS: Record<NewsType, string> = {
-    [NewsType.LOAN_SPECIFIC]: "Préstamo Específico",
+    [NewsType.LOAN_SPECIFIC]: "contrato Específico",
     [NewsType.STORE_WIDE]: "Todo el punto",
 }
 
@@ -93,7 +93,7 @@ export function NewsTable({ news, loading, onEdit, onDelete }: NewsTableProps) {
                         <TableHead>Tipo</TableHead>
                         <TableHead>Categoría</TableHead>
                         <TableHead>Título</TableHead>
-                        <TableHead>Préstamo/Usuario</TableHead>
+                        <TableHead>contrato/Usuario</TableHead>
                         <TableHead>Fechas</TableHead>
                         <TableHead>Días/Cuotas</TableHead>
                         <TableHead>Estado</TableHead>

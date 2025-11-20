@@ -103,15 +103,15 @@ export function useLoanTable() {
             })
             setLoans((prev) => prev.filter((loan) => loan.id !== loanToDelete))
             toast({
-                title: "Préstamo eliminado",
-                description: "El préstamo ha sido eliminado correctamente",
+                title: "contrato eliminado",
+                description: "El contrato ha sido eliminado correctamente",
             })
         } catch (error) {
-            console.error("Error al eliminar préstamo:", error)
+            console.error("Error al eliminar contrato:", error)
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "No se pudo eliminar el préstamo",
+                description: "No se pudo eliminar el contrato",
             })
         } finally {
             setDeleteDialogOpen(false)
@@ -147,13 +147,13 @@ export function useLoanTable() {
             )
 
             toast({
-                title: loanToArchive.archived ? "Préstamo desarchivado" : "Préstamo archivado",
+                title: loanToArchive.archived ? "contrato desarchivado" : "contrato archivado",
                 description: loanToArchive.archived
-                    ? "El préstamo ha sido desarchivado correctamente"
-                    : "El préstamo ha sido archivado correctamente",
+                    ? "El contrato ha sido desarchivado correctamente"
+                    : "El contrato ha sido archivado correctamente",
             })
         } catch (error) {
-            console.error("Error al archivar/desarchivar préstamo:", error)
+            console.error("Error al archivar/desarchivar contrato:", error)
             toast({
                 variant: "destructive",
                 title: "Error",
@@ -319,7 +319,7 @@ export function useLoanTable() {
         // Enhanced headers with more detailed information
         const headers = [
             // Cliente Information
-            "ID Préstamo",
+            "ID contrato",
             "Número de Contrato",
             "Cliente",
             "Identificación Cliente",
@@ -449,9 +449,9 @@ export function useLoanTable() {
 
         csvRows.push("")
         csvRows.push("RESUMEN ESTADÍSTICO")
-        csvRows.push(`Total de Préstamos,${totalLoans}`)
-        csvRows.push(`Préstamos Activos,${activeLoans}`)
-        csvRows.push(`Préstamos Completados,${completedLoans}`)
+        csvRows.push(`Total de contratos,${totalLoans}`)
+        csvRows.push(`contratos Activos,${activeLoans}`)
+        csvRows.push(`contratos Completados,${completedLoans}`)
         csvRows.push(`Monto Total Prestado,${formatCurrency(totalAmount)}`)
         csvRows.push(`Total Recaudado,${formatCurrency(totalPaid)}`)
         csvRows.push(`Deuda Total Pendiente,${formatCurrency(totalRemaining)}`)
@@ -476,7 +476,7 @@ export function useLoanTable() {
 
         toast({
             title: "Exportación exitosa",
-            description: `Se exportaron ${totalLoans} préstamos al archivo CSV`,
+            description: `Se exportaron ${totalLoans} contratos al archivo CSV`,
         })
     }
 

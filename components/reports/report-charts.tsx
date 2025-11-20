@@ -50,14 +50,14 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
   const getChartData = () => {
     switch (activeTab) {
       case "prestamos":
-        // Agrupar préstamos por estado
+        // Agrupar contratos por estado
         const loansByStatus = [
           { name: "Activos", value: data.loans.active },
           { name: "Completados", value: data.loans.completed },
           { name: "En Mora", value: data.loans.defaulted },
         ].filter(item => item.value > 0)
 
-        // Agrupar préstamos por frecuencia de pago
+        // Agrupar contratos por frecuencia de pago
         const loansByFrequency: { [key: string]: number } = {}
         data.loans.items.forEach((loan: any) => {
           const freq = loan.paymentFrequency || 'Semanal'
@@ -68,7 +68,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
           value
         }))
 
-        // Agrupar préstamos por tipo de interés
+        // Agrupar contratos por tipo de interés
         const loansByInterestType: { [key: string]: number } = {}
         data.loans.items.forEach((loan: any) => {
           const type = loan.interestType || 'Fijo'
@@ -148,7 +148,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
             value: client.totalAmount
           }))
 
-        // Clientes por cantidad de préstamos
+        // Clientes por cantidad de contratos
         const clientsByLoans = [...data.clients.items]
           .sort((a: any, b: any) => b.totalLoans - a.totalLoans)
           .slice(0, 5)
@@ -165,7 +165,7 @@ export function ReportCharts({ data, activeTab }: ReportChartsProps) {
           lineData: clientsByLoans.length > 0 ? clientsByLoans : [{ name: 'Sin datos', value: 0 }],
           pieLabel: "Estado",
           barLabel: "Top por Monto",
-          lineLabel: "Top por Préstamos",
+          lineLabel: "Top por contratos",
           isCurrency: false,
         }
 

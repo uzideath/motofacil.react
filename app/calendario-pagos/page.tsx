@@ -8,7 +8,7 @@ export default function CalendarPage() {
       <PageHeader
         icon={CalendarClock}
         title="Calendario de Pagos"
-        subtitle="Visualiza los pagos de cada préstamo en el calendario"
+        subtitle="Visualiza los pagos de cada contrato en el calendario"
         badgeIcon={Calendar}
         badgeLabel="Vista"
         badgeColor="purple"

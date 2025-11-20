@@ -23,11 +23,23 @@ export function LoanFormSummaryCard({
             <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2 text-blue-700 dark:text-blue-300">
                     <Calculator className="h-4 w-4" />
-                    Resumen del Préstamo
+                    Resumen del contrato
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <p className="text-xs font-medium text-purple-600/70 dark:text-purple-400/70 mb-1">Precio Total del Vehículo:</p>
+                        <p className="text-base font-semibold text-purple-700 dark:text-purple-300">
+                            {formatCurrency(formValues.totalAmount || 0)}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium text-green-600/70 dark:text-green-400/70 mb-1">Pago Inicial:</p>
+                        <p className="text-base font-semibold text-green-600 dark:text-green-400">
+                            {formatCurrency(formValues.downPayment || 0)}
+                        </p>
+                    </div>
                     <div>
                         <p className="text-xs font-medium text-blue-600/70 dark:text-blue-400/70 mb-1">Monto Financiado:</p>
                         <p className="text-base font-semibold text-blue-700 dark:text-blue-300">
@@ -43,8 +55,8 @@ export function LoanFormSummaryCard({
                         </p>
                     </div>
                     <div>
-                        <p className="text-xs font-medium text-green-600/70 dark:text-green-400/70 mb-1">Interés Total:</p>
-                        <p className="text-base font-semibold text-green-600 dark:text-green-400">
+                        <p className="text-xs font-medium text-amber-600/70 dark:text-amber-400/70 mb-1">Interés Total:</p>
+                        <p className="text-base font-semibold text-amber-600 dark:text-amber-400">
                             {formatCurrency(loanSummary.totalInterest)}
                         </p>
                     </div>

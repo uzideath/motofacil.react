@@ -39,7 +39,7 @@ export function LoanDetails({
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
 
-  // Función para obtener datos del préstamo
+  // Función para obtener datos del contrato
   const fetchLoanData = () => {
     setLoading(true)
     // Simulación de carga de datos
@@ -57,11 +57,11 @@ export function LoanDetails({
         setInterests(getInterest(response.totalAmount, response.interestRate, periods))
         setLoan(response)
       } catch (error) {
-        console.error("Error al cargar datos del préstamo:", error)
+        console.error("Error al cargar datos del contrato:", error)
         toast({
           variant: "destructive",
           title: "Error",
-          description: "No se pudieron cargar los datos del préstamo",
+          description: "No se pudieron cargar los datos del contrato",
         })
       } finally {
         setLoading(false)
@@ -152,7 +152,7 @@ export function LoanDetails({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Detalles del Préstamo</DialogTitle>
+          <DialogTitle>Detalles del contrato</DialogTitle>
         </DialogHeader>
 
         {loading ? (
@@ -296,10 +296,10 @@ export function LoanDetails({
               </Card>
             </div>
 
-            {/* Detalles del préstamo */}
+            {/* Detalles del contrato */}
             <Card>
               <CardHeader>
-                <CardTitle>Detalles del Préstamo</CardTitle>
+                <CardTitle>Detalles del contrato</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
@@ -310,7 +310,7 @@ export function LoanDetails({
                           <CreditCard className="h-6 w-6 text-blue-400" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-blue-200/80">Estado del Préstamo</p>
+                          <p className="text-sm font-medium text-blue-200/80">Estado del contrato</p>
                           <Badge className={`${getStatusColor(loan.status)} text-white px-3 py-1 text-sm mt-1`}>
                             {getStatusText(loan.status)}
                           </Badge>
@@ -614,7 +614,7 @@ export function LoanDetails({
           </div>
         ) : (
           <div className="py-6 text-center">
-            <p>No se encontró información del préstamo</p>
+            <p>No se encontró información del contrato</p>
           </div>
         )}
       </DialogContent>

@@ -121,7 +121,7 @@ export function CalendarHeader({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-lg font-semibold">Filtrar por Préstamo</h3>
+            <h3 className="text-lg font-semibold">Filtrar por contrato</h3>
           </div>
           <div className="flex items-center gap-2">
             {onRefresh && (
@@ -160,7 +160,7 @@ export function CalendarHeader({
                       </span>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">Buscar préstamo por placa...</span>
+                    <span className="text-muted-foreground">Buscar contrato por placa...</span>
                   )}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -173,7 +173,7 @@ export function CalendarHeader({
                     onValueChange={setSearchValue}
                   />
                   <CommandList>
-                    <CommandEmpty>No se encontraron préstamos</CommandEmpty>
+                    <CommandEmpty>No se encontraron contratos</CommandEmpty>
                     <CommandGroup>
                       <CommandItem
                         value="all"

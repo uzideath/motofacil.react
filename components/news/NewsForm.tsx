@@ -173,15 +173,15 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
             setLoans(loansData)
             
             toast({
-                title: "Préstamos cargados",
-                description: `${loansData.length} préstamos disponibles`,
+                title: "contratos cargados",
+                description: `${loansData.length} contratos disponibles`,
             })
         } catch (error: any) {
             console.error("Error loading loans:", error)
             toast({
                 variant: "destructive",
-                title: "Error al cargar préstamos",
-                description: error?.message || "No se pudieron cargar los préstamos",
+                title: "Error al cargar contratos",
+                description: error?.message || "No se pudieron cargar los contratos",
             })
         } finally {
             setLoadingLoans(false)
@@ -276,7 +276,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                             </FormControl>
                                             <SelectContent>
                                                 <SelectItem value={NewsType.LOAN_SPECIFIC}>
-                                                    Préstamo Específico
+                                                    contrato Específico
                                                 </SelectItem>
                                                 <SelectItem value={NewsType.STORE_WIDE}>
                                                     Todo el punto
@@ -285,7 +285,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                         </Select>
                                         <FormDescription>
                                             {newsType === NewsType.LOAN_SPECIFIC
-                                                ? "Afecta solo a un préstamo específico (vehículo en taller, accidente, etc.)"
+                                                ? "Afecta solo a un contrato específico (vehículo en taller, accidente, etc.)"
                                                 : "Afecta a todo el punto (festivos, días libres, mantenimiento del sistema)"}
                                         </FormDescription>
                                         <FormMessage />
@@ -299,7 +299,7 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                     name="loanId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Préstamo</FormLabel>
+                                            <FormLabel>contrato</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
                                                 value={field.value}
@@ -309,10 +309,10 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                     <SelectTrigger>
                                                         <SelectValue placeholder={
                                                             loadingLoans 
-                                                                ? "Cargando préstamos..." 
+                                                                ? "Cargando contratos..." 
                                                                 : loans.length === 0 
-                                                                    ? "No hay préstamos disponibles"
-                                                                    : "Selecciona un préstamo"
+                                                                    ? "No hay contratos disponibles"
+                                                                    : "Selecciona un contrato"
                                                         } />
                                                     </SelectTrigger>
                                                 </FormControl>
@@ -325,9 +325,9 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                 </SelectContent>
                                             </Select>
                                             <FormDescription>
-                                                {loadingLoans && "Cargando préstamos..."}
-                                                {!loadingLoans && loans.length === 0 && "No hay préstamos activos en este punto"}
-                                                {!loadingLoans && loans.length > 0 && `${loans.length} préstamos disponibles`}
+                                                {loadingLoans && "Cargando contratos..."}
+                                                {!loadingLoans && loans.length === 0 && "No hay contratos activos en este punto"}
+                                                {!loadingLoans && loans.length > 0 && `${loans.length} contratos disponibles`}
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>
@@ -363,8 +363,8 @@ export function NewsForm({ open, onClose, onSuccess, news }: NewsFormProps) {
                                                 </SelectContent>
                                             </Select>
                                             <FormDescription>
-                                                Si no seleccionas un tipo específico, la novedad afectará a todos los préstamos activos en el punto.
-                                                Si seleccionas un tipo, solo afectará a los préstamos con ese tipo de vehículo.
+                                                Si no seleccionas un tipo específico, la novedad afectará a todos los contratos activos en el punto.
+                                                Si seleccionas un tipo, solo afectará a los contratos con ese tipo de vehículo.
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>

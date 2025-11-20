@@ -120,7 +120,7 @@ export function ArchivedLoansDialog({ vehicleId, vehicleInfo, children }: Archiv
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudieron cargar los préstamos archivados.",
+        description: "No se pudieron cargar los contratos archivados.",
       })
     } finally {
       setLoading(false)
@@ -188,7 +188,7 @@ export function ArchivedLoansDialog({ vehicleId, vehicleInfo, children }: Archiv
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Archive className="h-5 w-5" />
-            Historial de Préstamos Archivados
+            Historial de contratos Archivados
           </DialogTitle>
           <DialogDescription>
             Vehículo: <strong>{vehicleInfo}</strong>
@@ -203,7 +203,7 @@ export function ArchivedLoansDialog({ vehicleId, vehicleInfo, children }: Archiv
           ) : archivedLoans.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Archive className="h-12 w-12 mx-auto mb-4 opacity-30" />
-              <p>No se encontraron préstamos archivados</p>
+              <p>No se encontraron contratos archivados</p>
             </div>
           ) : (
             <>
@@ -529,7 +529,7 @@ export function ArchivedLoansDialog({ vehicleId, vehicleInfo, children }: Archiv
                 <div className="mt-6 pt-4 border-t flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
                     Mostrando {startIndex + 1} a {Math.min(endIndex, archivedLoans.length)} de{" "}
-                    {archivedLoans.length} {archivedLoans.length === 1 ? "préstamo" : "préstamos"}
+                    {archivedLoans.length} {archivedLoans.length === 1 ? "contrato" : "contratos"}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button

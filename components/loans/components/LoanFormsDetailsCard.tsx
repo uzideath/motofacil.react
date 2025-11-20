@@ -18,7 +18,7 @@ export function LoanFormDetailsCard({ control, formatNumber, parseFormattedNumbe
             <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-primary" />
-                    Detalles del Préstamo
+                    Detalles del contrato
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

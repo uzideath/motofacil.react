@@ -30,7 +30,7 @@ export function NewsTableDialogs({
                     <AlertDialogDescription>
                         Esta acción no se puede deshacer. La novedad será eliminada
                         permanentemente. Si esta novedad tenía ajustes de cuotas automáticos, 
-                        los montos se restaurarán al préstamo.
+                        los montos se restaurarán al contrato.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

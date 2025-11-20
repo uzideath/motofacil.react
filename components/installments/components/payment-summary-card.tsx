@@ -40,7 +40,7 @@ export function PaymentSummaryCard({
 
                     <div>
                         <div className="flex justify-between mb-1">
-                            <p className="text-xs font-medium text-amber-600/70 dark:text-amber-400/70">Progreso del préstamo:</p>
+                            <p className="text-xs font-medium text-amber-600/70 dark:text-amber-400/70">Progreso del contrato:</p>
                             <p className="text-xs font-medium text-amber-600/70 dark:text-amber-400/70">{Math.round(progress)}%</p>
                         </div>
                         <div className="w-full bg-amber-200/50 dark:bg-amber-800/30 rounded-full h-2.5">

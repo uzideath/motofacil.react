@@ -167,7 +167,7 @@ export function LoanTableControls({
                     <LoanForm onSaved={onRefresh}>
                         <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all">
                             <Plus className="mr-2 h-4 w-4" />
-                            Nuevo Préstamo
+                            Nuevo contrato
                         </Button>
                     </LoanForm>
                 )}

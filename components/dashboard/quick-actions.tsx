@@ -13,7 +13,7 @@ export function QuickActions() {
     },
     {
       icon: <CreditCard className="h-4 w-4" />,
-      label: "Nuevo Préstamo",
+      label: "Nuevo contrato",
       href: "/arrendamientos",
       color: "bg-primary",
     },

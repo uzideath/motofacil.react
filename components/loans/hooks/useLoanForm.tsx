@@ -15,7 +15,7 @@ const loanSchema = z.object({
     downPayment: z.coerce.number().min(0, { message: "El pago inicial no puede ser negativo." }),
     startDate: z.string().optional(),
     endDate: z.string().nullable().optional(),
-    loanTermMonths: z.coerce.number().min(1, { message: "El plazo del préstamo debe ser al menos 1 mes." }),
+    loanTermMonths: z.coerce.number().min(1, { message: "El plazo del contrato debe ser al menos 1 mes." }),
     interestRate: z.coerce.number().min(0, { message: "La tasa de interés no puede ser negativa." }),
     interestType: z.enum(["FIXED", "COMPOUND"]),
     paymentFrequency: z.enum(["DAILY", "MONTHLY", "BIWEEKLY", "WEEKLY"]),
@@ -549,12 +549,12 @@ export function useLoanForm({ loanId, loanData, onSaved }: UseLoanFormProps) {
                 })
             }
 
-            toast({ title: loanId ? "Préstamo actualizado" : "Préstamo creado", description: "Operación exitosa" })
+            toast({ title: loanId ? "contrato actualizado" : "contrato creado", description: "Operación exitosa" })
             setIsOpen(false)
             onSaved?.(response.data)
         } catch (error) {
-            console.error("Error al guardar préstamo:", error)
-            toast({ variant: "destructive", title: "Error", description: "No se pudo guardar el préstamo" })
+            console.error("Error al guardar contrato:", error)
+            toast({ variant: "destructive", title: "Error", description: "No se pudo guardar el contrato" })
         } finally {
             setLoading(false)
         }

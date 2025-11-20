@@ -79,7 +79,7 @@ export function LoanTableDialogs({
                             Confirmar eliminación
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            ¿Está seguro que desea eliminar este préstamo? Esta acción no se puede deshacer.
+                            ¿Está seguro que desea eliminar este contrato? Esta acción no se puede deshacer.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -105,8 +105,8 @@ export function LoanTableDialogs({
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {loanToArchive?.archived
-                                ? "¿Está seguro que desea desarchivar este préstamo? Volverá a aparecer en la lista de préstamos activos."
-                                : "¿Está seguro que desea archivar este préstamo? Se moverá a la sección de archivados y no aparecerá en la lista principal."}
+                                ? "¿Está seguro que desea desarchivar este contrato? Volverá a aparecer en la lista de contratos activos."
+                                : "¿Está seguro que desea archivar este contrato? Se moverá a la sección de archivados y no aparecerá en la lista principal."}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

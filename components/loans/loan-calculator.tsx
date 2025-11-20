@@ -235,7 +235,7 @@ export function LoanCalculator() {
             {loanSummary && (
                 <Card className="bg-blue-900/20 border-blue-800/30">
                     <CardContent className="pt-6">
-                        <h3 className="text-lg font-semibold mb-4 text-blue-200">Resumen del Préstamo</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-blue-200">Resumen del contrato</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <p className="text-sm text-blue-300">Monto Financiado:</p>

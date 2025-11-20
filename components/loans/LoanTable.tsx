@@ -125,7 +125,7 @@ export function LoanTable() {
                     <TableHead className="text-foreground font-medium">
                       <div className="flex items-center gap-1.5">
                         <Activity className="h-4 w-4" />
-                        <span>Estado Préstamo</span>
+                        <span>Estado contrato</span>
                       </div>
                     </TableHead>
                     <TableHead className="text-right text-foreground font-medium">
@@ -192,7 +192,7 @@ export function LoanTable() {
                           <DollarSign className="h-10 w-10 text-muted-foreground/30" />
                           <p className="text-sm">
                             {showArchived
-                              ? "No se encontraron préstamos archivados"
+                              ? "No se encontraron contratos archivados"
                               : "No se encontraron arrendamientos"}
                           </p>
                           {searchTerm && (

@@ -245,9 +245,17 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                     <DollarSign className="h-4 w-4" />
                     {formatCurrency(loan.totalAmount)}
                 </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <CalendarIcon className="h-3 w-3" />
-                    {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
+                <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                    <div className="flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" />
+                        {getPaymentFrequencyText(loan.paymentFrequency || "DAILY")}
+                    </div>
+                    {loan.downPayment > 0 && (
+                        <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                            <DollarSign className="h-3 w-3" />
+                            Inicial: {formatCurrency(loan.downPayment)}
+                        </div>
+                    )}
                 </div>
             </TableCell>
             <TableCell className="hidden lg:table-cell">
@@ -278,7 +286,11 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                     <Percent className="h-3 w-3" />
-                    {((loan.totalPaid / loan.totalAmount) * 100).toFixed(1)}% del total
+                    {(() => {
+                        const financedAmount = loan.totalAmount - (loan.downPayment || 0)
+                        const percentage = financedAmount > 0 ? ((loan.totalPaid / financedAmount) * 100) : 0
+                        return `${percentage.toFixed(1)}% del monto financiado`
+                    })()}
                 </div>
             </TableCell>
             <TableCell className="hidden xl:table-cell">
@@ -393,7 +405,7 @@ export function LoanTableRow({ loan, index, onDelete, onArchive, onPrintContract
                                 <LoanForm loanId={loan.id} loanData={loan}>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                         <Edit className="mr-2 h-4 w-4" />
-                                        Editar préstamo
+                                        Editar contrato
                                     </DropdownMenuItem>
                                 </LoanForm>
                                 

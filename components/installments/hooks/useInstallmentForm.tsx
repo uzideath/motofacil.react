@@ -15,7 +15,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const COLOMBIA_TZ = "America/Bogota"
 
 const installmentSchema = z.object({
-    loanId: z.string({ required_error: "Debe seleccionar un préstamo" }),
+    loanId: z.string({ required_error: "Debe seleccionar un contrato" }),
     amount: z.coerce.number().min(1, { message: "El monto debe ser mayor a 0" }),
     gps: z.coerce.number(),
     paymentMethod: z.enum(["CASH", "CARD", "TRANSACTION"], {

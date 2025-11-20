@@ -42,7 +42,7 @@ const chartConfig = {
     color: "hsl(var(--primary))",
   },
   loans: {
-    label: "Préstamos",
+    label: "contratos",
     color: "hsl(var(--chart-2))",
   },
   payments: {

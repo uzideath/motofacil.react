@@ -61,7 +61,7 @@ export function LoanFormClientVehicleCard({
                                             <CommandList>
                                                 <CommandEmpty>
                                                     {availableUsers.length === 0
-                                                        ? "No hay clientes disponibles. Todos están asignados a préstamos activos."
+                                                        ? "No hay clientes disponibles. Todos están asignados a contratos activos."
                                                         : "No se encontraron clientes."}
                                                 </CommandEmpty>
                                                 <CommandGroup>
@@ -113,7 +113,7 @@ export function LoanFormClientVehicleCard({
                                             <CommandList>
                                                 <CommandEmpty>
                                                     {availableVehicles.length === 0
-                                                        ? "No hay vehículos disponibles. Todos están asignados a préstamos activos."
+                                                        ? "No hay vehículos disponibles. Todos están asignados a contratos activos."
                                                         : "No se encontraron vehículos."}
                                                 </CommandEmpty>
                                                 <CommandGroup>

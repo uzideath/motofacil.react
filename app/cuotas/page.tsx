@@ -8,7 +8,7 @@ export default function InstallmentsPage() {
       <PageHeader
         icon={Receipt}
         title="Cuotas"
-        subtitle="Gestión de cuotas de préstamos"
+        subtitle="Gestión de cuotas de contratos"
         badgeIcon={CheckCircle2}
         badgeLabel="Gestión"
         badgeColor="blue"

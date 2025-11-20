@@ -86,11 +86,11 @@ export function useCalendarPayments() {
 
         setLoans(mappedLoans)
       } catch (error) {
-        console.error("Error al obtener préstamos:", error)
+        console.error("Error al obtener contratos:", error)
         toast({
           variant: "destructive",
           title: "Error al cargar datos",
-          description: "No se pudieron obtener los préstamos",
+          description: "No se pudieron obtener los contratos",
         })
       }
     }
@@ -155,7 +155,7 @@ export function useCalendarPayments() {
         toast({
           variant: "destructive",
           title: "Error al cargar pagos",
-          description: "No se pudieron obtener los pagos del préstamo",
+          description: "No se pudieron obtener los pagos del contrato",
         })
       } finally {
         setLoading(false)

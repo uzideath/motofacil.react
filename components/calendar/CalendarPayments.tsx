@@ -70,10 +70,10 @@ export function CalendarPayments() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold mb-2 text-foreground">
-              Selecciona un préstamo
+              Selecciona un contrato
             </h3>
             <p className="text-muted-foreground max-w-md">
-              Busca por placa del vehículo o selecciona un préstamo del menú desplegable para ver los pagos en el calendario
+              Busca por placa del vehículo o selecciona un contrato del menú desplegable para ver los pagos en el calendario
             </p>
           </div>
         ) : (

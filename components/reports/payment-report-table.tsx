@@ -131,7 +131,7 @@ export function PaymentReportTable({ data }: PaymentReportTableProps) {
                     className="flex items-center gap-1 p-0 font-medium"
                     onClick={() => handleSort("loanId")}
                   >
-                    Préstamo
+                    contrato
                     <ArrowUpDownIcon className="h-3 w-3" />
                   </Button>
                 </TableHead>

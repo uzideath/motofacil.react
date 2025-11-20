@@ -41,7 +41,7 @@ export const RESOURCE_LABELS: Record<Resource, string> = {
   [Resource.INSTALLMENT]: 'Cuotas',
   [Resource.VEHICLE]: 'Vehículos',
   [Resource.USER]: 'Usuarios',
-  [Resource.LOAN]: 'Préstamos',
+  [Resource.LOAN]: 'contratos',
   [Resource.EXPENSE]: 'Egresos',
   [Resource.OWNER]: 'Administradores',
   [Resource.PROVIDER]: 'Proveedores',

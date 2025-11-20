@@ -139,7 +139,7 @@ export function InstallmentForm({
                       <User className="h-12 w-12 mb-4 opacity-20" />
                       <h3 className="text-lg font-medium mb-2">Seleccione un cliente</h3>
                       <p className="text-sm max-w-xs">
-                        Seleccione un cliente para ver la información del préstamo y calcular el desglose del pago
+                        Seleccione un cliente para ver la información del contrato y calcular el desglose del pago
                       </p>
                     </div>
                   )}

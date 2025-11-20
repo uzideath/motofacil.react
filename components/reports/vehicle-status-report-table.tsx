@@ -96,7 +96,7 @@ export function VehicleStatusReportTable({ data, onExport }: VehicleStatusReport
   // Get loan status badge
   const getLoanStatusBadge = (status: string | null) => {
     if (!status) {
-      return <Badge variant="outline">Sin préstamo</Badge>
+      return <Badge variant="outline">Sin contrato</Badge>
     }
 
     switch (status) {
@@ -249,7 +249,7 @@ export function VehicleStatusReportTable({ data, onExport }: VehicleStatusReport
                     <ArrowUpDownIcon className="h-3 w-3" />
                   </Button>
                 </TableHead>
-                <TableHead className="text-center">Estado Préstamo</TableHead>
+                <TableHead className="text-center">Estado contrato</TableHead>
                 <TableHead>Cliente Actual</TableHead>
                 <TableHead>Proveedor</TableHead>
                 <TableHead className="text-right">
