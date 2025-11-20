@@ -9,6 +9,7 @@ export type FormState = {
     cashFromTransfers: string
     cashFromCards: string
     notes: string
+    closingDate: string
     submitting: boolean
     success: boolean
     error: boolean

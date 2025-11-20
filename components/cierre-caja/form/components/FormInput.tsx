@@ -1,10 +1,16 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Banknote, ArrowDownToLine, CreditCard, Info } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Banknote, ArrowDownToLine, CreditCard, Info, CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import type { FormState } from "../types"
 
@@ -15,8 +21,51 @@ interface FormInputsProps {
 }
 
 export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, onInputChange }) => {
+    const [calendarOpen, setCalendarOpen] = useState(false)
+    
+    // Convert string date to Date object for calendar
+    const selectedDate = formState.closingDate ? new Date(formState.closingDate) : new Date()
+    
     return (
         <div className="space-y-6">
+            <div className="space-y-3">
+                <Label htmlFor="closingDate" className="text-sm font-medium flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-orange-500" />
+                    Fecha del Cierre
+                </Label>
+                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            className={cn(
+                                "w-full justify-start text-left font-normal transition-all",
+                                "hover:border-orange-500 focus-within:border-orange-500 focus-within:ring-orange-500/20",
+                                !formState.closingDate && "text-muted-foreground"
+                            )}
+                        >
+                            {formState.closingDate ? (
+                                format(selectedDate, "PPP", { locale: es })
+                            ) : (
+                                <span>Seleccionar fecha</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => {
+                                if (date) {
+                                    onInputChange("closingDate", format(date, "yyyy-MM-dd"))
+                                    setCalendarOpen(false)
+                                }
+                            }}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+            </div>
             <div className="space-y-3">
                 <Label htmlFor="cashInRegister" className="text-sm font-medium flex items-center gap-2">
                     <Banknote className="h-4 w-4 text-emerald-500" />

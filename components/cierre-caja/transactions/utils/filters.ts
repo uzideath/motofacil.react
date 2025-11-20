@@ -35,9 +35,8 @@ export function filterAndSortTransactions(
 ): Transaction[] {
   let filtered = [...transactions]
 
-  // CRITICAL: Only show transactions from today and future dates (Colombian time)
-  // Exclude past transactions before today
-  filtered = filtered.filter((transaction) => isTodayOrFuture(transaction.date))
+  // Show all unassigned transactions regardless of date
+  // This allows creating cash registers for past dates
 
   // Apply search filter
   if (filters.searchTerm) {

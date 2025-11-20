@@ -19,6 +19,7 @@ const initialFormState: FormState = {
     cashFromTransfers: "",
     cashFromCards: "",
     notes: "",
+    closingDate: new Date().toISOString().split('T')[0],
     submitting: false,
     success: false,
     error: false,
@@ -99,14 +100,13 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 cashFromTransfers: calculations.cashFromTransfers,
                 cashFromCards: calculations.cashFromCards,
                 notes: formState.notes,
+                closingDate: formState.closingDate,
                 installmentIds: incomes.map((i) => i.id),
                 expenseIds: expenses.map((e) => e.id),
                 createdById: user?.id,
                 provider: currentProvider,
                 providerId: currentProvider?.id,
             }
-
-            // Note: closingDate is no longer sent - backend determines it from transactions
 
             await HttpService.post("/api/v1/closing", payload)
 
