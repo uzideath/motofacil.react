@@ -119,7 +119,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
 
     // Operations items - Analytics & Tools - Only for employees
     const operationsItems = [
-        { path: "/flujo-efectivo", label: "Flujo de Efectivo", icon: TrendingUp },
+        // { path: "/flujo-efectivo", label: "Flujo de Efectivo", icon: TrendingUp },
         // { path: "/calculadora", label: "Calculadora", icon: Calculator },
         { path: "/reportes", label: "Reportes", icon: FileBarChart },
         { path: "/novedades", label: "Novedades", icon: Newspaper },
