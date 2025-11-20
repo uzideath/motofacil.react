@@ -24,7 +24,10 @@ export const FormInputs: React.FC<FormInputsProps> = ({ formState, isReadOnly, o
     const [calendarOpen, setCalendarOpen] = useState(false)
     
     // Convert string date to Date object for calendar
-    const selectedDate = formState.closingDate ? new Date(formState.closingDate) : new Date()
+    // Parse the date string as local date to avoid timezone issues
+    const selectedDate = formState.closingDate 
+        ? new Date(formState.closingDate + 'T00:00:00') 
+        : new Date()
     
     return (
         <div className="space-y-6">
