@@ -46,6 +46,16 @@ interface TransactionItemProps {
 export function TransactionItem({ transaction, isSelected, onSelect }: TransactionItemProps) {
     const [showDetailsModal, setShowDetailsModal] = useState(false)
 
+    // Debug logging for expenses
+    if (transaction.type === 'expense') {
+        console.log('🔍 TransactionItem - Expense:', {
+            id: transaction.id,
+            description: transaction.description,
+            provider: transaction.provider,
+            createdBy: transaction.createdBy
+        });
+    }
+
     // Get category details
     const categoryDetails = CATEGORY_DETAILS[transaction.category as keyof typeof CATEGORY_DETAILS] || {
         label: transaction.category,
@@ -54,13 +64,11 @@ export function TransactionItem({ transaction, isSelected, onSelect }: Transacti
     }
 
     // Get provider details if available
-    const providerDetails = transaction.provider
-        ? PROVIDER_DETAILS[transaction.provider.name as unknown as keyof typeof PROVIDER_DETAILS] || {
-            label: formatProviderName(transaction.provider.name),
-            color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",
-            icon: FileText,
-        }
-        : null
+    const providerDetails = transaction.provider ? {
+        label: transaction.provider.name || formatProviderName(transaction.provider.name),
+        color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+        icon: FileText,
+    } : null
 
     // Get payment method icon
     const paymentMethodIcon =

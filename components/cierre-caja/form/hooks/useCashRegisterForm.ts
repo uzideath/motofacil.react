@@ -67,12 +67,14 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
     useEffect(() => {
         console.log('💰 useCashRegisterForm - selectedTransactions changed:', selectedTransactions);
         console.log('💰 useCashRegisterForm - incomes:', incomes);
+        console.log('💰 useCashRegisterForm - expenses:', expenses);
+        
+        // Extract provider from any transaction (income or expense)
+        const provider = getProviderDetailsFromTransactions(selectedTransactions);
+        console.log('💰 useCashRegisterForm - extracted provider:', provider);
+        setCurrentProvider(provider);
         
         if (incomes.length > 0) {
-            const provider = getProviderDetailsFromTransactions(selectedTransactions);
-            console.log('💰 useCashRegisterForm - extracted provider:', provider);
-            setCurrentProvider(provider);
-
             const { cash, transfers, cards } = calculateAutoFillValues(incomes)
 
             setFormState((prev) => ({
@@ -83,11 +85,12 @@ export const useCashRegisterForm = (selectedTransactions: SelectedTransaction[],
                 success: false,
                 error: false,
             }))
-        } else {
-            console.log('💰 useCashRegisterForm - no incomes, clearing provider');
+        } else if (selectedTransactions.length === 0) {
+            // Only clear provider if no transactions are selected at all
+            console.log('💰 useCashRegisterForm - no transactions, clearing provider');
             setCurrentProvider(undefined)
         }
-    }, [incomes, selectedTransactions])
+    }, [incomes, expenses, selectedTransactions])
 
     const handleInputChange = (field: keyof FormState, value: string) => {
         setFormState((prev) => ({

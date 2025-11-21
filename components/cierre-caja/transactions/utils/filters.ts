@@ -35,9 +35,9 @@ export function filterAndSortTransactions(
 ): Transaction[] {
   let filtered = [...transactions]
 
-  // CRITICAL: Only show transactions from today and future dates (Colombian time)
-  // Exclude past transactions before today
-  filtered = filtered.filter((transaction) => isTodayOrFuture(transaction.date))
+  // NOTE: Show all unassigned transactions regardless of date
+  // This is needed for closing system to include past unassigned expenses and incomes
+  // The date filter is removed to show all available transactions
 
   // Apply search filter
   if (filters.searchTerm) {

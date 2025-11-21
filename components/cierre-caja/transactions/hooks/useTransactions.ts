@@ -115,6 +115,7 @@ export const useTransactions = ({ token, onSelect, itemsPerPage = DEFAULT_ITEMS_
             setRefreshing(true)
             const data = await fetchAvailableTransactions(token)
             console.log('📦 useTransactions - Fetched transactions:', data);
+            console.log('📦 useTransactions - Sample expense with provider:', data.find(t => t.type === 'expense'));
             setTransactions(data)
         } catch (error) {
             console.error("Error loading transactions:", error)

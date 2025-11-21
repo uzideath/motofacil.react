@@ -49,7 +49,7 @@ const expenseSchema = z.object({
     description: z.string().min(1, { message: "La descripción es obligatoria" }),
     date: z.string().min(1, { message: "La fecha es obligatoria" }),
     attachmentUrl: z.string().optional(),
-    provider: z.string(),
+    providerId: z.string().optional(),
 })
 
 export type ExpenseFormValues = z.infer<typeof expenseSchema>
@@ -80,7 +80,7 @@ export function useExpenseForm({ onSuccess, isModal = false, expenseData, isEdit
             description: "",
             date: format(new Date(), "yyyy-MM-dd"),
             attachmentUrl: "",
-            provider: "",
+            providerId: "",
         },
     })
 
@@ -95,7 +95,7 @@ export function useExpenseForm({ onSuccess, isModal = false, expenseData, isEdit
                 description: expenseData.description,
                 date: format(new Date(expenseData.date), "yyyy-MM-dd"),
                 attachmentUrl: expenseData.attachmentUrl || "",
-                provider: expenseData.provider?.name || "",
+                providerId: expenseData.providerId || "",
             })
             if (expenseData.attachmentUrl) {
                 setImagePreview(expenseData.attachmentUrl)
@@ -177,8 +177,15 @@ export function useExpenseForm({ onSuccess, isModal = false, expenseData, isEdit
     const onSubmit = async (values: ExpenseFormValues) => {
         try {
             setLoading(true)
+            
+            // Fix timezone issue: Convert date to Colombian timezone (UTC-5)
+            // When user selects Nov 20, we need to send it as Nov 20 00:00:00 Colombian time
+            const selectedDate = new Date(values.date + 'T00:00:00')
+            const colombianDate = new Date(selectedDate.toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+            
             const payload = {
                 ...values,
+                date: colombianDate.toISOString(),
                 createdById: user?.id,
             }
 
@@ -207,7 +214,7 @@ export function useExpenseForm({ onSuccess, isModal = false, expenseData, isEdit
                     description: "",
                     date: format(new Date(), "yyyy-MM-dd"),
                     attachmentUrl: "",
-                    provider: "",
+                    providerId: "",
                 })
                 setImagePreview(null)
             }
@@ -235,7 +242,7 @@ export function useExpenseForm({ onSuccess, isModal = false, expenseData, isEdit
             description: "",
             date: format(new Date(), "yyyy-MM-dd"),
             attachmentUrl: "",
-            provider: "",
+            providerId: "",
         })
         setImagePreview(null)
     }

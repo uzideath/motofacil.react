@@ -5,8 +5,9 @@ import { ChartData, FormCalculations, FormState, SelectedTransaction } from "./t
 export const getProviderDetailsFromTransactions = (transactions: SelectedTransaction[]): Provider | undefined => {
     console.log('🔍 getProviderDetailsFromTransactions - All transactions:', transactions);
     
-    const incomesWithProvider = transactions.filter((t) => {
-        const hasProvider = t.type === "income" && t.provider;
+    // Look for provider in both incomes (installments) and expenses
+    const transactionsWithProvider = transactions.filter((t) => {
+        const hasProvider = !!t.provider;
         console.log(`Transaction ${t.id}:`, {
             type: t.type,
             hasProvider: !!t.provider,
@@ -15,9 +16,9 @@ export const getProviderDetailsFromTransactions = (transactions: SelectedTransac
         return hasProvider;
     });
     
-    console.log('📊 Incomes with provider:', incomesWithProvider);
+    console.log('📊 Transactions with provider:', transactionsWithProvider);
     
-    const selectedProvider = incomesWithProvider.length > 0 ? incomesWithProvider[0].provider : undefined;
+    const selectedProvider = transactionsWithProvider.length > 0 ? transactionsWithProvider[0].provider : undefined;
     console.log('✅ Selected provider:', selectedProvider);
     
     return selectedProvider;

@@ -4,7 +4,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tag, Calendar, DollarSign, CreditCard, Loader2 } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Tag, Calendar, DollarSign, CreditCard, Loader2, CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 import type { Control } from "react-hook-form"
 import { ExpenseFormValues } from "../hooks/useExpenseForm"
 import { useProviders } from "@/components/providers/hooks/useProviders"
@@ -61,17 +67,50 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                         control={control}
                         name="date"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="flex flex-col">
                                 <FormLabel className="flex items-center gap-1.5 after:content-['*'] after:text-red-500 after:ml-0.5">
                                     <Calendar className="h-4 w-4 text-primary" />
                                     Fecha
                                 </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="date"
-                                        {...field}
-                                    />
-                                </FormControl>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "w-full pl-3 text-left font-normal",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(new Date(field.value + 'T12:00:00'), "PPP", { locale: es })
+                                                ) : (
+                                                    <span>Seleccione una fecha</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <CalendarComponent
+                                            mode="single"
+                                            selected={field.value ? new Date(field.value + 'T12:00:00') : undefined}
+                                            onSelect={(date) => {
+                                                if (date) {
+                                                    // Get the date in Colombian timezone to avoid timezone issues
+                                                    const year = date.getFullYear()
+                                                    const month = String(date.getMonth() + 1).padStart(2, '0')
+                                                    const day = String(date.getDate()).padStart(2, '0')
+                                                    field.onChange(`${year}-${month}-${day}`)
+                                                }
+                                            }}
+                                            disabled={(date) =>
+                                                date > new Date() || date < new Date("1900-01-01")
+                                            }
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                                 <FormDescription className="text-xs">Fecha en que se realizó el egreso</FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -129,7 +168,7 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                     />
                     <FormField
                         control={control}
-                        name="provider"
+                        name="providerId"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="flex items-center gap-1.5">
@@ -169,7 +208,7 @@ export function ExpenseBasicInfo({ control }: ExpenseBasicInfoProps) {
                                             </SelectItem>
                                         ) : (
                                             providers.map((provider) => (
-                                                <SelectItem key={provider.id} value={provider.name}>
+                                                <SelectItem key={provider.id} value={provider.id}>
                                                     {provider.name}
                                                 </SelectItem>
                                             ))
